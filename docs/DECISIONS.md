@@ -2,6 +2,17 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Phase 3 approved, with three choices
+
+- **The portal design pass runs right after phase 3** (task 3-13), over every page at once,
+  before phase 4; building it earlier would redo the pages phase 3 adds.
+- **Email:** hard bounces are caught at send time in phase 3 (the relay refuses them at once);
+  delayed bounces wait for phase 7, which builds the inbound mail server anyway; per-tenant SMTP
+  goes to Phase D until a tenant asks.
+- **Webhooks to plain HTTP are refused by default;** a platform admin can allow them for the
+  installation (the lab's test receivers need it). Private and internal addresses stay refused
+  either way.
+
 ## 2026-11-27: Phase 2 closed; known limits moved to a deferred phase
 
 - Phase 2 is closed on its done-when conditions (all met in the lab). The real Grandstream

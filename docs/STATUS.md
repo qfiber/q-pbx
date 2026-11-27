@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 3 — API, webhooks and notifications: breakdown proposed (2026-11-27), waiting for approval. Phase 2 done.
+**Current phase:** 3 — API, webhooks and notifications: breakdown approved (2026-11-27); next task 3-1. Phase 2 done.
 **Last updated:** 2026-11-27
 
 ## Phase 1 goal
@@ -369,7 +369,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- Phase 3 breakdown proposed (below); waiting for approval before 3-1 starts.
+- 3-1 API foundation (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next
@@ -447,7 +447,7 @@ Kamailio gets its real config.
   load in the lab), languages moved to one config list, firewall and plan forms now clear
   after a save (live validation added).
 
-## Phase 3 task breakdown (proposed 2026-11-27, waiting for approval)
+## Phase 3 task breakdown (approved 2026-11-27)
 
 From `docs/SPEC.md`, phase 3: `/v1` REST with OpenAPI, API keys, event bus, signed webhooks
 with retries and outbound request safety, WebSocket event stream, click-to-call; notification
@@ -472,6 +472,13 @@ webhook with minutes remaining, and a webhook aimed at an internal address is re
 | 3-10 | Call tests in CI | The SIPp suite extended: call webhooks delivered and signed, an API-driven change applied, a threshold alert | CI green |
 | 3-11 | Leftovers | Whatever phase 3 turns up | — |
 | 3-12 | Done-when verification | The four conditions in the lab, with the webhook latency measured | Results recorded here |
+| 3-13 | Portal design pass (was D-2) | A visual and usability pass over every portal page, done once phase 3's pages exist and before phase 4 | Review in the browser |
+
+Decisions with the approval (2026-11-27): the portal design pass runs right after
+phase 3 (3-13); email: hard bounces caught at send time in phase 3, delayed bounces in phase 7
+(it builds the inbound mail server), per-tenant SMTP in Phase D (D-12); webhooks to plain HTTP
+are refused by default and a platform admin can allow them for the installation (the lab needs
+it).
 
 Not in phase 3 (spec): OAuth 2 for CRM apps, chat formats, digests and escalation (phase 8),
 mobile push (phase 4, with Meow), call quality alerts from RTCP (with recording in phase 4 if
@@ -485,7 +492,7 @@ part of the spec's numbered phases; it runs when scheduled.
 | # | Item | Notes |
 | --- | --- | --- |
 | D-1 | Real Grandstream phone test | Deferred: busy lamps, voicemail light, transfers and audio on a desk phone, with the server logs watched |
-| D-2 | Portal design pass | Every page works but none is designed; a proper visual and usability pass |
+| D-2 | ~~Portal design pass~~ | Moved to 3-13 (after phase 3) |
 | D-3 | Real carrier | Carriers are simulated in the lab; test a real one (registration and IP) on a public server |
 | D-4 | IPv6 end to end | Kamailio and nftables are templated for dual stack; the lab LAN has no IPv6, so it was never exercised |
 | D-5 | S3 backup targets | Only SFTP is built and tested; pgBackRest and restic both support S3 (Garage, Hetzner, Backblaze) |
@@ -495,6 +502,7 @@ part of the spec's numbered phases; it runs when scheduled.
 | D-9 | Voicemail email delivery | The lab has no mail server: the email is built and checked, never delivered; test with a real SMTP relay |
 | D-10 | Runtime validation messages | Messages built at runtime (for example "unknown feature x") are not translated |
 | D-11 | Unused SIP credential API | `create_sip_credential` and friends are used only by their tests since devices took over; remove them |
+| D-12 | Per-tenant SMTP | The spec lists it for 1.0; deferred until a tenant asks (decided 2026-11-27) |
 
 ## Phase 2 task breakdown (proposed 2026-11-27)
 
