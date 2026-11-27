@@ -51,6 +51,11 @@ Kamailio gets its real config.
   (`create_sip_credential` and friends) is used by nothing but its tests since devices took
   over; left as is. Lab: a "Demo Company" tenant with three extensions, a voicemail and three
   logins (kept on the workstation in `~/.local/share/qpbx-lab/demo-logins.txt`). 251 tests.
+- Fixed (2026-11-27): in production the theme script (`theme-<digest>.js`) answered 404, so the
+  light/dark choice was not applied before the page drew: `Plug.Static`'s list of allowed
+  names did not cover the fingerprinted copy. Note for the lab: the portal answers live
+  connections only on its own address (`portal.pbx.lab.test`); opened under another name it
+  shows "Something went wrong" (the origin check refuses the WebSocket, by design).
 
 - 2-12 Done-when verification (done): `lab/done-when/phase2.py` runs every phase 2 lab check
   and reports the spec's five conditions; a new `phase2-tenants.py` shows two tenants with the

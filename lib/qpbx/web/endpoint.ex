@@ -29,6 +29,8 @@ defmodule QPBX.Web.Endpoint do
     from: :qpbx,
     gzip: not code_reloading?,
     only: QPBX.Web.static_paths(),
+    # The fingerprinted copy (theme-<digest>.js) that ~p"/theme.js" points to in production.
+    only_matching: ~w(theme),
     raise_on_missing_only: code_reloading?
 
   # Code reloading can be explicitly enabled under the
