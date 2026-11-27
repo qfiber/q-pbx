@@ -38,3 +38,6 @@ npm-debug.log
 /priv/plts/
 /fwd/qpbx-fwd
 /out/
+
+# Ansible and ansible-lint caches (downloaded collections)
+.ansible/
