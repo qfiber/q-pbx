@@ -45,6 +45,9 @@ defmodule QPBX.Web.Layouts do
           <.link navigate={~p"/platform/plans"} class="btn btn-ghost btn-sm">
             {gettext("Plans")}
           </.link>
+          <.link navigate={~p"/platform/firewall"} class="btn btn-ghost btn-sm" id="nav-firewall">
+            {gettext("Firewall")}
+          </.link>
         </nav>
       </div>
       <div class="flex-none flex items-center gap-2">

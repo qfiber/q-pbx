@@ -91,6 +91,7 @@ uses two roles (`qpbx_owner` for migrations, `qpbx` for the app); development us
 | `lab/create-vm.sh` | Local Debian 12 lab VM (libvirt, bridged to `br0`; `QPBX_LAB_NET=network=default` for NAT) |
 | `cd ansible && ansible-playbook site.yml` | Install or update the server in the inventory (lab by default) |
 | `lab/acme/pebble.sh <vm-ip>` | Local test ACME server (Pebble) with DNS, to test the certificate modes |
+| `node lab/done-when/phase1b.mjs <vm-ip>` | Phase 1b security checks in the lab (needs `qpbx_session_idle_timeout=60`) |
 | `cd ansible && ansible-lint` | Lint the playbook and roles |
 | `scripts/check_module_docs.sh <base>` | Fails if an area's public API module changed without its `README.md` |
 | `mix sobelow --config` | Security scan (CI fails on any finding) |

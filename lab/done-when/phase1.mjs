@@ -4,10 +4,8 @@
 //   3. an allowlist change reaches nftables through the helper.
 // Usage: node phase1.mjs <vm-ip>   (domain pbx.lab.test, SSH key from lab/create-vm.sh)
 import puppeteer from "puppeteer-core";
-import { execFileSync } from "node:child_process";
-import { createHmac } from "node:crypto";
 import { mkdirSync } from "node:fs";
-import { homedir } from "node:os";
+import { fill, nextWindow, reporter, sshTo, submit, totp } from "./lib.mjs";
 
 const vm = process.argv[2] ?? "192.168.10.25";
 const domain = process.env.QPBX_LAB_DOMAIN ?? "pbx.lab.test";
@@ -16,32 +14,8 @@ const run = Date.now().toString(36);
 const password = "lab-password-" + run;
 const shots = new URL("./screenshots/", import.meta.url).pathname;
 mkdirSync(shots, { recursive: true });
-const results = [];
-
-const lab = `${homedir()}/.local/share/qpbx-lab`;
-const ssh = (cmd) =>
-  execFileSync("ssh", ["-o", "IdentitiesOnly=yes", "-i", `${lab}/id_ed25519`, "-o", `UserKnownHostsFile=${lab}/known_hosts`,
-    `debian@${vm}`, cmd], { encoding: "utf8" });
-
-// TOTP (RFC 6238, SHA-1, 30 s, 6 digits) from a base32 secret.
-function totp(secret32, t = Date.now()) {
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-  let bits = "";
-  for (const c of secret32.replace(/=+$/, "")) bits += alphabet.indexOf(c).toString(2).padStart(5, "0");
-  const key = Buffer.from(bits.match(/.{8}/g).map((b) => parseInt(b, 2)));
-  const counter = Buffer.alloc(8);
-  counter.writeBigUInt64BE(BigInt(Math.floor(t / 30000)));
-  const h = createHmac("sha1", key).update(counter).digest();
-  const o = h[h.length - 1] & 0xf;
-  return ((h.readUInt32BE(o) & 0x7fffffff) % 1_000_000).toString().padStart(6, "0");
-}
-// Each code is accepted once; wait for a fresh 30 s window before the next one.
-const nextWindow = () => new Promise((r) => setTimeout(r, 30000 - (Date.now() % 30000) + 1000));
-
-function check(name, ok, detail = "") {
-  results.push({ name, ok, detail });
-  console.log(`${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  (" + detail + ")" : ""}`);
-}
+const ssh = sshTo(vm);
+const { check, done } = reporter();
 
 const browser = await puppeteer.launch({
   executablePath: "/usr/bin/google-chrome",
@@ -49,19 +23,6 @@ const browser = await puppeteer.launch({
   // Lab only: names resolve to the VM, and the certificate comes from a test CA.
   args: [`--host-resolver-rules=MAP *.${domain} ${vm}, MAP ${domain} ${vm}`, "--ignore-certificate-errors"],
 });
-
-async function submit(page, form) {
-  await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }).catch(() => {}), page.click(`${form} button[type=submit], ${form} button`)]);
-}
-
-async function fill(page, values) {
-  for (const [name, value] of Object.entries(values)) {
-    const el = await page.$(`[name="${name}"]`);
-    const tag = await el.evaluate((e) => e.tagName);
-    if (tag === "SELECT") await page.select(`[name="${name}"]`, value);
-    else { await el.click({ clickCount: 3 }); await el.type(value); }
-  }
-}
 
 // Setup link -> password -> 2FA enrolment. Returns the TOTP secret.
 async function completeSetup(page, url, label) {
@@ -164,6 +125,4 @@ try {
   await browser.close();
 }
 
-const failed = results.filter((r) => !r.ok).length;
-console.log(`\n${results.length - failed} passed, ${failed} failed. Screenshots: ${shots}`);
-process.exit(failed ? 1 : 0);
+process.exit(done(shots));

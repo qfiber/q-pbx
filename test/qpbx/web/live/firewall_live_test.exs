@@ -49,6 +49,15 @@ defmodule QPBX.Web.Platform.FirewallLiveTest do
            |> has_element?()
   end
 
+  test "the platform menu links to the firewall page", %{conn: conn} do
+    {:ok, view, _} = live(conn, ~p"/platform")
+
+    assert view
+           |> element("#nav-firewall")
+           |> render_click()
+           |> follow_redirect(conn, ~p"/platform/firewall")
+  end
+
   test "invalid input shows errors", %{conn: conn} do
     {:ok, view, _} = live(conn, ~p"/platform/firewall")
 

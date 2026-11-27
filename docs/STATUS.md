@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 1b — Security hardening (approved 2026-11-27; phase 1 done)
+**Current phase:** 1b — Security hardening: built; lab checks pass; waiting for review
 **Last updated:** 2026-11-27
 
 ## Phase 1 goal
@@ -135,7 +135,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 1b-10 Lab verification of phase 1b.
+- Nothing. Phase 1b waits for review; phase 2 does not start without approval.
 
 ## Next
 
@@ -202,6 +202,11 @@ Kamailio gets its real config.
   configured human-check provider, no inline scripts or eval, no framing, forms to the site
   only); the inline theme script moved to `/theme.js`. Three false positives are skipped with
   their reasons in the code. Browser Done-when checks still pass under the CSP. 3 new tests (111).
+- 1b-10 Lab verification (done), `lab/done-when/phase1b.mjs`, browser through an SSH SOCKS
+  proxy so the portal sees a non-allowlisted client: see results below. Added on the way: CLI
+  `QPBX.Release.revoke_sessions/1`, `qpbx_session_idle_timeout` (lower only), the missing
+  Firewall link in the platform menu (an unchecked edit in P1-08 had silently not applied).
+  CI had been red since 1b-4 (a formatting slip, then a boundary export): fixed and green.
 - Done after the phase 1 review: nginx in front (non-root, real client IP, optional
   ModSecurity), FreeSWITCH modules added (G.729, Opus/MP3 recording, loopback, CDR spool; all
   load in the lab), languages moved to one config list, firewall and plan forms now clear
@@ -292,6 +297,30 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
 - Tenant office IPs (tenant firewall entries) have an API but no tenant portal page yet;
   platform admins add them today.
 - Sessions are signed cookies; they expire but cannot be revoked server-side before expiry.
+
+## Lab results (phase 1b)
+
+Run on 2026-11-27 on the lab VM (`lab/done-when/phase1b.mjs`, idle timeout set to 60 s for
+the run, then back to 15 minutes; phase 1 checks rerun afterwards: 8/8 pass).
+
+| Check | Result |
+| --- | --- |
+| Setup page carries a proof-of-work challenge for a non-allowlisted client | PASS |
+| The real browser solves it; account set up with 2FA | PASS |
+| Second login with proof of work and 2FA | PASS |
+| "Sign out everywhere else" sends the other browser's open page to login at once | PASS |
+| CLI revocation ends an open page within 40 s | PASS |
+| Idle warning shown; the idle session ends and its page goes to login | PASS |
+| No Content-Security-Policy violations in the browser | PASS |
+| 5 failed logins from one IP block it (HTTP 429); a missing proof of work counts as a failure | PASS |
+| App database role cannot update or delete audit entries or change the schema | PASS |
+| Only base system daemons run as root | PASS |
+| No AppArmor complaints during the run | PASS |
+| Every Q-PBX-related unit rates "OK" in `systemd-analyze security` | PASS |
+| Secrets file is root-only (600) | PASS |
+
+Not covered: real AWS KMS (tested against `local-kms`), the three outside CAPTCHA services
+(tested against stubbed APIs; they need accounts), and IPv6.
 
 ## Done-when results (phase 1)
 
