@@ -44,3 +44,6 @@ npm-debug.log
 
 # Python bytecode (lab tools)
 __pycache__/
+
+# Go build output
+/fwd/fwd
