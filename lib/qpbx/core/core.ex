@@ -17,7 +17,8 @@ defmodule QPBX.Core do
       Vault,
       UserSession,
       SessionSweeper,
-      Scope
+      Scope,
+      KeyProvider
     ]
 
   import Ecto.Query

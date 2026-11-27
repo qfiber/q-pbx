@@ -32,6 +32,10 @@ if config_env() == :prod do
 
   config :qpbx, :health_token, System.get_env("QPBX_HEALTH_TOKEN")
 
+  # Seconds; can only lower the 15-minute idle timeout (QPBX.Core.Sessions caps it).
+  if idle = System.get_env("QPBX_SESSION_IDLE_TIMEOUT"),
+    do: config(:qpbx, :session_idle_timeout, String.to_integer(idle))
+
   config :qpbx, QPBX.Web.Captcha,
     provider: String.to_existing_atom(System.get_env("QPBX_CAPTCHA_PROVIDER", "pow")),
     site_key: System.get_env("QPBX_CAPTCHA_SITE_KEY"),

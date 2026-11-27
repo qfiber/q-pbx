@@ -33,4 +33,12 @@ defmodule QPBX.ReleaseTest do
     t = tenant_fixture(slug: "listme")
     assert capture_io(fn -> QPBX.Release.list_sip_domains() end) =~ t.sip_domain
   end
+
+  test "revoke_sessions ends every session of an account" do
+    user = user_fixture()
+    QPBX.Core.create_session(user)
+    QPBX.Core.create_session(user)
+    assert capture_io(fn -> QPBX.Release.revoke_sessions(user.email) end) =~ "ended 2 sessions"
+    assert QPBX.Core.list_sessions(user) == []
+  end
 end

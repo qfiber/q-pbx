@@ -38,6 +38,9 @@ qpbx_aws_access_key_id: ""    # keep in Ansible Vault
 qpbx_aws_secret_access_key: ""
 qpbx_kms_key_backed_up: false
 
+# Portal session idle timeout in seconds (at most 900; higher values are capped).
+qpbx_session_idle_timeout: 900
+
 # Human check on login and setup pages: pow (built-in), turnstile, friendly_captcha, captcha_eu, none.
 qpbx_captcha_provider: pow
 qpbx_captcha_site_key: ""

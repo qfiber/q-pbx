@@ -93,6 +93,20 @@ defmodule QPBX.Release do
     end
   end
 
+  @doc "Ends every session of the platform admin or tenant user with this email (CLI revocation)."
+  def revoke_sessions(email) do
+    with_db(fn ->
+      case QPBX.Core.find_account_by_email(email) do
+        nil ->
+          fail("no account with email #{email}")
+
+        account ->
+          {:ok, n} = QPBX.Core.revoke_sessions(account, @actor)
+          IO.puts("ended #{n} sessions")
+      end
+    end)
+  end
+
   @doc "Prints every tenant SIP domain, one per line (for per-hostname certificates)."
   def list_sip_domains do
     with_db(fn -> Enum.each(QPBX.Core.list_tenants(), &IO.puts(&1.sip_domain)) end)
