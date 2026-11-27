@@ -19,7 +19,7 @@ defmodule QPBX.Web do
 
   use Boundary,
     # Repo only for the health check's SELECT 1 and Oban backlog count; no area tables.
-    deps: [QPBX.Core, QPBX.Notify, QPBX.Firewall, QPBX.Repo],
+    deps: [QPBX.Core, QPBX.Notify, QPBX.Firewall, QPBX.Events, QPBX.Repo],
     exports: [Endpoint, Telemetry, Health]
 
   @doc """

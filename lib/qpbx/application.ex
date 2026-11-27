@@ -17,8 +17,10 @@ defmodule QPBX.Application do
       # Start a worker by calling: QPBX.Worker.start_link(arg)
       # {QPBX.Worker, arg},
       # Start to serve requests, typically the last entry
+      QPBX.Core.SessionSweeper,
       QPBX.Firewall.Sync,
       QPBX.Web.Health,
+      QPBX.Web.SessionReaper,
       QPBX.Web.Endpoint
     ]
 

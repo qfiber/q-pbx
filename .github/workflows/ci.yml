@@ -54,6 +54,8 @@ jobs:
         if: github.event_name == 'pull_request'
         run: scripts/check_module_docs.sh "origin/${{ github.base_ref }}"
       - run: scripts/test/module_docs_test.sh
+      - name: Translations complete, no fuzzy guesses
+        run: scripts/check_translations.sh
       - run: mix dialyzer --format github
 
   fwd:

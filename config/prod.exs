@@ -16,6 +16,8 @@ config :qpbx, QPBX.Web.Endpoint,
     exclude: [conn: {QPBX.Web.SSLExclude, :excluded?, []}]
   ]
 
+config :qpbx, :secure_cookies, true
+
 # Configure Swoosh API Client
 config :swoosh, api_client: Swoosh.ApiClient.Req
 

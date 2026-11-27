@@ -6,7 +6,9 @@ defmodule QPBX.Core do
   Every function that changes data takes an `actor` (a `PlatformAdmin`, a `User`, or
   `{:system, name}`) and writes an audit entry in the same transaction.
   """
-  use Boundary, deps: [QPBX.Repo], exports: [Plan, Tenant, PlatformAdmin, User, AuditLog, Vault]
+  use Boundary,
+    deps: [QPBX.Repo, QPBX.Events],
+    exports: [Plan, Tenant, PlatformAdmin, User, AuditLog, Vault, UserSession, SessionSweeper]
 
   import Ecto.Query
   alias Ecto.Multi
@@ -103,6 +105,16 @@ defmodule QPBX.Core do
   defdelegate requires_totp?(account), to: Accounts
   defdelegate enable_totp(account, secret, code), to: Accounts
   defdelegate verify_totp(account, code), to: Accounts
+
+  ## Sessions (see QPBX.Core.Sessions)
+
+  defdelegate create_session(account, meta \\ %{}), to: QPBX.Core.Sessions, as: :create
+  defdelegate fetch_session(token, opts \\ []), to: QPBX.Core.Sessions, as: :fetch
+  defdelegate list_sessions(account), to: QPBX.Core.Sessions, as: :list
+  defdelegate revoke_session(account, session_id, actor), to: QPBX.Core.Sessions, as: :revoke
+  defdelegate revoke_sessions(account, actor, opts \\ []), to: QPBX.Core.Sessions, as: :revoke_all
+  defdelegate end_session(token), to: QPBX.Core.Sessions, as: :delete_by_token
+  defdelegate session_idle_timeout(), to: QPBX.Core.Sessions, as: :idle_timeout
 
   ## Audit log
 

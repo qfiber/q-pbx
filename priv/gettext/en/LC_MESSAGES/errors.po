@@ -113,7 +113,7 @@ msgstr ""
 
 ## From Ecto.Changeset.validate_confirmation/3
 #: lib/qpbx/web/error_messages.ex:11
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "does not match"
 msgstr ""
 

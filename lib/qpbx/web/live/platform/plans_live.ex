@@ -38,7 +38,12 @@ defmodule QPBX.Web.Platform.PlansLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} locale={@locale} current_account={@current_account}>
+    <Layouts.app
+      flash={@flash}
+      locale={@locale}
+      current_account={@current_account}
+      idle_timeout={@idle_timeout}
+    >
       <.header>{gettext("Plans")}</.header>
 
       <.table id="plans" rows={@plans}>

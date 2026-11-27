@@ -17,11 +17,13 @@ running endpoint).
 `/setup/:token`, `/locale/:locale`, `/logout`; platform LiveViews under `/platform`
 (tenants, new tenant, plans); tenant LiveViews under `/app`.
 
-**Auth (`QPBX.Web.Auth`):** session key `account` = `{kind, id, logged_in_at}`, expiry
-`:session_max_age` (seconds, default 12 h). `pending` holds an account between password and
-TOTP for 5 minutes.
+**Auth (`QPBX.Web.Auth`):** the cookie holds `session_token` (checked in the database on every
+request, LiveView event and every 30 s) and `live_socket_id` (`sessions:<id>`);
+`QPBX.Web.SessionReaper` broadcasts "disconnect" there when Core announces revoked sessions.
+`pending` holds an account between password and TOTP for 5 minutes. Pages pass
+`idle_timeout={@idle_timeout}` to `Layouts.app` for the idle warning (JS hook `IdleWarning`).
 
-**Events emitted:** none. **Events consumed:** none yet.
+**Events emitted:** none. **Events consumed:** `SessionsRevoked`.
 
 **Real client IP:** `QPBX.Web.RealIP` (first plug in the endpoint) takes `X-Real-IP` only from
 loopback peers, i.e. nginx. Use `conn.remote_ip` everywhere; never read forwarding headers.

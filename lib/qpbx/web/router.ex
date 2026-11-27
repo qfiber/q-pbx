@@ -56,6 +56,11 @@ defmodule QPBX.Web.Router do
       live "/tenants/new", TenantsLive, :new
       live "/plans", PlansLive, :index
       live "/firewall", FirewallLive, :index
+
+      # Shared page: full module name, not the surrounding scope's alias.
+      scope "/", alias: false do
+        live "/account", QPBX.Web.Account.SessionsLive, :index, as: :platform_account
+      end
     end
   end
 
@@ -64,6 +69,11 @@ defmodule QPBX.Web.Router do
 
     live_session :tenant_user, on_mount: {QPBX.Web.Auth, :tenant_user} do
       live "/", HomeLive, :index
+
+      # Shared page: full module name, not the surrounding scope's alias.
+      scope "/", alias: false do
+        live "/account", QPBX.Web.Account.SessionsLive, :index, as: :tenant_account
+      end
     end
   end
 

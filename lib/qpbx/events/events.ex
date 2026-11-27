@@ -3,7 +3,7 @@ defmodule QPBX.Events do
   Public API of the event bus: typed, versioned event structs on Phoenix.PubSub.
   Phoenix.PubSub reaches every node in the cluster. See `lib/qpbx/events/README.md`.
   """
-  use Boundary, deps: [], exports: [FirewallChanged]
+  use Boundary, deps: [], exports: [FirewallChanged, SessionsRevoked]
 
   @pubsub QPBX.PubSub
 

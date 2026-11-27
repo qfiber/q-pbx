@@ -28,6 +28,11 @@ defmodule QPBX.Web.Layouts do
   attr :flash, :map, required: true, doc: "the map of flash messages"
   attr :locale, :string, default: "en"
   attr :current_account, :map, default: nil
+
+  attr :idle_timeout, :integer,
+    default: nil,
+    doc: "seconds; shows the idle warning on signed-in pages"
+
   slot :inner_block, required: true
 
   def app(assigns) do
@@ -55,6 +60,14 @@ defmodule QPBX.Web.Layouts do
         </.link>
         <.link
           :if={@current_account}
+          navigate={account_path(@current_account)}
+          class="btn btn-ghost btn-sm"
+          id="account"
+        >
+          {gettext("Sessions")}
+        </.link>
+        <.link
+          :if={@current_account}
           href={~p"/logout"}
           method="delete"
           class="btn btn-ghost btn-sm"
@@ -73,8 +86,25 @@ defmodule QPBX.Web.Layouts do
     </main>
 
     <.flash_group flash={@flash} />
+
+    <div
+      :if={@idle_timeout}
+      id="idle-warning"
+      phx-hook="IdleWarning"
+      data-idle-ms={@idle_timeout * 1000}
+      class="toast toast-bottom toast-center hidden"
+      role="alert"
+    >
+      <div class="alert alert-warning">
+        <span>{gettext("You will be signed out soon because of inactivity.")}</span>
+        <button class="btn btn-sm" data-keepalive>{gettext("Stay signed in")}</button>
+      </div>
+    </div>
     """
   end
+
+  defp account_path(%QPBX.Core.PlatformAdmin{}), do: ~p"/platform/account"
+  defp account_path(_), do: ~p"/app/account"
 
   defp home(%QPBX.Core.PlatformAdmin{}), do: ~p"/platform"
   defp home(%QPBX.Core.User{}), do: ~p"/app"

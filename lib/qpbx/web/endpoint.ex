@@ -8,7 +8,11 @@ defmodule QPBX.Web.Endpoint do
     store: :cookie,
     key: "_qpbx_key",
     signing_salt: "8bgIwNNl",
-    same_site: "Lax"
+    same_site: "Lax",
+    # The cookie carries only the session token; the server decides when it ends.
+    http_only: true,
+    secure: Application.compile_env(:qpbx, :secure_cookies, false),
+    max_age: 12 * 3600
   ]
 
   socket "/live", Phoenix.LiveView.Socket,

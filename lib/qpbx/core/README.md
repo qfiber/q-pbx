@@ -14,13 +14,17 @@ and writes an audit entry in the same transaction.
 - Setup links: `setup_token/1`, `account_from_setup_token/1`, `complete_setup/2`.
 - TOTP: `new_totp_secret/0`, `totp_uri/2`, `totp_enabled?/1`, `requires_totp?/1`,
   `enable_totp/3`, `verify_totp/2`.
+- Sessions: `create_session/2`, `fetch_session/2` (`touch: false` for checks that are not
+  activity), `list_sessions/1`, `revoke_session/3`, `revoke_sessions/3` (`except:`),
+  `end_session/1`, `session_idle_timeout/0`. Password and 2FA changes revoke all sessions.
+  `QPBX.Core.SessionSweeper` ends idle/expired sessions every 30 s.
 - Audit: `audit/4` (for changes made by other areas), `list_audit_logs/1`.
 - `with_tenant/2`: run a function with row-level security scoped to one tenant.
 - `effective_limits/1`: plan limits merged with the tenant's overrides; nil = unlimited.
 - `locales/0`: language codes offered by the installation (`config :qpbx, :locales`).
 - `sip_base_domain/0`: tenant SIP domains are `<slug>.<base>` (`QPBX_SIP_BASE_DOMAIN` in prod).
 
-**Events emitted:** none yet. **Events consumed:** none.
+**Events emitted:** `QPBX.Events.SessionsRevoked` (whenever sessions end). **Events consumed:** none.
 
 **Gotchas:**
 - New tenant tables get `QPBX.Repo.RLS.enable/1` in their migration.

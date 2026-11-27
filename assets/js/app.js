@@ -25,11 +25,41 @@ import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/qpbx"
 import topbar from "../vendor/topbar"
 
+// Idle warning: the server ends a session after data-idle-ms without activity. User input on
+// the page counts as activity and is reported at most once a minute ("keepalive"), so the
+// server and this timer agree. The warning shows two minutes before the end.
+const IdleWarning = {
+  mounted() {
+    this.idleMs = parseInt(this.el.dataset.idleMs, 10)
+    this.lastPing = Date.now()
+    this.onActivity = () => {
+      this.reset()
+      if (Date.now() - this.lastPing > 60000) this.ping()
+    }
+    for (const ev of ["keydown", "pointerdown", "input"]) window.addEventListener(ev, this.onActivity, {passive: true})
+    this.el.querySelector("[data-keepalive]").addEventListener("click", () => { this.ping(); this.reset() })
+    this.reset()
+  },
+  ping() {
+    this.lastPing = Date.now()
+    this.pushEvent("keepalive", {})
+  },
+  reset() {
+    this.el.classList.add("hidden")
+    clearTimeout(this.warnTimer)
+    this.warnTimer = setTimeout(() => this.el.classList.remove("hidden"), Math.max(this.idleMs - 120000, 0))
+  },
+  destroyed() {
+    for (const ev of ["keydown", "pointerdown", "input"]) window.removeEventListener(ev, this.onActivity)
+    clearTimeout(this.warnTimer)
+  },
+}
+
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks},
+  hooks: {...colocatedHooks, IdleWarning},
 })
 
 // Show progress bar on live navigation and form submits

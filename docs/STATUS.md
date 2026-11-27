@@ -135,12 +135,19 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 1b-1 Server-side sessions.
+- 1b-2 2FA mandatory for tenant admins.
 
 ## Next
 
 - Review of phase 1 and answers to the open points in the phase 1 report.
 - Phase 1b: security items marked "1b" in the security plan, before phase 2.
+- 1b-1 Server-side sessions (done): `user_sessions` (token hash only, RLS), checked on every
+  request and LiveView event plus every 30 s; 15 min idle (configurable lower only) and 12 h
+  maximum; sweeper every 30 s; revocation on password or 2FA change, from the new account page
+  ("Sessions": list, sign out one, sign out everywhere else) and by logout; revoked sessions'
+  live pages get a disconnect broadcast; idle warning 2 minutes before the end; secure,
+  HTTP-only cookie holding only the token. New CI check: translations complete, no fuzzy
+  guesses (it caught a wrong Arabic label). 13 new tests (80 total).
 - Done after the phase 1 review: nginx in front (non-root, real client IP, optional
   ModSecurity), FreeSWITCH modules added (G.729, Opus/MP3 recording, loopback, CDR spool; all
   load in the lab), languages moved to one config list, firewall and plan forms now clear

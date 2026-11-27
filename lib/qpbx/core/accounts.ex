@@ -97,12 +97,22 @@ defmodule QPBX.Core.Accounts do
 
   def change_password(account, attrs \\ %{}), do: Credentials.password_changeset(account, attrs)
 
+  @doc "Sets the password from a setup link. Every existing session of the account ends."
   def complete_setup(account, attrs) do
     Multi.new()
     |> Multi.update(:account, Credentials.password_changeset(account, attrs))
     |> Audit.add(account, "account.setup", :account, %{})
     |> Audit.commit(:account)
+    |> revoke_sessions_on_success(account)
   end
+
+  # Credentials changed: no session may outlive them.
+  defp revoke_sessions_on_success({:ok, _} = ok, account) do
+    {:ok, _} = QPBX.Core.Sessions.revoke_all(account, {:system, "credentials-changed"})
+    ok
+  end
+
+  defp revoke_sessions_on_success(error, _account), do: error
 
   defp fingerprint(%{hashed_password: hash}),
     do: :crypto.hash(:sha256, hash || "") |> binary_part(0, 12) |> Base.url_encode64()
@@ -133,6 +143,7 @@ defmodule QPBX.Core.Accounts do
       |> Multi.update(:account, Ecto.Changeset.change(account, changes))
       |> Audit.add(account, "account.totp_enable", :account, %{})
       |> Audit.commit(:account)
+      |> revoke_sessions_on_success(account)
     else
       {:error, :invalid_code}
     end

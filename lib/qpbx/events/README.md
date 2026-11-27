@@ -10,6 +10,7 @@
 | Struct | Topic | Version | Fields | Emitted by |
 | --- | --- | --- | --- | --- |
 | `QPBX.Events.FirewallChanged` | `firewall` | 1 | `at`, `reason` | `QPBX.Firewall` |
+| `QPBX.Events.SessionsRevoked` | `sessions` | 1 | `session_ids`, `at` | `QPBX.Core` (sessions) |
 
 **Gotchas:** bump `version` and keep old fields when an event's shape changes; webhooks
 (phase 3) will expose these structs.
