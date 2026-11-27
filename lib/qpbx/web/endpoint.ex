@@ -40,6 +40,8 @@ defmodule QPBX.Web.Endpoint do
     param_key: "request_logger",
     cookie_key: "request_logger"
 
+  # Real client IP from nginx (trusted only from localhost); before logging and sessions.
+  plug QPBX.Web.RealIP
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
 

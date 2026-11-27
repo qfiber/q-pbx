@@ -4,8 +4,6 @@ defmodule QPBX.Core.Tenant do
   import Ecto.Changeset
   alias QPBX.Core.Plan
 
-  @locales ~w(en ar)
-
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "tenants" do
@@ -19,8 +17,6 @@ defmodule QPBX.Core.Tenant do
     timestamps(type: :utc_datetime)
   end
 
-  def locales, do: @locales
-
   def changeset(tenant, attrs, base_domain) do
     tenant
     |> cast(attrs, [:name, :slug, :timezone, :locale, :plan_id, :limit_overrides])
@@ -30,7 +26,7 @@ defmodule QPBX.Core.Tenant do
     |> validate_format(:slug, ~r/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/,
       message: "lowercase letters, digits and dashes, not starting or ending with a dash"
     )
-    |> validate_inclusion(:locale, @locales)
+    |> validate_inclusion(:locale, QPBX.Core.locales())
     |> validate_change(:timezone, &validate_timezone/2)
     |> validate_change(:limit_overrides, &validate_overrides/2)
     |> put_sip_domain(base_domain)

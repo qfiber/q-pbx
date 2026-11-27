@@ -60,19 +60,12 @@
 
 - name: Healthy
   ansible.builtin.uri:
-    url: "https://127.0.0.1/health"
-    validate_certs: false
+    url: "http://127.0.0.1:4000/health"
     status_code: [200, 503]
   register: health
   until: health.status in [200, 503] and health.json is defined
   retries: 30
   delay: 2
-
-- name: Per-hostname certificates need the running app for HTTP-01
-  ansible.builtin.include_role:
-    name: certificates
-    tasks_from: per_host_issue
-  when: qpbx_cert_mode == 'per_host'
 
 - name: Seed management IPs into the database (only if none exist yet)
   ansible.builtin.command:

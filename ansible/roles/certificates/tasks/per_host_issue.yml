@@ -1,4 +1,4 @@
-# Runs after the app is up (it answers the HTTP-01 challenges): included from qpbx_app.
+# Runs once nginx is up (it answers the HTTP-01 challenges): included from the nginx role.
 - name: Issue the platform certificate (HTTP-01)
   ansible.builtin.command:
     argv: "{{ ['/usr/local/sbin/qpbx-acme', '--issue', '-w', certificates_webroot, '--keylength', 'ec-256']

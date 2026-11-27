@@ -18,7 +18,7 @@
     owner: freeswitch
     group: freeswitch
     mode: "0750"
-  loop: [/var/lib/freeswitch, /var/lib/freeswitch/db, /var/lib/freeswitch/storage, /var/log/freeswitch]
+  loop: [/var/lib/freeswitch, /var/lib/freeswitch/db, /var/lib/freeswitch/storage, /var/lib/freeswitch/cdr-spool, /var/log/freeswitch]
 
 - name: Package cache folder
   ansible.builtin.file:
@@ -66,6 +66,7 @@
     - autoload_configs/sofia.conf.xml
     - autoload_configs/logfile.conf.xml
     - autoload_configs/console.conf.xml
+    - autoload_configs/json_cdr.conf.xml
   notify: Restart freeswitch
 
 - name: Unit

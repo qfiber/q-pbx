@@ -23,6 +23,13 @@ config :qpbx, QPBX.Web.Endpoint,
   pubsub_server: QPBX.PubSub,
   live_view: [signing_salt: "nn2gsyFt"]
 
+# Portal and email languages. Adding one: its .po files under priv/gettext/<code>/ and
+# priv/gettext_notify/<code>/ (mix gettext.merge ... --locale <code>), plus one line here.
+config :qpbx, :locales, [
+  %{code: "en", name: "English", dir: "ltr"},
+  %{code: "ar", name: "العربية", dir: "rtl"}
+]
+
 # Bundled IANA data (no network updates on the server); tenant time zones need it.
 config :elixir, :time_zone_database, Tz.TimeZoneDatabase
 

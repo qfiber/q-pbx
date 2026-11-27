@@ -33,6 +33,22 @@ defmodule QPBX.Web.Platform.FirewallLiveTest do
     assert html =~ "last management IP"
   end
 
+  test "the form is empty again after a successful add", %{conn: conn} do
+    {:ok, view, _} = live(conn, ~p"/platform/firewall")
+    attrs = %{cidr: "198.51.100.8", kind: "allow", scope: "sip", reason: "carrier"}
+    view |> form("#firewall-form", entry: attrs) |> render_change()
+    view |> form("#firewall-form", entry: attrs) |> render_submit()
+    _ = QPBX.Firewall.sync_status()
+
+    refute view
+           |> element(~s(#firewall-form input[name="entry[cidr]"][value="198.51.100.8"]))
+           |> has_element?()
+
+    refute view
+           |> element(~s(#firewall-form input[name="entry[reason]"][value="carrier"]))
+           |> has_element?()
+  end
+
   test "invalid input shows errors", %{conn: conn} do
     {:ok, view, _} = live(conn, ~p"/platform/firewall")
 

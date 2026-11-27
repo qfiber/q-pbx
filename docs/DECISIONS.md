@@ -2,6 +2,27 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Phase 1 review answers
+
+- **FreeSWITCH modules confirmed, plus additions:** mod_opusfile and mod_shout (recordings as
+  Opus or MP3, as the spec says), mod_bcg729 (G.729, optional in the spec; built from
+  xadhoom/mod_bcg729 against Debian's libbcg729), mod_loopback (local routing and transfers)
+  and mod_json_cdr (every call leg also spooled to disk as JSON, so no CDR is lost while
+  Elixir is down; Elixir imports the spool in phase 2). Packages carry a build stamp.
+- **nginx in front of the app** (reverses the P1-09 "app serves TLS itself" choice), so the
+  operator can run ModSecurity. nginx terminates TLS, serves ACME challenges, and runs as
+  `www-data` with only `CAP_NET_BIND_SERVICE` (no root master). The app listens on
+  127.0.0.1:4000 and holds no capabilities. The real client IP comes from nginx
+  (`X-Real-IP`, trusted from localhost only); behind a CDN, nginx trusts the CDN header only
+  from the CDN's published ranges.
+- **Tenant office IP limits confirmed:** at most /24 (IPv4) or /48 (IPv6).
+- **Secrets file goes into the encrypted file backup** (phase 2), with the backup password
+  kept off the server.
+- **Login rate limits:** per client IP, 5 failed attempts block for 1 hour, 5 more for
+  24 hours (phase 1b).
+- **Languages are configuration:** one list in `config :qpbx, :locales`; each language has its
+  own `.po` files, so adding one needs no code change.
+
 ## 2026-11-27: Security baseline
 
 - **What:** the spec gains a "Security baseline" (database, login, TLS everywhere, sessions,
@@ -44,8 +65,7 @@ Newest first. Each entry: date, what, why, alternatives rejected.
 - **FreeSWITCH is built from public GitHub sources** (signalwire/freeswitch v1.10.12,
   freeswitch/sofia-sip v1.13.17, freeswitch/spandsp at commit 0d2e6ac, because newer spandsp
   breaks mod_spandsp in 1.10.12). No SignalWire token is needed for this.
-- **The app terminates TLS itself on 443** (Bandit) with HTTP on 80 only for redirects and ACME
-  challenges; the spec allowed "behind nginx or directly". Rejected: nginx (one more service).
+- ~~The app terminates TLS itself on 443~~ Replaced by nginx in front (phase 1 review, above).
 - **Secrets are generated on the server** (`/etc/qpbx/secrets.json`, root only) on first
   install and never leave it. It must be in the backups: losing the Cloak key makes TOTP
   secrets unreadable.

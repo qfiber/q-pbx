@@ -1,0 +1,8 @@
+# Where the real client IP comes from: none (clients connect directly), cloudflare, imperva, custom.
+qpbx_cdn: none
+# custom (and imperva): the header carrying the client IP, and the proxy ranges allowed to set it.
+qpbx_cdn_ip_header: X-Forwarded-For
+qpbx_cdn_ranges: []
+# ModSecurity (Debian's nginx connector); rules go in /etc/nginx/qpbx-modsecurity.d/*.conf.
+qpbx_nginx_modsecurity: false
+qpbx_nginx_max_body: 25m

@@ -27,7 +27,7 @@ defmodule QPBX.Core.Credentials do
     |> validate_format(:email, ~r/^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "must be a valid email")
     |> validate_length(:email, max: 160)
     |> validate_length(:name, max: 200)
-    |> validate_inclusion(:locale, ~w(en ar))
+    |> validate_inclusion(:locale, QPBX.Core.locales())
     |> unsafe_validate_unique(:email, QPBX.Repo)
     |> unique_constraint(:email)
   end

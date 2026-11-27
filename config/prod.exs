@@ -7,10 +7,14 @@ import Config
 # before starting your production server.
 config :qpbx, QPBX.Web.Endpoint, cache_static_manifest: "priv/static/cache_manifest.json"
 
-# HTTPS only (with HSTS), except ACME HTTP-01 challenges and requests to localhost. The app
-# terminates TLS itself, so X-Forwarded-Proto is not trusted. Must be set at compile time.
+# nginx terminates TLS and sets X-Forwarded-Proto; the app listens on localhost only, so only
+# nginx (and local health checks, excluded) can reach it. Must be set at compile time.
 config :qpbx, QPBX.Web.Endpoint,
-  force_ssl: [hsts: true, exclude: [conn: {QPBX.Web.SSLExclude, :excluded?, []}]]
+  force_ssl: [
+    rewrite_on: [:x_forwarded_proto],
+    hsts: true,
+    exclude: [conn: {QPBX.Web.SSLExclude, :excluded?, []}]
+  ]
 
 # Configure Swoosh API Client
 config :swoosh, api_client: Swoosh.ApiClient.Req

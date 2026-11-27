@@ -111,7 +111,7 @@ defmodule QPBX.Web.Platform.TenantsLive do
           field={@form[:locale]}
           type="select"
           label={gettext("Language")}
-          options={[{"English", "en"}, {"العربية", "ar"}]}
+          options={QPBX.Web.Locale.options()}
         />
         <h3 class="font-semibold mt-4">{gettext("First tenant admin")}</h3>
         <.input field={@form[:admin_name]} label={gettext("Name")} required />

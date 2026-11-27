@@ -15,11 +15,13 @@ defmodule QPBX.Web.Platform.PlansLive do
   end
 
   @impl true
+  def handle_event("validate", %{"plan" => params}, socket) do
+    cs = Core.change_plan(%Core.Plan{}, plan_params(params)) |> Map.put(:action, :validate)
+    {:noreply, assign(socket, form: to_form(cs))}
+  end
+
   def handle_event("save", %{"plan" => params}, socket) do
-    params =
-      params
-      |> Map.update("allowed_destination_classes", [], &Enum.reject(&1, fn v -> v == "" end))
-      |> Map.put("features", Map.new(Plan.features(), &{&1, params["feature_" <> &1] == "true"}))
+    params = plan_params(params)
 
     case Core.create_plan(params, socket.assigns.current_account) do
       {:ok, plan} ->
@@ -51,7 +53,7 @@ defmodule QPBX.Web.Platform.PlansLive do
 
       <h2 class="text-lg font-semibold mt-8">{gettext("New plan")}</h2>
       <p class="text-sm opacity-70">{gettext("Leave a limit empty for unlimited.")}</p>
-      <.form for={@form} id="plan-form" phx-submit="save">
+      <.form for={@form} id="plan-form" phx-change="validate" phx-submit="save">
         <.input field={@form[:name]} label={gettext("Name")} required />
         <div class="grid sm:grid-cols-2 gap-x-4">
           <.input
@@ -83,6 +85,12 @@ defmodule QPBX.Web.Platform.PlansLive do
       </.form>
     </Layouts.app>
     """
+  end
+
+  defp plan_params(params) do
+    params
+    |> Map.update("allowed_destination_classes", [], &Enum.reject(&1, fn v -> v == "" end))
+    |> Map.put("features", Map.new(Plan.features(), &{&1, params["feature_" <> &1] == "true"}))
   end
 
   defp limit_label(:max_extensions), do: gettext("Max extensions")

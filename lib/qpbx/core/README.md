@@ -17,6 +17,7 @@ and writes an audit entry in the same transaction.
 - Audit: `audit/4` (for changes made by other areas), `list_audit_logs/1`.
 - `with_tenant/2`: run a function with row-level security scoped to one tenant.
 - `effective_limits/1`: plan limits merged with the tenant's overrides; nil = unlimited.
+- `locales/0`: language codes offered by the installation (`config :qpbx, :locales`).
 - `sip_base_domain/0`: tenant SIP domains are `<slug>.<base>` (`QPBX_SIP_BASE_DOMAIN` in prod).
 
 **Events emitted:** none yet. **Events consumed:** none.

@@ -1,0 +1,135 @@
+# nginx terminates TLS for the portal, API and provisioning, serves ACME challenges, and passes
+# the real client IP to the app (which listens on 127.0.0.1:4000 only).
+- name: Packages
+  ansible.builtin.apt:
+    name: "{{ ['nginx'] + (['libnginx-mod-http-modsecurity'] if qpbx_nginx_modsecurity else []) }}"
+    state: present
+
+- name: Cloudflare address ranges (only Cloudflare may set CF-Connecting-IP)
+  ansible.builtin.set_fact:
+    nginx_cdn_ranges: >-
+      {{ (lookup('ansible.builtin.url', 'https://www.cloudflare.com/ips-v4', wantlist=True)
+          + lookup('ansible.builtin.url', 'https://www.cloudflare.com/ips-v6', wantlist=True)) | map('trim') | select | list }}
+    nginx_cdn_header: CF-Connecting-IP
+  when: qpbx_cdn == 'cloudflare'
+
+- name: Imperva or custom CDN
+  ansible.builtin.set_fact:
+    nginx_cdn_ranges: "{{ qpbx_cdn_ranges }}"
+    nginx_cdn_header: "{{ 'Incap-Client-IP' if qpbx_cdn == 'imperva' else qpbx_cdn_ip_header }}"
+  when: qpbx_cdn in ['imperva', 'custom']
+
+- name: A CDN needs its address ranges, or anyone could fake the client IP
+  ansible.builtin.assert:
+    that: qpbx_cdn == 'none' or (nginx_cdn_ranges | length > 0)
+    fail_msg: qpbx_cdn={{ qpbx_cdn }} needs qpbx_cdn_ranges (the CDN's published address ranges).
+
+- name: Config folders for operator additions
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop: [/etc/nginx/qpbx.d, /etc/nginx/qpbx-modsecurity.d]
+
+- name: ModSecurity base config (detection only until rules are added)
+  ansible.builtin.copy:
+    dest: /etc/nginx/qpbx-modsecurity.conf
+    content: |
+      # Q-PBX: ModSecurity entry point. The engine runs in DetectionOnly until you switch
+      # SecRuleEngine to On in one of your files in /etc/nginx/qpbx-modsecurity.d/.
+      Include /etc/modsecurity/modsecurity.conf-recommended
+      SecRuleEngine DetectionOnly
+      SecAuditLog /var/log/nginx/modsec_audit.log
+      Include /etc/nginx/qpbx-modsecurity.d/*.conf
+    mode: "0644"
+  when: qpbx_nginx_modsecurity
+  notify: Reload nginx
+
+- name: Main config
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Q-PBX site
+  ansible.builtin.template:
+    src: qpbx.conf.j2
+    dest: /etc/nginx/sites-available/qpbx
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Site enabled
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/qpbx
+    src: /etc/nginx/sites-available/qpbx
+    state: link
+  notify: Reload nginx
+
+- name: Default site removed
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload nginx
+
+- name: Unit drop-in folder
+  ansible.builtin.file:
+    path: /etc/systemd/system/nginx.service.d
+    state: directory
+    mode: "0755"
+
+- name: Run nginx without root (www-data, only CAP_NET_BIND_SERVICE)
+  ansible.builtin.template:
+    src: hardening.conf.j2
+    dest: /etc/systemd/system/nginx.service.d/qpbx.conf
+    mode: "0644"
+  notify: Restart nginx
+
+- name: PID folder for the non-root master, created at every boot
+  ansible.builtin.copy:
+    dest: /etc/tmpfiles.d/qpbx-nginx.conf
+    content: "d /run/nginx 0755 www-data www-data -\n"
+    mode: "0644"
+  register: nginx_tmpfiles
+
+- name: Create the PID folder now
+  ansible.builtin.command: systemd-tmpfiles --create /etc/tmpfiles.d/qpbx-nginx.conf
+  when: nginx_tmpfiles.changed  # noqa: no-handler
+  changed_when: true
+
+- name: Log and temp folders owned by www-data
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: www-data
+    group: adm
+    mode: "0750"
+  loop: [/var/log/nginx, /var/lib/nginx]
+
+- name: AppArmor profile (complain mode)
+  ansible.builtin.template:
+    src: apparmor.j2
+    dest: /etc/apparmor.d/qpbx-nginx
+    mode: "0644"
+    validate: apparmor_parser -Q %s
+  notify: [Load AppArmor profile qpbx-nginx, Restart nginx]
+
+- name: Config is valid
+  ansible.builtin.command: nginx -t -q
+  changed_when: false
+
+- name: Running
+  ansible.builtin.systemd:
+    name: nginx
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Apply config changes before anything depends on them
+  ansible.builtin.meta: flush_handlers
+
+- name: Per-hostname certificates (nginx answers HTTP-01)
+  ansible.builtin.include_role:
+    name: certificates
+    tasks_from: per_host_issue
+  when: qpbx_cert_mode == 'per_host'

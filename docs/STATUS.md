@@ -135,12 +135,16 @@ Kamailio gets its real config.
 
 ## In progress
 
-- Nothing. Phase 1 waits for review; phase 2 does not start without approval.
+- Nothing. Phase 1b (security) and phase 2 wait for approval.
 
 ## Next
 
 - Review of phase 1 and answers to the open points in the phase 1 report.
 - Phase 1b: security items marked "1b" in the security plan, before phase 2.
+- Done after the phase 1 review: nginx in front (non-root, real client IP, optional
+  ModSecurity), FreeSWITCH modules added (G.729, Opus/MP3 recording, loopback, CDR spool; all
+  load in the lab), languages moved to one config list, firewall and plan forms now clear
+  after a save (live validation added).
 
 ## Security plan
 
@@ -153,7 +157,7 @@ lab server). "1b" = before phase 2 starts.
 | S2 | DB access: least privilege | App connects as non-superuser `qpbx` on localhost; it owns the schema | Separate owner role for migrations; runtime role with only data rights; `audit_logs` insert/select only (no update/delete); `pg_hba` scram on localhost only; Kamailio read-only role on a view (phase 2) | 1b (Kamailio role: 2) |
 | S3 | Validation and sanitization | Changesets validate every input; Ecto parameterizes all queries; HEEx escapes output; the only raw HTML is the server-generated QR SVG; strict token checks on setup and ACME paths | Add a CI scan (Sobelow) for unsafe patterns; keep `raw/1` only for generated SVG | 1b |
 | S4 | 2FA for admins | Mandatory for platform admins; optional for tenant admins | Make it mandatory for tenant admins (enrolment cannot be skipped) | 1b |
-| S5 | Login brute-force protection, CAPTCHA, proof of work | None (Argon2 only slows guessing) | Rate limits per IP and per account, lockout with backoff; `Captcha` behaviour with a built-in self-hosted proof of work (default), Friendly Captcha, Cloudflare Turnstile, Captcha.eu and "none", configured per installation, on login, 2FA, setup and password pages; failed logins feed the brute-force alert (phase 3) | 1b |
+| S5 | Login brute-force protection, CAPTCHA, proof of work | Real client IP already correct (nginx `X-Real-IP`, CDN header only from CDN ranges); no limits yet | Per client IP on login, 2FA and setup pages: 5 failures block for 1 hour, 5 more for 24 hours (HTTP 429, counters survive restarts); per account: after 5 failures, always challenge and alert rather than lock (so nobody can lock an admin out on purpose); `Captcha` behaviour with a built-in self-hosted proof of work (default), Friendly Captcha, Cloudflare Turnstile, Captcha.eu and "none", configured per installation, on login, 2FA, setup and password pages; failed logins feed the brute-force alert (phase 3) | 1b |
 | S6 | TLS everywhere | HTTPS with HSTS on 443 (TLS 1.2+); HTTP only redirects and serves ACME; SIP TLS on 5061 available; SMTP requires TLS when a login is used; localhost-only plain links (Postgres, event socket, Kamailio to FreeSWITCH, JSON-RPC) | SIP TLS 5061 with SRTP as the default and in provisioning; 5060 stays open for phones and trunks that need it (phase 2); HTTPS-only webhooks and CRM calls (phase 3); TLS or WireGuard between servers (phase 9) | 2, 3, 9 |
 | S7 | Token validation on every action, instant revocation | CSRF tokens on every form; LiveView signs its session; but sessions are signed cookies that cannot be revoked before they expire | Server-side session table (token hash, user, created, last seen, IP, user agent); every request and LiveView event checks it; revocation deletes the rows and disconnects live sockets (PubSub); password, 2FA or role changes revoke all of a user's sessions; "sign out everywhere" in the portal | 1b |
 | S8 | 15-minute idle timeout | 12 h absolute expiry only | Idle timeout 15 min (configurable lower, not higher) plus 12 h absolute; LiveView pages warn before expiry and redirect to login | 1b |
@@ -164,6 +168,21 @@ lab server). "1b" = before phase 2 starts.
 
 Answered 2026-11-27: 5060 stays open next to TLS 5061 (the default); AWS KMS first; built-in
 proof of work as the default challenge; full-disk encryption later.
+
+## Planned features from the phase 1 review
+
+| Feature | Phase | Why there |
+| --- | --- | --- |
+| Tenant portal page for office IPs (tenant firewall entries; API already exists) | 2 | Phase 2 brings the tenant portal's telephony pages and Kamailio's per-tenant use of these IPs |
+| Login rate limits and lockout (S5) | 1b | Security plan |
+| Trim FreeSWITCH image dependencies (cairo, X11 came in with the recording codecs' build packages) | 2 | With the FreeSWITCH config work |
+
+**Spend caps (proposed, awaiting approval):** phase 2 uses minute caps per
+destination class (local, mobile, international, premium) per hour, day and month, which
+need no prices; plus a platform-managed list of high-cost prefixes (satellite, premium-rate,
+known fraud ranges) that count as "premium", blocked unless a plan allows them; plus the
+velocity alerts. Money-based spend caps need a rate table (cost per minute per prefix); add
+it later only if operators ask, and the same table could then feed the usage export.
 
 ## Blockers / open questions for phase 1
 
@@ -177,10 +196,11 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
 
 ## Known bugs
 
+- FreeSWITCH depends on image libraries (cairo, X11) it does not need; harmless, planned to trim.
+
 - The lab LAN has no IPv6, so dual-stack listening (Kamailio, nftables rules) is templated but
   not yet exercised end to end.
 
-- After adding a firewall entry, the portal form keeps the typed values instead of clearing.
 - Validation messages built at runtime (for example "unknown feature x") are not translated;
   the fixed ones are.
 - Arabic portal texts need review by a native speaker
@@ -197,6 +217,7 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
 Run on 2026-11-27 against the local Debian 12 lab VM (libvirt, bridged to the host LAN), with
 packages built from the repo, installed by `ansible/site.yml`, through a real headless Chrome
 (`lab/done-when/phase1.mjs`). Certificate from a local Pebble test CA (wildcard mode).
+Rerun after the phase 1 review changes (nginx in front, new FreeSWITCH modules): all pass.
 
 | Check | Result |
 | --- | --- |
@@ -206,6 +227,7 @@ packages built from the repo, installed by `ansible/site.yml`, through a real he
 | Tenant admin logs in with password + TOTP in Arabic (`lang=ar`, `dir=rtl`, Arabic text) | PASS |
 | Tenant admin logs in with password + TOTP in English | PASS |
 | Allowlist entry added in the portal appears in nftables set `allow_ssh_v4`, applied by `qpbx-fwd` | PASS |
+| The firewall form is empty again after the add (browser check) | PASS |
 | Removing it in the portal removes it from nftables | PASS |
 
 Also verified in the lab: playbook second run `changed=0`; `/health` `ok` with every component

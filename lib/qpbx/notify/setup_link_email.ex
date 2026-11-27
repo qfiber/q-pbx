@@ -16,7 +16,7 @@ defmodule QPBX.Notify.SetupLinkEmail do
 
   def build(email, name, locale, url) do
     Gettext.with_locale(QPBX.Notify.Gettext, locale, fn ->
-      dir = if locale == "ar", do: "rtl", else: "ltr"
+      dir = dir(locale)
       greeting = gettext("Hello %{name},", name: name)
 
       body =
@@ -36,6 +36,15 @@ defmodule QPBX.Notify.SetupLinkEmail do
       <p><a href="#{esc(url)}">#{esc(url)}</a></p><p>#{esc(expiry)}</p></div>
       """)
     end)
+  end
+
+  # Text direction from the installation's language list (config :qpbx, :locales).
+  defp dir(locale) do
+    Enum.find_value(
+      Application.fetch_env!(:qpbx, :locales),
+      "ltr",
+      &(&1.code == locale && &1.dir)
+    )
   end
 
   defp esc(text), do: text |> Phoenix.HTML.html_escape() |> Phoenix.HTML.safe_to_string()

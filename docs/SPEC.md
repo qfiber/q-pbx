@@ -141,7 +141,7 @@ Version 1 runs on a single Debian 12 server, installed natively with Ansible and
 **Install method**
 
 - **OS:** Debian 12, the best-supported platform for FreeSWITCH.
-- **Ansible roles:** `kamailio`, `freeswitch`, `qpbx_app`, `postgres`, `storage`, `nftables`, `hardening`, `monitoring`. One playbook builds a full server; the inventory lists one host in every group.
+- **Ansible roles:** `kamailio`, `freeswitch`, `qpbx_app`, `nginx`, `certificates`, `postgres`, `storage`, `nftables`, `hardening`, `monitoring`. One playbook builds a full server; the inventory lists one host in every group.
 - **Packages built in CI:** a FreeSWITCH package with only the modules Q-PBX uses (sofia, xml\_curl, event\_socket, spandsp, conference, callcenter, opus), and the Elixir app as a `mix release` package. Built once, installed the same everywhere.
 - **systemd units** for every service, logs in journald.
 - **Docker:** not used in production. Used in CI for integration tests, and later for a one-command demo with the open source release.
@@ -159,7 +159,8 @@ Version 1 runs on a single Debian 12 server, installed natively with Ansible and
 | --- | --- | --- |
 | Kamailio | Service IP: UDP/TCP 5060, TLS 5061 | The only SIP entry point; NAT handling, push, bans |
 | FreeSWITCH | SIP on 127.0.0.1 only; RTP on the service IP | Never reachable by SIP from outside |
-| Elixir app | 443 behind nginx or directly with TLS | Portal, API, provisioning, health endpoint, `mod_xml_curl` on localhost |
+| nginx | 80 and 443 | TLS for the portal, API and provisioning, ACME challenges, real client IP from a trusted CDN header, optional ModSecurity; runs without root |
+| Elixir app | 127.0.0.1:4000 behind nginx | Portal, API, provisioning, health endpoint, `mod_xml_curl` on localhost |
 | PostgreSQL 16 | localhost | Plain install, no Patroni yet |
 | File storage | Local NVMe folder | Recordings, voicemail, faxes, prompts |
 
@@ -533,10 +534,14 @@ These apply to every phase; `docs/STATUS.md` ("Security plan") tracks when each 
   input is validated at the boundary (changesets), queries are parameterized, and output is
   escaped (HEEx); Kamailio gets a read-only role on a narrow view.
 - **Login:** 2FA required for platform admins and tenant admins (optional for tenant users);
-  login, setup and password pages protected by rate limits, lockout with backoff, and a
+  login, setup and password pages protected by rate limits (per client IP: 5 failures block
+  for 1 hour, 5 more block for 24 hours), the real client IP taken only from nginx and, behind
+  a CDN, only from that CDN's header (Cloudflare `CF-Connecting-IP`, Imperva
+  `Incap-Client-IP`, or a configured header) when the request comes from its ranges, and a
   CAPTCHA or proof-of-work challenge chosen per installation: a built-in, self-hosted
   proof of work (the default, no outside service), Friendly Captcha, Cloudflare Turnstile,
   Captcha.eu, or none.
+- **Web application firewall:** nginx can load ModSecurity with the operator's own rules.
 - **TLS everywhere** a network is crossed: HTTPS with HSTS for the portal, API and
   provisioning; SIP over TLS (5061) with SRTP is the default for phones and apps and what
   provisioning sets up, while plain SIP on 5060 stays open to phones and trunks that need it
@@ -549,7 +554,8 @@ These apply to every phase; `docs/STATUS.md` ("Security plan") tracks when each 
   revokes them. API keys are checked on every request and revocable instantly.
 - **Encryption at rest:** secrets and sensitive fields encrypted with Cloak; the master key
   comes from a key provider: a local file by default, or AWS KMS for installations that want
-  the key off the server. Backups are encrypted. Full-disk encryption (LUKS) is a later option.
+  the key off the server. Backups are encrypted, including the server's secrets file, whose
+  backup password is kept off the server. Full-disk encryption (LUKS) is a later option.
 - **Recordings, voicemail and faxes** are encrypted at rest (a data key per file, wrapped by
   the master key) and decrypted only while streamed to an authorized user.
 - **Temporary data** (media being recorded, uploads, document conversion) lives only in

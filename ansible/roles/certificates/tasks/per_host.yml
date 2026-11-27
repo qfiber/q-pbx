@@ -1,4 +1,4 @@
-# One certificate for the platform names through HTTP-01 (answered by the app on port 80),
+# One certificate for the platform names through HTTP-01 (answered by nginx on port 80),
 # and one per tenant SIP domain, issued by a timer within minutes of the tenant being created.
 - name: ACME client
   ansible.builtin.include_tasks: acme.yml

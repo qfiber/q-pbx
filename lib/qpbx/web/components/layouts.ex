@@ -44,7 +44,7 @@ defmodule QPBX.Web.Layouts do
       </div>
       <div class="flex-none flex items-center gap-2">
         <.link
-          :for={{code, name} <- [{"en", "English"}, {"ar", "العربية"}]}
+          :for={{name, code} <- QPBX.Web.Locale.options()}
           :if={code != @locale}
           href={~p"/locale/#{code}"}
           lang={code}

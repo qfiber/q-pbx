@@ -1,0 +1,24 @@
+# {{ ansible_managed }}
+# nginx without root: the master runs as www-data and may only bind ports below 1024.
+[Service]
+User=www-data
+Group=www-data
+SupplementaryGroups=qpbx-tls
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+# /run/nginx comes from tmpfiles.d (it must also exist for `nginx -t` outside the unit).
+PIDFile=/run/nginx/nginx.pid
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ReadWritePaths=/var/log/nginx /var/lib/nginx
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+LockPersonality=true
+SystemCallFilter=@system-service
+SystemCallArchitectures=native

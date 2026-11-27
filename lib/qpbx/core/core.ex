@@ -76,6 +76,9 @@ defmodule QPBX.Core do
   defp to_limit(k) when is_atom(k), do: k
   defp to_limit(k), do: Enum.find(Plan.limits(), &(Atom.to_string(&1) == k))
 
+  @doc "Language codes the installation offers (config `:qpbx, :locales`)."
+  def locales, do: Enum.map(Application.fetch_env!(:qpbx, :locales), & &1.code)
+
   def sip_base_domain, do: Application.fetch_env!(:qpbx, :sip_base_domain)
 
   ## Accounts

@@ -19,10 +19,6 @@ defmodule QPBX.Web.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/.well-known/acme-challenge", QPBX.Web do
-    get "/:token", AcmeController, :show
-  end
-
   scope "/health", QPBX.Web do
     pipe_through :health
 

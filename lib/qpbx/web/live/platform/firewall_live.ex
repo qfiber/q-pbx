@@ -19,10 +19,16 @@ defmodule QPBX.Web.Platform.FirewallLive do
         sync: Firewall.sync_status()
       )
 
+  # Tracking typed values on the server is also what lets the form clear after a save:
+  # otherwise the server's empty form never differs from what it rendered before.
   @impl true
+  def handle_event("validate", %{"entry" => params}, socket) do
+    cs = params |> entry_params() |> Firewall.change_entry() |> Map.put(:action, :validate)
+    {:noreply, assign(socket, form: to_form(cs))}
+  end
+
   def handle_event("save", %{"entry" => params}, socket) do
-    params =
-      params |> Map.put("level", "platform") |> Map.update("expires_at", nil, &blank_to_nil/1)
+    params = entry_params(params)
 
     case Firewall.create_entry(params, socket.assigns.current_account) do
       {:ok, entry} ->
@@ -57,6 +63,9 @@ defmodule QPBX.Web.Platform.FirewallLive do
          )}
     end
   end
+
+  defp entry_params(params),
+    do: params |> Map.put("level", "platform") |> Map.update("expires_at", nil, &blank_to_nil/1)
 
   defp blank_to_nil(""), do: nil
   defp blank_to_nil(v), do: v
@@ -97,7 +106,7 @@ defmodule QPBX.Web.Platform.FirewallLive do
       </.table>
 
       <h2 class="text-lg font-semibold mt-8">{gettext("Add an entry")}</h2>
-      <.form for={@form} id="firewall-form" phx-submit="save">
+      <.form for={@form} id="firewall-form" phx-change="validate" phx-submit="save">
         <.input field={@form[:cidr]} label={gettext("IP address or prefix")} dir="ltr" required />
         <.input
           field={@form[:kind]}

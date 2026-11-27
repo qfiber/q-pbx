@@ -16,4 +16,5 @@
     - kamailio
     - freeswitch
     - qpbx_app
+    - nginx
     - monitoring

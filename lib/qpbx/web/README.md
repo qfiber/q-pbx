@@ -1,6 +1,7 @@
 # Web (`QPBX.Web`)
 
-**Purpose:** Phoenix endpoint, LiveView portal (English and Arabic RTL), health endpoint.
+**Purpose:** Phoenix endpoint (on 127.0.0.1:4000 behind nginx), LiveView portal (languages from
+`config :qpbx, :locales`, RTL supported), health endpoint.
 Later: REST API `/v1`, WebSocket event stream.
 
 **Public API:** `QPBX.Web.Endpoint`, `QPBX.Web.Telemetry` (started by `QPBX.Application`);
@@ -21,6 +22,11 @@ running endpoint).
 TOTP for 5 minutes.
 
 **Events emitted:** none. **Events consumed:** none yet.
+
+**Real client IP:** `QPBX.Web.RealIP` (first plug in the endpoint) takes `X-Real-IP` only from
+loopback peers, i.e. nginx. Use `conn.remote_ip` everywhere; never read forwarding headers.
+
+**Languages:** `QPBX.Web.Locale` (`all/0`, `codes/0`, `options/0`, `dir/1`).
 
 **Gotchas:**
 - The web layer calls other areas only through their public API modules. It depends on

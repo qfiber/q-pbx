@@ -122,3 +122,20 @@ settings, and for `wildcard` mode `qpbx_acme_dns_provider` and `qpbx_acme_dns_en
 Ansible Vault). Collections: `ansible-galaxy collection install -r ansible/requirements.yml`.
 On the server, `qpbx eval '...'` runs release commands (for example
 `QPBX.Release.create_platform_admin("you@example.com", "You")`).
+
+## Languages
+
+The portal and emails use Gettext. Each language has its own files:
+`priv/gettext/<code>/LC_MESSAGES/*.po` (portal) and `priv/gettext_notify/<code>/LC_MESSAGES/*.po`
+(emails). To add one: `mix gettext.merge priv/gettext --locale <code>` and the same for
+`priv/gettext_notify`, translate, then add `%{code: ..., name: ..., dir: "ltr" | "rtl"}` to
+`config :qpbx, :locales` in `config/config.exs`. After changing texts in code, run
+`mix gettext.extract --merge` and fill in every language's new entries.
+
+## nginx
+
+nginx (`ansible/roles/nginx`) terminates TLS and proxies to the app on 127.0.0.1:4000. Behind a
+CDN set `qpbx_cdn` (`cloudflare`, `imperva` with `qpbx_cdn_ranges`, or `custom` with
+`qpbx_cdn_ip_header` and `qpbx_cdn_ranges`). `qpbx_nginx_modsecurity: true` loads ModSecurity
+in detection-only mode; put rules in `/etc/nginx/qpbx-modsecurity.d/*.conf` and other nginx
+additions in `/etc/nginx/qpbx.d/*.conf`.

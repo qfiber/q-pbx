@@ -141,6 +141,8 @@ try {
   await ap.click("#firewall-form button");
   await ap.waitForFunction((ip) => document.querySelector("#firewall-entries")?.textContent.includes(ip), {}, testIp);
   await ap.screenshot({ path: `${shots}/firewall.png`, fullPage: true });
+  const leftover = await ap.$eval(`#firewall-form [name="entry[cidr]"]`, (e) => e.value);
+  check("firewall form is empty again after the add", leftover === "", `address field: "${leftover}"`);
   let inSet = false;
   for (let i = 0; i < 10 && !inSet; i++) {
     inSet = ssh("sudo nft list set inet qpbx allow_ssh_v4").includes(testIp);

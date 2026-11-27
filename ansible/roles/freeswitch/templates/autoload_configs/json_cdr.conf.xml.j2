@@ -1,0 +1,11 @@
+<!-- {{ ansible_managed }} -->
+<!-- Backup CDR path: every call leg is also written as a JSON file, so no CDR is lost while
+     Elixir is down. Elixir imports and removes the files (phase 2). -->
+<configuration name="json_cdr.conf" description="JSON CDR spool">
+  <settings>
+    <param name="log-dir" value="/var/lib/freeswitch/cdr-spool"/>
+    <param name="log-b-leg" value="true"/>
+    <param name="prefix-a-leg" value="false"/>
+    <param name="encode-values" value="true"/>
+  </settings>
+</configuration>

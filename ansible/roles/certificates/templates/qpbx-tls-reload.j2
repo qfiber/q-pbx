@@ -1,10 +1,10 @@
 #!/bin/sh
 # {{ ansible_managed }}
-# Runs after a certificate is issued or renewed: fix permissions, then make the app and
+# Runs after a certificate is issued or renewed: fix permissions, then make nginx and
 # Kamailio load the new files without a restart.
 set -u
 find {{ qpbx_tls_dir }} -name '*.pem' -exec chgrp qpbx-tls {} + -exec chmod 0640 {} +
-# The app re-reads certificate files on new connections once the PEM cache is cleared.
-systemctl is-active -q qpbx && /usr/local/sbin/qpbx rpc ':ssl.clear_pem_cache()' || true
+# nginx re-reads its certificate on reload (graceful: open connections keep running).
+systemctl is-active -q nginx && systemctl reload nginx || true
 systemctl is-active -q kamailio && curl -s -m 5 -d '{"jsonrpc":"2.0","method":"tls.reload","id":1}' \
   http://127.0.0.1:5071/RPC >/dev/null || true

@@ -31,7 +31,6 @@ if config_env() == :prod do
     socket: System.get_env("QPBX_FWD_SOCKET", "/run/qpbx-fwd/fwd.sock")
 
   config :qpbx, :health_token, System.get_env("QPBX_HEALTH_TOKEN")
-  config :qpbx, :acme_webroot, System.get_env("QPBX_ACME_WEBROOT")
 
   config :qpbx, QPBX.Web.Health,
     interval: 10_000,
@@ -114,21 +113,10 @@ if config_env() == :prod do
 
   host = System.get_env("PHX_HOST") || "example.com"
 
-  # The app serves HTTPS itself on 443 (no nginx) and HTTP on 80 only to redirect and to
-  # answer ACME HTTP-01 challenges. Binding :: accepts IPv4 and IPv6 (dual-stack).
+  # nginx terminates TLS and proxies to the app on localhost only.
   config :qpbx, QPBX.Web.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
-    https: [
-      ip: {0, 0, 0, 0, 0, 0, 0, 0},
-      port: String.to_integer(System.get_env("HTTPS_PORT", "443")),
-      certfile: System.fetch_env!("QPBX_TLS_CERT_FILE"),
-      keyfile: System.fetch_env!("QPBX_TLS_KEY_FILE"),
-      cipher_suite: :strong
-    ],
-    http: [
-      ip: {0, 0, 0, 0, 0, 0, 0, 0},
-      port: String.to_integer(System.get_env("HTTP_PORT", "80"))
-    ],
+    http: [ip: {127, 0, 0, 1}, port: String.to_integer(System.get_env("PORT", "4000"))],
     server: true,
     secret_key_base: secret_key_base
 

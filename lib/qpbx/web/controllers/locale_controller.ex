@@ -1,11 +1,12 @@
 defmodule QPBX.Web.LocaleController do
   use QPBX.Web, :controller
 
-  def update(conn, %{"locale" => locale}) when locale in ["en", "ar"] do
-    conn |> put_session(:locale, locale) |> redirect(to: back_path(conn))
-  end
+  def update(conn, %{"locale" => locale}) do
+    conn =
+      if locale in QPBX.Web.Locale.codes(), do: put_session(conn, :locale, locale), else: conn
 
-  def update(conn, _params), do: redirect(conn, to: back_path(conn))
+    redirect(conn, to: back_path(conn))
+  end
 
   # Only same-site paths, so the switch cannot be used as an open redirect.
   defp back_path(conn) do

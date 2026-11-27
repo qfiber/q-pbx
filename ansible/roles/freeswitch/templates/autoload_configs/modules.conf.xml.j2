@@ -3,7 +3,8 @@
   <modules>
 {% for m in ['mod_console', 'mod_logfile', 'mod_event_socket', 'mod_sofia', 'mod_commands', 'mod_dptools',
              'mod_dialplan_xml', 'mod_spandsp', 'mod_opus', 'mod_conference', 'mod_callcenter',
-             'mod_sndfile', 'mod_native_file', 'mod_tone_stream', 'mod_local_stream', 'mod_say_en', 'mod_xml_curl'] %}
+             'mod_sndfile', 'mod_native_file', 'mod_tone_stream', 'mod_local_stream', 'mod_say_en', 'mod_xml_curl',
+             'mod_loopback', 'mod_opusfile', 'mod_shout', 'mod_bcg729', 'mod_json_cdr'] %}
     <load module="{{ m }}"/>
 {% endfor %}
   </modules>
