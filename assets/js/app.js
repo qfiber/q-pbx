@@ -55,6 +55,40 @@ const IdleWarning = {
   },
 }
 
+// Built-in proof of work (ALTCHA format) on the login and setup forms: on submit, find the
+// number whose SHA-256 with the salt equals the server's challenge, then submit for real.
+async function solvePow(c) {
+  const enc = new TextEncoder()
+  for (let n = 0; n <= c.maxnumber; n++) {
+    const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", enc.encode(c.salt + n)))
+    let hex = ""
+    for (const b of digest) hex += b.toString(16).padStart(2, "0")
+    if (hex === c.challenge) return n
+  }
+  return null
+}
+
+document.addEventListener("submit", async (e) => {
+  const field = e.target.querySelector("input[data-pow-challenge]")
+  if (!field || field.value) return
+  e.preventDefault()
+  const form = e.target
+  form.querySelectorAll("button").forEach((b) => (b.disabled = true))
+  const c = JSON.parse(field.dataset.powChallenge)
+  const number = await solvePow(c)
+  field.value = btoa(JSON.stringify({algorithm: c.algorithm, challenge: c.challenge, number, salt: c.salt, signature: c.signature}))
+  form.submit()
+}, true)
+
+// Captcha.eu: its SDK adds the captcha_at_solution field and holds the submit until solved.
+window.addEventListener("load", () => {
+  document.querySelectorAll("[data-captcha-eu-key]").forEach((el) => {
+    if (!window.KROT) return
+    window.KROT.setup(el.dataset.captchaEuKey)
+    window.KROT.interceptForm(document.getElementById(el.dataset.captchaEuForm))
+  })
+})
+
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,

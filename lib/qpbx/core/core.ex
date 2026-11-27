@@ -117,6 +117,12 @@ defmodule QPBX.Core do
   defdelegate end_session(token), to: QPBX.Core.Sessions, as: :delete_by_token
   defdelegate session_idle_timeout(), to: QPBX.Core.Sessions, as: :idle_timeout
 
+  ## Login limits (see QPBX.Core.LoginGuard)
+
+  defdelegate login_check(ip), to: QPBX.Core.LoginGuard, as: :check
+  defdelegate login_failed(ip, account \\ nil), to: QPBX.Core.LoginGuard, as: :failure
+  defdelegate login_succeeded(ip), to: QPBX.Core.LoginGuard, as: :success
+
   ## Audit log
 
   @doc "Records an audit entry for a change made outside `QPBX.Core` (for example the firewall)."

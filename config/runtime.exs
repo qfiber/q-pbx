@@ -32,6 +32,11 @@ if config_env() == :prod do
 
   config :qpbx, :health_token, System.get_env("QPBX_HEALTH_TOKEN")
 
+  config :qpbx, QPBX.Web.Captcha,
+    provider: String.to_existing_atom(System.get_env("QPBX_CAPTCHA_PROVIDER", "pow")),
+    site_key: System.get_env("QPBX_CAPTCHA_SITE_KEY"),
+    secret: System.get_env("QPBX_CAPTCHA_SECRET")
+
   config :qpbx, QPBX.Web.Health,
     interval: 10_000,
     disk: [paths: String.split(System.get_env("QPBX_HEALTH_DISK_PATHS", "/ /var/lib/qpbx"))],

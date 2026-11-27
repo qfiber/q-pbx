@@ -28,6 +28,11 @@ request, LiveView event and every 30 s) and `live_socket_id` (`sessions:<id>`);
 **Real client IP:** `QPBX.Web.RealIP` (first plug in the endpoint) takes `X-Real-IP` only from
 loopback peers, i.e. nginx. Use `conn.remote_ip` everywhere; never read forwarding headers.
 
+**Login protection:** `QPBX.Web.LoginProtection` (plug on login, 2FA and setup controllers:
+429 for blocked IPs, `failed/2`, `succeeded/1`, `human?/2`, `captcha_assigns/1`; allowlisted
+IPs exempt). `QPBX.Web.Captcha` (`provider/0`, `verify/2`, `widget/1`) with `Pow`, `Turnstile`,
+`FriendlyCaptcha`, `CaptchaEU`; `Captcha.PowStore` remembers used challenges (per node).
+
 **Languages:** `QPBX.Web.Locale` (`all/0`, `codes/0`, `options/0`, `dir/1`).
 
 **Gotchas:**

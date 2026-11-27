@@ -9,6 +9,7 @@ in-memory sync arrives in phase 2.
 - `create_entry(attrs, actor)`: audited; broadcasts `FirewallChanged`
 - `delete_entry(entry, actor)`: audited; `{:error, :last_management_entry}` when it would
   remove the last non-expiring management entry
+- `allowlisted?(ip_tuple, scope)`: on the platform allowlist for that scope (or "all")
 - `sync_now/0`, `sync_status/0` (`%{at, errors, skipped}`), `helper_sets_flag/0`
 
 **Entries:** level `platform` (any kind and scope) or `tenant` (allow + scope `sip` only,

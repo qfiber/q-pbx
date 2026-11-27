@@ -37,8 +37,8 @@ msgstr ""
 msgid "CRM"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:44
-#: lib/qpbx/web/controllers/auth_html.ex:76
+#: lib/qpbx/web/controllers/auth_html.ex:45
+#: lib/qpbx/web/controllers/auth_html.ex:77
 #, elixir-autogen, elixir-format
 msgid "Code"
 msgstr ""
@@ -69,7 +69,7 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:38
+#: lib/qpbx/web/controllers/auth_html.ex:39
 #, elixir-autogen, elixir-format
 msgid "Enter the 6-digit code from your authenticator app."
 msgstr ""
@@ -126,8 +126,8 @@ msgid "Local"
 msgstr ""
 
 #: lib/qpbx/web/controllers/auth_html.ex:9
-#: lib/qpbx/web/controllers/auth_html.ex:27
-#: lib/qpbx/web/controllers/session_controller.ex:34
+#: lib/qpbx/web/controllers/auth_html.ex:28
+#: lib/qpbx/web/controllers/session_controller.ex:53
 #, elixir-autogen, elixir-format
 msgid "Log in"
 msgstr ""
@@ -185,7 +185,7 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:101
+#: lib/qpbx/web/controllers/auth_html.ex:103
 #, elixir-autogen, elixir-format
 msgid "New password (at least 12 characters)"
 msgstr ""
@@ -201,12 +201,12 @@ msgstr ""
 msgid "New tenant"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:84
+#: lib/qpbx/web/controllers/auth_html.ex:85
 #, elixir-autogen, elixir-format
 msgid "Not now"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:68
+#: lib/qpbx/web/controllers/auth_html.ex:69
 #, elixir-autogen, elixir-format
 msgid "Or enter this key by hand:"
 msgstr ""
@@ -250,7 +250,7 @@ msgstr ""
 msgid "Platform admin login"
 msgstr ""
 
-#: lib/qpbx/web/controllers/totp_controller.ex:76
+#: lib/qpbx/web/controllers/totp_controller.ex:94
 #, elixir-autogen, elixir-format
 msgid "Please log in again."
 msgstr ""
@@ -270,7 +270,7 @@ msgstr ""
 msgid "Recording storage (GB)"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:108
+#: lib/qpbx/web/controllers/auth_html.ex:110
 #, elixir-autogen, elixir-format
 msgid "Repeat the password"
 msgstr ""
@@ -285,7 +285,7 @@ msgstr ""
 msgid "SIP domain name"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:112
+#: lib/qpbx/web/controllers/auth_html.ex:115
 #, elixir-autogen, elixir-format
 msgid "Save password"
 msgstr ""
@@ -295,19 +295,19 @@ msgstr ""
 msgid "Saving..."
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:62
+#: lib/qpbx/web/controllers/auth_html.ex:63
 #, elixir-autogen, elixir-format
 msgid "Scan this code with an authenticator app, then enter the 6-digit code it shows."
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:60
-#: lib/qpbx/web/controllers/totp_controller.ex:68
+#: lib/qpbx/web/controllers/auth_html.ex:61
+#: lib/qpbx/web/controllers/totp_controller.ex:79
 #, elixir-autogen, elixir-format
 msgid "Set up two-factor authentication"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:94
-#: lib/qpbx/web/controllers/setup_controller.ex:32
+#: lib/qpbx/web/controllers/auth_html.ex:95
+#: lib/qpbx/web/controllers/setup_controller.ex:57
 #, elixir-autogen, elixir-format
 msgid "Set up your account"
 msgstr ""
@@ -349,13 +349,13 @@ msgstr ""
 msgid "Tenants"
 msgstr ""
 
-#: lib/qpbx/web/controllers/totp_controller.ex:16
-#: lib/qpbx/web/controllers/totp_controller.ex:46
+#: lib/qpbx/web/controllers/totp_controller.ex:22
+#: lib/qpbx/web/controllers/totp_controller.ex:55
 #, elixir-autogen, elixir-format
 msgid "That code is not valid. Try the next one."
 msgstr ""
 
-#: lib/qpbx/web/controllers/setup_controller.ex:40
+#: lib/qpbx/web/controllers/setup_controller.ex:74
 #, elixir-autogen, elixir-format
 msgid "This setup link is invalid or has expired. Ask your administrator for a new one."
 msgstr ""
@@ -365,13 +365,13 @@ msgstr ""
 msgid "Time zone"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:81
+#: lib/qpbx/web/controllers/auth_html.ex:82
 #, elixir-autogen, elixir-format
 msgid "Turn on 2FA"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:37
-#: lib/qpbx/web/controllers/totp_controller.ex:24
+#: lib/qpbx/web/controllers/auth_html.ex:38
+#: lib/qpbx/web/controllers/totp_controller.ex:31
 #, elixir-autogen, elixir-format
 msgid "Two-factor authentication"
 msgstr ""
@@ -392,7 +392,7 @@ msgstr ""
 msgid "Unlimited"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:50
+#: lib/qpbx/web/controllers/auth_html.ex:51
 #, elixir-autogen, elixir-format
 msgid "Verify"
 msgstr ""
@@ -402,7 +402,7 @@ msgstr ""
 msgid "We can't find the internet"
 msgstr ""
 
-#: lib/qpbx/web/controllers/session_controller.ex:19
+#: lib/qpbx/web/controllers/session_controller.ex:22
 #, elixir-autogen, elixir-format
 msgid "Wrong email or password."
 msgstr ""
@@ -577,7 +577,7 @@ msgstr ""
 msgid "You will be signed out soon because of inactivity."
 msgstr ""
 
-#: lib/qpbx/web/auth.ex:180
+#: lib/qpbx/web/auth.ex:181
 #, elixir-autogen, elixir-format
 msgid "Your session has ended. Please log in again."
 msgstr ""
@@ -586,4 +586,21 @@ msgstr ""
 #: lib/qpbx/web/live/account/sessions_live.ex:41
 #, elixir-autogen, elixir-format
 msgid "Your sessions"
+msgstr ""
+
+#: lib/qpbx/web/controllers/session_controller.ex:14
+#: lib/qpbx/web/controllers/setup_controller.ex:39
+#, elixir-autogen, elixir-format
+msgid "The automatic check did not pass. Please try again."
+msgstr ""
+
+#: lib/qpbx/web/controllers/auth_html.ex:124
+#: lib/qpbx/web/login_protection.ex:58
+#, elixir-autogen, elixir-format
+msgid "Too many attempts"
+msgstr ""
+
+#: lib/qpbx/web/controllers/auth_html.ex:126
+#, elixir-autogen, elixir-format
+msgid "Too many failed attempts from your network. Try again after %{time} (UTC)."
 msgstr ""

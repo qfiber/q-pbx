@@ -24,6 +24,7 @@ defmodule QPBX.Web.AuthHTML do
           autocomplete="current-password"
           required
         />
+        <QPBX.Web.Captcha.widget :if={@captcha?} form="login-form" challenge={@captcha_challenge} />
         <.button variant="primary" class="w-full">{gettext("Log in")}</.button>
       </.form>
     </Layouts.app>
@@ -94,6 +95,7 @@ defmodule QPBX.Web.AuthHTML do
         {gettext("Set up your account")}
         <:subtitle><span dir="ltr">{@email}</span></:subtitle>
       </.header>
+      <p :if={@error} class="alert alert-error" role="alert">{@error}</p>
       <.form for={@form} action={@action} method="put" id="setup-form">
         <.input
           field={@form[:password]}
@@ -109,8 +111,22 @@ defmodule QPBX.Web.AuthHTML do
           autocomplete="new-password"
           required
         />
+        <QPBX.Web.Captcha.widget :if={@captcha?} form="setup-form" challenge={@captcha_challenge} />
         <.button variant="primary" class="w-full">{gettext("Save password")}</.button>
       </.form>
+    </Layouts.app>
+    """
+  end
+
+  def blocked(assigns) do
+    ~H"""
+    <Layouts.app flash={@flash} locale={@locale}>
+      <.header>{gettext("Too many attempts")}</.header>
+      <p class="alert alert-error" role="alert" id="blocked">
+        {gettext("Too many failed attempts from your network. Try again after %{time} (UTC).",
+          time: Calendar.strftime(@until, "%Y-%m-%d %H:%M")
+        )}
+      </p>
     </Layouts.app>
     """
   end

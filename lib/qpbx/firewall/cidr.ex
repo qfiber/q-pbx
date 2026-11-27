@@ -19,6 +19,19 @@ defmodule QPBX.Firewall.CIDR do
 
   def parse(_), do: :error
 
+  @doc "Whether the address tuple `ip` lies in `cidr` (canonical or not)."
+  def contains?(cidr, ip) when is_tuple(ip) do
+    with {:ok, _, fam, len} <- parse(cidr),
+         [addr | _] = String.split(cidr, "/"),
+         {:ok, net} <- :inet.parse_strict_address(String.to_charlist(String.trim(addr))),
+         {^fam, bits} <- family(ip) do
+      m = mask(len, bits)
+      band(to_int(ip, fam), m) == band(to_int(net, fam), m)
+    else
+      _ -> false
+    end
+  end
+
   defp family({_, _, _, _}), do: {:v4, 32}
   defp family({_, _, _, _, _, _, _, _}), do: {:v6, 128}
 

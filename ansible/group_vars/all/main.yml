@@ -26,6 +26,11 @@ qpbx_freeswitch_deb: "{{ lookup('ansible.builtin.fileglob', qpbx_packages_dir ~ 
 qpbx_cert_mode: wildcard
 qpbx_tls_dir: /etc/qpbx/tls
 
+# Human check on login and setup pages: pow (built-in), turnstile, friendly_captcha, captcha_eu, none.
+qpbx_captcha_provider: pow
+qpbx_captcha_site_key: ""
+qpbx_captcha_secret: ""   # keep in Ansible Vault
+
 # Email for setup links.
 qpbx_mail_from: "noreply@{{ qpbx_domain }}"
 qpbx_smtp_host: localhost

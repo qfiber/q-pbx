@@ -135,7 +135,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 1b-3 Login protection (IP rate limits, challenge providers).
+- 1b-4 Row-level security in force.
 
 ## Next
 
@@ -150,6 +150,15 @@ Kamailio gets its real config.
   guesses (it caught a wrong Arabic label). 13 new tests (80 total).
 - 1b-2 2FA mandatory for tenant admins (done): they are sent to enrolment at login and cannot
   skip it; tenant users still may. `QPBX.Core.totp_optional?/1`. 2 new tests (82 total).
+- 1b-3 Login protection (done): per-IP failure counter in the database (`login_failures`):
+  5 failures block 1 h, 5 more 24 h, strikes forgotten after 24 quiet hours; failures are wrong
+  passwords or unknown emails, wrong 2FA codes, bad setup links and failed checks; blocked IPs
+  get HTTP 429; accounts are never locked (5 failures write an `account.login_failures_alert`
+  audit entry); IPs on the platform HTTPS/all allowlist are exempt. Human check on login and
+  setup pages (`QPBX.Web.Captcha`): built-in proof of work (default, ALTCHA format, single use,
+  5 min), Cloudflare Turnstile, Friendly Captcha v2, Captcha.eu, or none; an outage of an
+  outside service lets attempts through (logged), a rejected key does not. Ansible:
+  `qpbx_captcha_provider`, `qpbx_captcha_site_key`, `qpbx_captcha_secret`. 18 new tests (100).
 - Done after the phase 1 review: nginx in front (non-root, real client IP, optional
   ModSecurity), FreeSWITCH modules added (G.729, Opus/MP3 recording, loopback, CDR spool; all
   load in the lab), languages moved to one config list, firewall and plan forms now clear

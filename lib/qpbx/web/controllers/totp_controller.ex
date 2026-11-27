@@ -4,6 +4,7 @@ defmodule QPBX.Web.TotpController do
   alias QPBX.Web.Auth
 
   plug :put_view, QPBX.Web.AuthHTML
+  plug QPBX.Web.LoginProtection
   plug :require_pending
 
   ## Login step
@@ -12,8 +13,14 @@ defmodule QPBX.Web.TotpController do
 
   def verify(conn, %{"totp" => %{"code" => code}}) do
     case Core.verify_totp(conn.assigns.pending, code) do
-      {:ok, account} -> Auth.log_in(conn, account)
-      {:error, _} -> render_verify(conn, gettext("That code is not valid. Try the next one."))
+      {:ok, account} ->
+        Auth.log_in(conn, account)
+
+      {:error, _} ->
+        code_failed(
+          conn,
+          &render_verify(&1, gettext("That code is not valid. Try the next one."))
+        )
     end
   end
 
@@ -43,7 +50,10 @@ defmodule QPBX.Web.TotpController do
         conn |> delete_session(:totp_secret) |> Auth.log_in(account)
 
       {:error, _} ->
-        render_setup(conn, secret, gettext("That code is not valid. Try the next one."))
+        code_failed(
+          conn,
+          &render_setup(&1, secret, gettext("That code is not valid. Try the next one."))
+        )
     end
   end
 
@@ -68,6 +78,13 @@ defmodule QPBX.Web.TotpController do
       error: error,
       page_title: gettext("Set up two-factor authentication")
     )
+  end
+
+  defp code_failed(conn, render) do
+    case QPBX.Web.LoginProtection.failed(conn, conn.assigns.pending) do
+      {:halt, conn} -> conn
+      {:cont, conn} -> render.(conn)
+    end
   end
 
   defp require_pending(conn, _opts) do

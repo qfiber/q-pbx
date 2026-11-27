@@ -39,6 +39,15 @@ defmodule QPBX.FirewallTest do
       assert {:ok, "2001:db8::1", :v6, 128} = CIDR.parse(" 2001:db8::1 ")
     end
 
+    test "contains?/2 checks membership, per family" do
+      assert CIDR.contains?("198.51.100.0/24", {198, 51, 100, 77})
+      refute CIDR.contains?("198.51.100.0/24", {198, 51, 101, 1})
+      assert CIDR.contains?("2001:db8::/32", {0x2001, 0xDB8, 1, 0, 0, 0, 0, 1})
+      refute CIDR.contains?("2001:db8::/32", {198, 51, 100, 1})
+      assert CIDR.contains?("203.0.113.7", {203, 0, 113, 7})
+      refute CIDR.contains?("garbage", {203, 0, 113, 7})
+    end
+
     test "refuses everything else" do
       for bad <- [
             "",

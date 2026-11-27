@@ -18,6 +18,8 @@ and writes an audit entry in the same transaction.
   activity), `list_sessions/1`, `revoke_session/3`, `revoke_sessions/3` (`except:`),
   `end_session/1`, `session_idle_timeout/0`. Password and 2FA changes revoke all sessions.
   `QPBX.Core.SessionSweeper` ends idle/expired sessions every 30 s.
+- Login limits: `login_check/1`, `login_failed/2` (IP, optional account), `login_succeeded/1`
+  (`QPBX.Core.LoginGuard`; never locks accounts).
 - Audit: `audit/4` (for changes made by other areas), `list_audit_logs/1`.
 - `with_tenant/2`: run a function with row-level security scoped to one tenant.
 - `effective_limits/1`: plan limits merged with the tenant's overrides; nil = unlimited.

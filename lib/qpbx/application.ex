@@ -21,6 +21,7 @@ defmodule QPBX.Application do
       QPBX.Firewall.Sync,
       QPBX.Web.Health,
       QPBX.Web.SessionReaper,
+      QPBX.Web.Captcha.PowStore,
       QPBX.Web.Endpoint
     ]
 

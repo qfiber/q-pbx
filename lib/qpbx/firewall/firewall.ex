@@ -7,7 +7,7 @@ defmodule QPBX.Firewall do
 
   alias QPBX.Events
   alias QPBX.Events.FirewallChanged
-  alias QPBX.Firewall.{Entry, Sets, Store, Sync}
+  alias QPBX.Firewall.{CIDR, Entry, Sets, Store, Sync}
 
   defdelegate list_entries(opts \\ []), to: Store, as: :list
   defdelegate get_entry!(id), to: Store, as: :get!
@@ -19,6 +19,18 @@ defmodule QPBX.Firewall do
 
   @doc "Removes an entry (audited). Refuses `{:error, :last_management_entry}`."
   def delete_entry(%Entry{} = entry, actor), do: Store.delete(entry, actor) |> notify("delete")
+
+  @doc """
+  Whether `ip` is on the platform allowlist for `scope` ("ssh", "sip" or "https"), directly or
+  through an "all" entry. Allowed IPs are never blocked or challenged by login limits.
+  """
+  def allowlisted?(ip, scope) when is_tuple(ip) do
+    Store.active_entries()
+    |> Enum.any?(fn e ->
+      e.level == "platform" and e.kind == "allow" and e.scope in [scope, "all"] and
+        CIDR.contains?(e.cidr, ip)
+    end)
+  end
 
   @doc "Reconciles this node now; returns `%{at, errors, skipped}`."
   defdelegate sync_now(), to: Sync, as: :run_now

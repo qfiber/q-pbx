@@ -1,5 +1,8 @@
 defmodule QPBX.Core.SessionSweeper do
-  @moduledoc "Ends idle and expired sessions every 30 seconds (their live pages disconnect)."
+  @moduledoc """
+  Every 30 seconds: ends idle and expired sessions (their live pages disconnect) and drops
+  old login-failure counters.
+  """
   use GenServer
   require Logger
 
@@ -15,6 +18,7 @@ defmodule QPBX.Core.SessionSweeper do
   def handle_info(:sweep, state) do
     try do
       QPBX.Core.Sessions.sweep()
+      QPBX.Core.LoginGuard.sweep()
     rescue
       # Database down: sessions are still checked per request; try again next round.
       e -> Logger.error("session sweep failed: #{Exception.message(e)}")

@@ -52,3 +52,6 @@ config :qpbx, QPBX.Firewall,
   helper: QPBX.FakeHelper,
   reconcile_interval: :timer.hours(24),
   reconcile_on_start: false
+
+# Tests of the login flow skip the human check; the captcha tests enable it themselves.
+config :qpbx, QPBX.Web.Captcha, provider: :none

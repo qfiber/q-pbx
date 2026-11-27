@@ -52,6 +52,10 @@ config :qpbx, QPBX.Core.Vault,
 # (prod: runtime.exs from QPBX_* environment variables).
 config :qpbx, QPBX.Web.Health, interval: 10_000, disk: [paths: ["/"]]
 
+# Human check on login and setup pages: :pow (built-in, default), :turnstile, :friendly_captcha,
+# :captcha_eu or :none. Outside services need site_key and secret (runtime.exs in prod).
+config :qpbx, QPBX.Web.Captcha, provider: :pow
+
 # Oban: one queue per area (spec: calls, fax, webhooks, notify, crm, provisioning).
 # Phase 1 only has work for notify; the others are added with their areas.
 config :qpbx, Oban,

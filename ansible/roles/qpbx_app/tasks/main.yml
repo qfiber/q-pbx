@@ -1,6 +1,13 @@
 - name: Secrets
   ansible.builtin.include_tasks: secrets.yml
 
+- name: Known human-check provider
+  ansible.builtin.assert:
+    that:
+      - qpbx_captcha_provider in ['pow', 'turnstile', 'friendly_captcha', 'captcha_eu', 'none']
+      - qpbx_captcha_provider in ['pow', 'none'] or (qpbx_captcha_site_key and qpbx_captcha_secret)
+    fail_msg: qpbx_captcha_provider must be pow, turnstile, friendly_captcha, captcha_eu or none; outside services need site key and secret.
+
 - name: Package cache folder
   ansible.builtin.file:
     path: /var/cache/qpbx

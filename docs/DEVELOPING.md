@@ -119,7 +119,8 @@ GitHub Actions: `.github/workflows/ci.yml` runs every check above on pushes and 
 `ansible/site.yml` builds a whole server from the packages in `out/`. Set the inventory
 (`ansible/inventories/<env>/`): `qpbx_domain`, `qpbx_management_ips` (must include the machine
 running Ansible, or the run stops before touching the firewall), `qpbx_cert_mode`, SMTP
-settings, and for `wildcard` mode `qpbx_acme_dns_provider` and `qpbx_acme_dns_env` (keep these in
+settings, the human check (`qpbx_captcha_provider`: `pow`, `turnstile`, `friendly_captcha`,
+`captcha_eu` or `none`, with site key and secret for the outside services), and for `wildcard` mode `qpbx_acme_dns_provider` and `qpbx_acme_dns_env` (keep these in
 Ansible Vault). Collections: `ansible-galaxy collection install -r ansible/requirements.yml`.
 On the server, `qpbx eval '...'` runs release commands (for example
 `QPBX.Release.create_platform_admin("you@example.com", "You")`).

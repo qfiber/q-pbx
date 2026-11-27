@@ -2,6 +2,17 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Login protection details (1b-3)
+
+- **Blocks are per client IP only;** accounts are never locked, so nobody can lock an
+  admin out on purpose. Platform-allowlisted IPs are exempt from blocks and checks.
+- **The human check fails open on an outside service's outage** (network error or 5xx), as
+  Friendly Captcha's documentation advises; per-IP limits still apply. A 4xx (wrong key) fails
+  closed so a misconfiguration is noticed.
+- **Built-in proof of work uses the ALTCHA format** (public, documented), so the open-source
+  ALTCHA widget could replace our small solver later. Used challenges are remembered per node
+  (ETS); a shared store comes with the second app node (phase 9).
+
 ## 2026-11-27: Fraud caps without rating
 
 - Phase 2 caps minutes per destination class per hour, day and month, and treats a
