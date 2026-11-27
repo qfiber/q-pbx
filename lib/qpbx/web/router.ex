@@ -62,6 +62,7 @@ defmodule QPBX.Web.Router do
       live "/trunks/:id", TrunksLive, :edit
       live "/numbers", DidsLive, :index
       live "/numbering", NumberingLive, :index
+      live "/protection", ProtectionLive, :index
 
       # Shared page: full module name, not the surrounding scope's alias.
       scope "/", alias: false do

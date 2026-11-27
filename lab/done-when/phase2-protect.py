@@ -112,6 +112,8 @@ def clean():
                 kamailio("htable.delete", t, item["name"])
     app('''
 for e <- QPBX.Firewall.list_entries(), String.starts_with?(e.cidr, "127.0.0."), do: QPBX.Firewall.delete_entry(e, {:system, "lab"})
+for b <- QPBX.Edge.list_bans(), String.starts_with?(b.ip, "127.0.0."), do: QPBX.Edge.lift_ban(b.key, {:system, "lab"})
+{:ok, _} = QPBX.Edge.update_settings(%{flood_requests: 40, register_per_minute: 30, invite_per_minute: 30, auth_failures_port: 10, auth_failures_ip: 30, ban_seconds: 3600}, {:system, "lab"})
 IO.puts("JSON{}")
 ''')
 
@@ -195,6 +197,39 @@ t = Enum.find(QPBX.Core.list_tenants(), &(&1.sip_domain == "''' + DOMAIN + '''")
 IO.puts("JSON{}")
 ''')
 check("a banned address that becomes an office IP is answered again within seconds", banned and wait(lambda: send("127.0.0.9", "options") == ["200"], 20))
+
+# Settings from the admin panel apply live, without a Kamailio restart.
+app('''{:ok, _} = QPBX.Edge.update_settings(%{register_per_minute: 10}, {:system, "lab"}); IO.puts("JSON{}")''')
+time.sleep(7)  # the app reloads Kamailio's settings table (at most one reload per 5 s)
+r = send("127.0.0.7", "register", count=11, port=5095)
+check("a changed limit applies live: the 11th REGISTER is refused with the limit set to 10", r[:10] == ["401"] * 10 and r[10] == "503", " ".join(r[-2:]))
+
+# Bans are on disk: a restarted Kamailio loads them back.
+ok = wait(lambda: {"127.0.0.3|5091", "127.0.0.4"} <= set(app('''IO.puts("JSON" <> Jason.encode!(Enum.map(QPBX.Edge.list_bans(), & &1.key)))''')), 15)
+check("bans are stored in the database (one phone and a whole address)", ok)
+ssh("sudo systemctl restart kamailio")
+time.sleep(3)
+check("after a Kamailio restart the banned phone is still banned", send("127.0.0.3", "register", port=5091) == ["-"])
+check("after a Kamailio restart the banned address is still banned", send("127.0.0.4", "options", port=6200) == ["-"])
+check("…and other addresses are answered normally", send("127.0.0.5", "register", port=5096) == ["401"])
+
+# A ban keeps its expiry across a restart: a 60-second ban ends on time.
+app('''{:ok, _} = QPBX.Edge.update_settings(%{ban_seconds: 60}, {:system, "lab"}); IO.puts("JSON{}")''')
+time.sleep(7)
+started = time.time()
+send("127.0.0.7", "options", ua="sipvicious")
+ok = wait(lambda: "127.0.0.7" in app('''IO.puts("JSON" <> Jason.encode!(Enum.map(QPBX.Edge.list_bans(), & &1.key)))'''), 15)
+ssh("sudo systemctl restart kamailio")
+time.sleep(3)
+still = send("127.0.0.7", "options", port=5097) == ["-"]
+check("a 60-second ban survives a restart", ok and still)
+wait(lambda: time.time() - started > 75, 90)
+check("…and ends on time after the restart", send("127.0.0.7", "options", port=5098) == ["200"])
+
+# Lifting a ban from the admin panel frees the address at once.
+app('''QPBX.Edge.lift_ban("127.0.0.4", {:system, "lab"}); IO.puts("JSON{}")''')
+check("a lifted ban: the address is answered again", send("127.0.0.4", "options", port=6201) == ["200"])
+check("…and it is gone from nftables", wait(lambda: "127.0.0.4" not in nft_block("x"), 15))
 
 clean()
 time.sleep(2)

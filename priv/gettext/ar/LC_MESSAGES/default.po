@@ -26,8 +26,8 @@ msgstr "الإجراءات"
 msgid "Allowed destination classes"
 msgstr "فئات الوجهات المسموح بها"
 
-#: lib/qpbx/web/components/layouts.ex:171
-#: lib/qpbx/web/components/layouts.ex:183
+#: lib/qpbx/web/components/layouts.ex:174
+#: lib/qpbx/web/components/layouts.ex:186
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
 msgstr "جارٍ محاولة إعادة الاتصال"
@@ -138,7 +138,7 @@ msgstr "محلي"
 msgid "Log in"
 msgstr "تسجيل الدخول"
 
-#: lib/qpbx/web/components/layouts.ex:107
+#: lib/qpbx/web/components/layouts.ex:110
 #, elixir-autogen, elixir-format
 msgid "Log out"
 msgstr "تسجيل الخروج"
@@ -341,7 +341,7 @@ msgstr "رابط الإعداد لـ %{email} (أُرسل بالبريد أيض�
 msgid "Signed in as %{name}"
 msgstr "مسجّل الدخول باسم %{name}"
 
-#: lib/qpbx/web/components/layouts.ex:178
+#: lib/qpbx/web/components/layouts.ex:181
 #, elixir-autogen, elixir-format
 msgid "Something went wrong!"
 msgstr "حدث خطأ ما!"
@@ -416,7 +416,7 @@ msgstr "غير محدود"
 msgid "Verify"
 msgstr "تحقّق"
 
-#: lib/qpbx/web/components/layouts.ex:166
+#: lib/qpbx/web/components/layouts.ex:169
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
 msgstr "تعذّر الاتصال بالإنترنت"
@@ -458,6 +458,7 @@ msgstr "إضافة إدخال"
 
 #: lib/qpbx/web/live/account/sessions_live.ex:56
 #: lib/qpbx/web/live/platform/firewall_live.ex:96
+#: lib/qpbx/web/live/platform/protection_live.ex:118
 #: lib/qpbx/web/live/tenant/office_ips_live.ex:80
 #, elixir-autogen, elixir-format
 msgid "Address"
@@ -515,6 +516,7 @@ msgstr "النوع"
 
 #: lib/qpbx/web/live/platform/firewall_live.ex:99
 #: lib/qpbx/web/live/platform/firewall_live.ex:128
+#: lib/qpbx/web/live/platform/protection_live.ex:120
 #, elixir-autogen, elixir-format
 msgid "Reason"
 msgstr "السبب"
@@ -567,7 +569,7 @@ msgstr "آخر نشاط"
 msgid "Session ended."
 msgstr "انتهت الجلسة."
 
-#: lib/qpbx/web/components/layouts.ex:98
+#: lib/qpbx/web/components/layouts.ex:101
 #, elixir-autogen, elixir-format
 msgid "Sessions"
 msgstr "الجلسات"
@@ -597,7 +599,7 @@ msgstr "تاريخ الدخول"
 msgid "Signed out of %{count} other sessions."
 msgstr "تم تسجيل الخروج من %{count} جلسات أخرى."
 
-#: lib/qpbx/web/components/layouts.ex:131
+#: lib/qpbx/web/components/layouts.ex:134
 #, elixir-autogen, elixir-format
 msgid "Stay signed in"
 msgstr "البقاء متصلًا"
@@ -607,7 +609,7 @@ msgstr "البقاء متصلًا"
 msgid "This browser"
 msgstr "هذا المتصفح"
 
-#: lib/qpbx/web/components/layouts.ex:130
+#: lib/qpbx/web/components/layouts.ex:133
 #, elixir-autogen, elixir-format
 msgid "You will be signed out soon because of inactivity."
 msgstr "سيتم تسجيل خروجك قريبًا بسبب عدم النشاط."
@@ -972,7 +974,7 @@ msgstr "تم إنشاء التحويلة %{number}."
 msgid "Extension %{number} deleted."
 msgstr "تم حذف التحويلة %{number}."
 
-#: lib/qpbx/web/components/layouts.ex:65
+#: lib/qpbx/web/components/layouts.ex:68
 #: lib/qpbx/web/live/tenant/extensions_live.ex:10
 #: lib/qpbx/web/live/tenant/extensions_live.ex:53
 #, elixir-autogen, elixir-format
@@ -1167,7 +1169,7 @@ msgstr "الرقم"
 msgid "Number (e.g. 100)"
 msgstr "الرقم (مثلًا 100)"
 
-#: lib/qpbx/web/components/layouts.ex:77
+#: lib/qpbx/web/components/layouts.ex:80
 #: lib/qpbx/web/live/tenant/number_format_live.ex:8
 #: lib/qpbx/web/live/tenant/number_format_live.ex:64
 #, elixir-autogen, elixir-format
@@ -1187,7 +1189,7 @@ msgid "Numbering"
 msgstr "الترقيم"
 
 #: lib/qpbx/web/components/layouts.ex:57
-#: lib/qpbx/web/components/layouts.ex:68
+#: lib/qpbx/web/components/layouts.ex:71
 #: lib/qpbx/web/live/platform/dids_live.ex:14
 #: lib/qpbx/web/live/platform/dids_live.ex:84
 #: lib/qpbx/web/live/tenant/numbers_live.ex:15
@@ -1201,7 +1203,7 @@ msgstr "الأرقام"
 msgid "Numbers can be typed the local way, for example 02-123-4567."
 msgstr "يمكن كتابة الأرقام بالطريقة المحلية، مثلًا 02-123-4567."
 
-#: lib/qpbx/web/components/layouts.ex:74
+#: lib/qpbx/web/components/layouts.ex:77
 #: lib/qpbx/web/live/tenant/office_ips_live.ex:14
 #: lib/qpbx/web/live/tenant/office_ips_live.ex:74
 #, elixir-autogen, elixir-format
@@ -1218,7 +1220,7 @@ msgstr "مفعّل"
 msgid "Only tenant admins can open this page."
 msgstr "يمكن لمسؤولي المستأجر فقط فتح هذه الصفحة."
 
-#: lib/qpbx/web/components/layouts.ex:71
+#: lib/qpbx/web/components/layouts.ex:74
 #: lib/qpbx/web/live/tenant/routes_live.ex:17
 #: lib/qpbx/web/live/tenant/routes_live.ex:114
 #, elixir-autogen, elixir-format
@@ -1240,6 +1242,7 @@ msgstr "الرقم الخارجي"
 msgid "Phone numbers held at carriers. A backup number routes like its main number and belongs to the same tenant."
 msgstr "أرقام الهواتف لدى المزوّدين. الرقم الاحتياطي يُوجَّه مثل رقمه الرئيسي ويتبع المستأجر نفسه."
 
+#: lib/qpbx/web/live/platform/protection_live.ex:119
 #: lib/qpbx/web/live/platform/trunks_live.ex:174
 #, elixir-autogen, elixir-format
 msgid "Port"
@@ -1333,6 +1336,7 @@ msgid "SIP user"
 msgstr "مستخدم SIP"
 
 #: lib/qpbx/web/live/platform/numbering_live.ex:159
+#: lib/qpbx/web/live/platform/protection_live.ex:107
 #: lib/qpbx/web/live/platform/trunks_live.ex:246
 #: lib/qpbx/web/live/tenant/extension_live.ex:237
 #: lib/qpbx/web/live/tenant/number_format_live.ex:92
@@ -1461,3 +1465,115 @@ msgstr "إعداداتك الخاصة."
 #, elixir-autogen, elixir-format
 msgid "Your phone numbers and where their calls go. The platform adds and removes numbers."
 msgstr "أرقام هواتفك وإلى أين تذهب مكالماتها. المنصة هي التي تضيف الأرقام وتزيلها."
+
+#: lib/qpbx/web/live/platform/protection_live.ex:110
+#, elixir-autogen, elixir-format
+msgid "Active bans"
+msgstr "الحظر النشط"
+
+#: lib/qpbx/web/live/platform/protection_live.ex:79
+#, elixir-autogen, elixir-format
+msgid "Ban length (seconds)"
+msgstr "مدة الحظر (بالثواني)"
+
+#: lib/qpbx/web/live/platform/protection_live.ex:51
+#, elixir-autogen, elixir-format
+msgid "Ban lifted."
+msgstr "تم رفع الحظر."
+
+#: lib/qpbx/web/live/platform/protection_live.ex:140
+#, elixir-autogen, elixir-format
+msgid "Failed logins"
+msgstr "محاولات دخول فاشلة"
+
+#: lib/qpbx/web/live/platform/protection_live.ex:93
+#, elixir-autogen, elixir-format
+msgid "Failed logins in 15 minutes to ban one phone (address and port)"
+msgstr "محاولات الدخول الفاشلة خلال 15 دقيقة لحظر هاتف واحد (العنوان والمنفذ)"
+
+#: lib/qpbx/web/live/platform/protection_live.ex:98
+#, elixir-autogen, elixir-format
+msgid "Failed logins in 15 minutes to ban the whole address"
+msgstr "محاولات الدخول الفاشلة خلال 15 دقيقة لحظر العنوان بالكامل"
+
+#: lib/qpbx/web/live/platform/protection_live.ex:137
+#, elixir-autogen, elixir-format
+msgid "Flood"
+msgstr "إغراق"
+
+#: lib/qpbx/web/live/platform/protection_live.ex:77
+#, elixir-autogen, elixir-format
+msgid "Flood: requests per address in 2 seconds"
+msgstr "الإغراق: عدد الطلبات من العنوان خلال ثانيتين"
+
+#: lib/qpbx/web/live/platform/protection_live.ex:88
+#, elixir-autogen, elixir-format
+msgid "INVITE per phone per minute"
+msgstr "طلبات INVITE لكل هاتف في الدقيقة"
+
+#: lib/qpbx/web/live/platform/protection_live.ex:112
+#, elixir-autogen, elixir-format
+msgid "Kept on disk: a restarted SIP edge loads them back. Whole-address bans are also in the firewall until they expire."
+msgstr "محفوظ على القرص: عند إعادة تشغيل بوابة SIP يُعاد تحميله. حظر العنوان بالكامل موجود أيضًا في جدار الحماية حتى ينتهي."
+
+#: lib/qpbx/web/live/platform/protection_live.ex:129
+#, elixir-autogen, elixir-format
+msgid "Lift"
+msgstr "رفع"
+
+#: lib/qpbx/web/live/platform/protection_live.ex:127
+#, elixir-autogen, elixir-format
+msgid "Lift the ban of %{address}?"
+msgstr "رفع الحظر عن %{address}؟"
+
+#: lib/qpbx/web/live/platform/protection_live.ex:116
+#, elixir-autogen, elixir-format
+msgid "No active bans."
+msgstr "لا يوجد حظر نشط."
+
+#: lib/qpbx/web/live/platform/protection_live.ex:83
+#, elixir-autogen, elixir-format
+msgid "REGISTER per phone per minute"
+msgstr "طلبات REGISTER لكل هاتف في الدقيقة"
+
+#: lib/qpbx/web/live/platform/protection_live.ex:139
+#, elixir-autogen, elixir-format
+msgid "Rate limit"
+msgstr "تجاوز الحد"
+
+#: lib/qpbx/web/components/layouts.ex:63
+#: lib/qpbx/web/live/platform/protection_live.ex:12
+#: lib/qpbx/web/live/platform/protection_live.ex:64
+#, elixir-autogen, elixir-format
+msgid "SIP protection"
+msgstr "حماية SIP"
+
+#: lib/qpbx/web/live/platform/protection_live.ex:39
+#, elixir-autogen, elixir-format
+msgid "Saved. The SIP edge applies it within seconds."
+msgstr "تم الحفظ. تطبّقه بوابة SIP خلال ثوانٍ."
+
+#: lib/qpbx/web/live/platform/protection_live.ex:138
+#, elixir-autogen, elixir-format
+msgid "Scanner"
+msgstr "ماسح"
+
+#: lib/qpbx/web/live/platform/protection_live.ex:105
+#, elixir-autogen, elixir-format
+msgid "Scanner user agents (names separated by |): dropped and banned"
+msgstr "برامج المسح (أسماء مفصولة بـ |): تُتجاهل طلباتها وتُحظر"
+
+#: lib/qpbx/web/live/platform/protection_live.ex:66
+#, elixir-autogen, elixir-format
+msgid "The platform SIP allowlist is never limited. Tenant office IPs skip flood detection, get three times the per-phone limit and are never banned as a whole: an alert is raised instead."
+msgstr "قائمة السماح الخاصة بالمنصة لا تخضع لأي حد. عناوين مكاتب المستأجرين لا تخضع لكشف الإغراق، وتحصل على ثلاثة أضعاف حد الهاتف الواحد، ولا تُحظر بالكامل أبدًا: يُرسل تنبيه بدلًا من ذلك."
+
+#: lib/qpbx/web/live/platform/protection_live.ex:121
+#, elixir-autogen, elixir-format
+msgid "Until (UTC)"
+msgstr "حتى (UTC)"
+
+#: lib/qpbx/web/live/platform/protection_live.ex:119
+#, elixir-autogen, elixir-format
+msgid "all"
+msgstr "الكل"

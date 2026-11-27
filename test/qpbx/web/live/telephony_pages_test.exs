@@ -229,6 +229,36 @@ defmodule QPBX.Web.TelephonyPagesTest do
       assert Core.get_trunk!(platform, trunk.id).password == "carrier-secret"
     end
 
+    test "SIP protection: settings saved; bans listed and lifted", %{conn: conn} do
+      {:ok, view, _} = live(conn, ~p"/platform/protection")
+
+      html =
+        view
+        |> form("#protection-form", settings: %{register_per_minute: 45, ban_seconds: 5})
+        |> render_submit()
+
+      assert html =~ "must be greater than or equal to 60"
+
+      view
+      |> form("#protection-form", settings: %{register_per_minute: 45, ban_seconds: 600})
+      |> render_submit()
+
+      assert QPBX.Edge.get_settings().register_per_minute == 45
+
+      QPBX.Repo.insert!(%QPBX.Edge.Ban{
+        key: "203.0.113.70|5060",
+        ip: "203.0.113.70",
+        port: 5060,
+        reason: "rate",
+        expires_at: DateTime.utc_now() |> DateTime.add(600) |> DateTime.truncate(:second)
+      })
+
+      {:ok, view, html} = live(conn, ~p"/platform/protection")
+      assert html =~ "203.0.113.70"
+      view |> element("#lift-203-0-113-70-5060") |> render_click()
+      assert QPBX.Edge.list_bans() == []
+    end
+
     test "numbers, classes and emergency routes", %{conn: conn, tenant: t} do
       platform = Core.scope_for(platform_admin_fixture())
 

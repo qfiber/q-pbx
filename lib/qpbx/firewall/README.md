@@ -14,6 +14,7 @@ SIP allow entries through a view (below).
   later bans, never shortened; `{:ok, :allowlisted}` / `{:ok, :office_ip}` when the address is
   allowed (never banned); `{:error, :invalid_address}`. Broadcasts `FirewallChanged`.
 - `office_ip?(ip_tuple)`: inside a tenant office IP entry
+- `unban(ip, actor)`: removes the automatic SIP block of an address (manual entries stay)
 - `sync_now/0`, `sync_status/0` (`%{at, errors, skipped}`), `helper_sets_flag/0`
 
 **Entries:** level `platform` (any kind and scope) or `tenant` (allow + scope `sip` only,

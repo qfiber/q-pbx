@@ -1,17 +1,21 @@
 defmodule QPBX.Edge.Bans do
   @moduledoc """
-  Carries Kamailio's whole-address bans to nftables and raises office-IP alerts. Kamailio
-  detects (floods, scanners, failed logins) and bans in memory at once; every 5 s this reads
-  its `ipban` and `edgealert` tables. A new whole-address ban becomes a firewall block entry
-  with an expiry (`QPBX.Firewall.ban/4`: dropped in the kernel even while the app is down); a
-  new alert is logged, audited and announced (`EdgeAlert`). Bans of one address and port stay
-  in Kamailio only (many phones share an office address).
+  Keeps Kamailio's bans on disk, carries whole-address bans to nftables, and raises office-IP
+  alerts. Kamailio detects (floods, scanners, failed logins) and bans in memory at once; every
+  5 s this reads its `ipban` and `edgealert` tables. Each new ban is stored (`edge_bans`, which
+  a restarted Kamailio loads back through the `kamailio.ipban` view); a new whole-address ban
+  also becomes a firewall block with an expiry (`QPBX.Firewall.ban/4`: dropped in the kernel
+  even while the app is down). Bans of one address and port stay out of nftables (many phones
+  share an office address). A new alert is logged, audited and announced (`EdgeAlert`).
   """
   use GenServer
   require Logger
+  import Ecto.Query
   alias QPBX.Edge
+  alias QPBX.Edge.Ban
   alias QPBX.Events
   alias QPBX.Events.EdgeAlert
+  alias QPBX.Repo
 
   @every_ms 5_000
   @actor {:system, "edge"}
@@ -21,7 +25,7 @@ defmodule QPBX.Edge.Bans do
   @impl true
   def init(_) do
     Process.send_after(self(), :poll, @every_ms)
-    {:ok, %{pushed: MapSet.new(), alerted: MapSet.new()}}
+    {:ok, %{alerted: MapSet.new()}}
   end
 
   @impl true
@@ -31,23 +35,45 @@ defmodule QPBX.Edge.Bans do
   end
 
   @doc false
-  # One round; the state remembers what was handled, so a ban or alert is acted on once while
-  # Kamailio holds it (and again after it expired and comes back).
+  # One round. A ban is handled once: its row in edge_bans says so (also across app restarts);
+  # alerts once while Kamailio holds them.
   def poll(state) do
     with {:ok, bans} <- table("ipban"), {:ok, alerts} <- table("edgealert") do
-      bans = lift_allowed(bans)
+      now = DateTime.utc_now()
+      known = MapSet.new(Repo.all(from b in Ban, where: b.expires_at > ^now, select: b.key))
+      seconds = Edge.get_settings().ban_seconds
 
-      whole =
-        for {key, reason} <- bans, not String.contains?(key, "|"), into: %{}, do: {key, reason}
+      for {key, reason} <- lift_allowed(bans),
+          not MapSet.member?(known, key),
+          do: record(key, reason, seconds)
 
-      for {ip, reason} <- whole, not MapSet.member?(state.pushed, ip), do: push(ip, reason)
       for {ip, reason} <- alerts, not MapSet.member?(state.alerted, ip), do: alert(ip, reason)
-      %{pushed: MapSet.new(Map.keys(whole)), alerted: MapSet.new(Enum.map(alerts, &elem(&1, 0)))}
+      Repo.delete_all(from b in Ban, where: b.expires_at < ^DateTime.add(now, -1, :day))
+      %{alerted: MapSet.new(Enum.map(alerts, &elem(&1, 0)))}
     else
       {:error, reason} ->
         Logger.warning("edge: cannot read Kamailio's bans: #{inspect(reason)}")
         state
     end
+  end
+
+  defp record(key, reason, seconds) do
+    {ip, port} =
+      case String.split(key, "|") do
+        [ip, port] -> {ip, String.to_integer(port)}
+        [ip] -> {ip, nil}
+      end
+
+    until = DateTime.utc_now() |> DateTime.add(seconds) |> DateTime.truncate(:second)
+
+    Repo.insert!(%Ban{key: key, ip: ip, port: port, reason: reason, expires_at: until},
+      on_conflict: {:replace, [:reason, :expires_at, :updated_at]},
+      conflict_target: :key
+    )
+
+    if is_nil(port),
+      do: push(ip, reason, seconds),
+      else: Logger.warning("edge: banned #{ip}:#{port} (#{reason})")
   end
 
   # A ban placed before Kamailio learned that the address is allowed (the allow list reloads a
@@ -76,8 +102,8 @@ defmodule QPBX.Edge.Bans do
     end)
   end
 
-  defp push(ip, reason) do
-    case QPBX.Firewall.ban(ip, reason, ban_seconds(), @actor) do
+  defp push(ip, reason, seconds) do
+    case QPBX.Firewall.ban(ip, reason, seconds, @actor) do
       {:ok, %{expires_at: until}} ->
         Logger.warning("edge: #{ip} blocked in the firewall until #{until} (#{reason})")
 
@@ -106,6 +132,4 @@ defmodule QPBX.Edge.Bans do
        )}
     end
   end
-
-  defp ban_seconds, do: Edge.config()[:ban_seconds] || 3600
 end

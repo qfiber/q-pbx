@@ -32,6 +32,9 @@ defmodule QPBX.Edge.Reloader do
   def handle_info({:event, %SipCredentialsChanged{}}, s), do: {:noreply, run(:credentials, 1, s)}
   def handle_info({:event, %TenantsChanged{}}, s), do: {:noreply, run(:domains, 1, s)}
 
+  def handle_info({:event, %ConfigChanged{kind: "edge_settings"}}, s),
+    do: {:noreply, run(:settings, 1, s)}
+
   def handle_info({:event, %ConfigChanged{kind: "trunks"}}, s),
     do: {:noreply, run(:registrations, 1, run(:trunks, 1, s))}
 
@@ -62,6 +65,7 @@ defmodule QPBX.Edge.Reloader do
 
   defp perform(:credentials), do: Edge.reload("credentials")
   defp perform(:domains), do: Edge.reload("domains")
+  defp perform(:settings), do: Edge.reload("settings")
   defp perform(:trunks), do: Edge.reload_trunks()
   defp perform(:allowlist), do: Edge.reload_allowlist()
   defp perform(:registrations), do: Registrations.sync()

@@ -57,6 +57,20 @@ defmodule QPBX.Firewall do
     end
   end
 
+  @doc "Removes the automatic SIP block of an address (a lifted ban); manual entries stay."
+  def unban(ip, actor) when is_binary(ip) do
+    with {:ok, canonical, _, _} <- CIDR.parse(ip) do
+      deleted =
+        for e <- Store.list(level: "platform"),
+            e.kind == "block" and e.scope == "sip" and e.cidr == canonical and
+              String.starts_with?(e.reason, "auto: "),
+            do: Store.delete(e, actor)
+
+      if deleted != [], do: notify({:ok, nil}, "unban")
+      :ok
+    end
+  end
+
   defp until(seconds),
     do: DateTime.utc_now() |> DateTime.add(seconds) |> DateTime.truncate(:second)
 

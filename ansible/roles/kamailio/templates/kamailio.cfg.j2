@@ -14,12 +14,6 @@
 #!include_file "/etc/kamailio/db.cfg"
 
 #!define CORE_URI "sip:127.0.0.1:5080"
-#!define REGISTER_PER_MINUTE {{ qpbx_edge_register_per_minute }}
-#!define INVITE_PER_MINUTE {{ qpbx_edge_invite_per_minute }}
-#!define AUTHFAIL_PORT {{ qpbx_edge_auth_failures_port }}
-#!define AUTHFAIL_IP {{ qpbx_edge_auth_failures_ip }}
-#!substdef "!BAN_SECONDS!{{ qpbx_edge_ban_seconds }}!g"
-#!substdef "!SCANNER_AGENTS!{{ qpbx_edge_scanner_agents }}!g"
 #!define FLT_NATS 5
 #!define FLB_NATB 6
 #!define FLB_NATSIPPING 7
@@ -73,7 +67,6 @@ loadmodule "nathelper.so"
 loadmodule "dispatcher.so"
 loadmodule "permissions.so"
 loadmodule "uac.so"
-loadmodule "pike.so"
 
 modparam("tls", "config", "/etc/kamailio/tls.cfg")
 modparam("jsonrpcs", "transport", 1)
@@ -87,17 +80,19 @@ modparam("htable", "htable", "domains=>size=8;dbtable=domains;")
 modparam("htable", "htable", "credentials=>size=12;dbtable=credentials;")
 modparam("htable", "htable", "trunks=>size=8;dbtable=trunks;")
 
-# Edge protection, in memory. Keys: "<ip>" (whole address) or "<ip>|<port>" (one phone).
-#  ipban: banned addresses (whole-address bans also go to nftables through the app)
-#  authfail, rate: counters over fixed windows (updateexpire=0)
+# Edge protection. Thresholds come from the admin panel (htable "settings", reloaded on change).
+# Keys: "<ip>" (whole address) or "<ip>|<port>" (one phone).
+#  ipban: bans, each with its own expiry; loaded from the database at start (the app stores
+#    every ban), so a restart keeps them
+#  counters: request and failure counts in fixed time buckets (flood 2 s, rate 1 min,
+#    failed logins 15 min); in memory only
 #  edgealert: office IPs that would have been banned; the app raises an alert
-modparam("htable", "htable", "ipban=>size=12;autoexpire=BAN_SECONDS;")
-modparam("htable", "htable", "authfail=>size=12;autoexpire=900;updateexpire=0;")
-modparam("htable", "htable", "rate=>size=12;autoexpire=60;updateexpire=0;")
+modparam("htable", "db_expires", 1)
+modparam("htable", "htable", "settings=>size=4;dbtable=settings;")
+modparam("htable", "htable", "ipban=>size=12;autoexpire=2592000;dbtable=ipban;")
+modparam("htable", "htable", "counters=>size=14;autoexpire=1000;updateexpire=0;")
 modparam("htable", "htable", "edgealert=>size=8;autoexpire=3600;updateexpire=0;")
-modparam("pike", "sampling_time_unit", 2)
-modparam("pike", "reqs_density_per_unit", {{ qpbx_edge_flood_requests }})
-modparam("pike", "remove_latency", 4)
+modparam("htable", "timer_interval", 10)
 
 # Registrations in memory, one location table across tenants (address of record user@domain).
 modparam("usrloc", "db_mode", 0)
@@ -224,88 +219,124 @@ route[PROTECT] {
     drop;
     exit;
   }
-  if ($ua =~ "SCANNER_AGENTS") {
+  route(SETTINGS);
+  if ($ua != $null && $ua =~ $var(s_agents)) {
     xlog("L_WARN", "edge: scanner user agent [$ua] from $si\n");
     $var(reason) = "scanner";
     route(BAN_IP);
     drop;
     exit;
   }
-  if ($var(office) == 0 && !pike_check_req()) {
-    xlog("L_WARN", "edge: flood from $si\n");
-    $var(reason) = "flood";
-    route(BAN_IP);
-    drop;
-    exit;
+  # Flood: requests per address in 2-second buckets (office IPs skip it: many phones).
+  if ($var(office) == 0) {
+    $var(key) = "f|" + $si + "|" + ($Ts / 2);
+    route(COUNT);
+    if ($var(n) > $var(s_flood)) {
+      xlog("L_WARN", "edge: flood from $si\n");
+      $var(reason) = "flood";
+      route(BAN_IP);
+      drop;
+      exit;
+    }
   }
   if (!has_totag()) {
     if (is_method("REGISTER")) {
-      route(RATE_REGISTER);
+      $var(limit) = $var(s_register);
+      route(RATE);
     } else if (is_method("INVITE")) {
-      route(RATE_INVITE);
+      $var(limit) = $var(s_invite);
+      route(RATE);
     }
   }
 }
 
-route[RATE_REGISTER] {
-  # $shtinc does not create a missing counter.
-  if ($sht(rate=>r|$si|$sp) == $null) {
-    $sht(rate=>r|$si|$sp) = 0;
+# The admin panel's settings, with safe defaults if they are missing.
+route[SETTINGS] {
+  $var(s_flood) = 40;
+  $var(s_register) = 30;
+  $var(s_invite) = 30;
+  $var(s_fail_port) = 10;
+  $var(s_fail_ip) = 30;
+  $var(s_ban) = 3600;
+  $var(s_agents) = "friendly-scanner|sipvicious|sipcli";
+  if ($sht(settings=>flood_requests) != $null) {
+    $var(s_flood) = $sht(settings=>flood_requests);
   }
-  $var(n) = $shtinc(rate=>r|$si|$sp);
-  $var(limit) = REGISTER_PER_MINUTE;
+  if ($sht(settings=>register_per_minute) != $null) {
+    $var(s_register) = $sht(settings=>register_per_minute);
+  }
+  if ($sht(settings=>invite_per_minute) != $null) {
+    $var(s_invite) = $sht(settings=>invite_per_minute);
+  }
+  if ($sht(settings=>auth_failures_port) != $null) {
+    $var(s_fail_port) = $sht(settings=>auth_failures_port);
+  }
+  if ($sht(settings=>auth_failures_ip) != $null) {
+    $var(s_fail_ip) = $sht(settings=>auth_failures_ip);
+  }
+  if ($sht(settings=>ban_seconds) != $null) {
+    $var(s_ban) = $sht(settings=>ban_seconds);
+  }
+  if ($sht(settings=>scanner_agents) != $null) {
+    $var(s_agents) = $sht(settings=>scanner_agents);
+  }
+}
+
+# Increments counters $var(key) and sets $var(n). ($shtinc does not create a missing key.)
+route[COUNT] {
+  if ($sht(counters=>$var(key)) == $null) {
+    $sht(counters=>$var(key)) = 0;
+  }
+  $var(n) = $shtinc(counters=>$var(key));
+}
+
+# REGISTER or INVITE per address and port per minute ($var(limit)): over it, refused; three
+# times over, that address and port banned.
+route[RATE] {
+  $var(key) = "r|" + $rm + "|" + $si + "|" + $sp + "|" + ($Ts / 60);
+  route(COUNT);
   if ($var(n) > $var(limit)) {
-    route(RATE_EXCEEDED);
+    if ($var(n) > 3 * $var(limit)) {
+      $var(ban) = $si + "|" + $sp;
+      $var(reason) = "rate";
+      route(BAN);
+    }
+    append_to_reply("Retry-After: 60\r\n");
+    sl_send_reply("503", "Rate Limited");
+    exit;
   }
 }
 
-route[RATE_INVITE] {
-  # $shtinc does not create a missing counter.
-  if ($sht(rate=>i|$si|$sp) == $null) {
-    $sht(rate=>i|$si|$sp) = 0;
-  }
-  $var(n) = $shtinc(rate=>i|$si|$sp);
-  $var(limit) = INVITE_PER_MINUTE;
-  if ($var(n) > $var(limit)) {
-    route(RATE_EXCEEDED);
-  }
-}
-
-# Over the limit: refuse; three times over: ban that address and port.
-route[RATE_EXCEEDED] {
-  if ($var(n) > 3 * $var(limit)) {
-    $sht(ipban=>$si|$sp) = "rate";
-    xlog("L_WARN", "edge: rate limit, banned $si:$sp\n");
-  }
-  append_to_reply("Retry-After: 60\r\n");
-  sl_send_reply("503", "Rate Limited");
-  exit;
-}
-
-# A failed authentication (wrong password, unknown user, someone else's user).
+# A failed authentication (wrong password, unknown user, someone else's user), counted per
+# address and port and per address in 15-minute buckets.
 route[AUTHFAIL] {
-  # $shtinc does not create a missing counter.
-  if ($sht(authfail=>$si|$sp) == $null) {
-    $sht(authfail=>$si|$sp) = 0;
-  }
-  $var(n) = $shtinc(authfail=>$si|$sp);
-  # $shtinc does not create a missing counter.
-  if ($sht(authfail=>$si) == $null) {
-    $sht(authfail=>$si) = 0;
-  }
-  $var(m) = $shtinc(authfail=>$si);
-  $var(port_limit) = AUTHFAIL_PORT;
+  route(SETTINGS);
+  $var(bucket) = $Ts / 900;
+  $var(key) = "a|" + $si + "|" + $sp + "|" + $var(bucket);
+  route(COUNT);
+  $var(n_port) = $var(n);
+  $var(key) = "a|" + $si + "|" + $var(bucket);
+  route(COUNT);
+  $var(port_limit) = $var(s_fail_port);
   if ($var(office) == 1) {
-    $var(port_limit) = 3 * AUTHFAIL_PORT;
+    $var(port_limit) = 3 * $var(s_fail_port);
   }
-  if ($var(n) >= $var(port_limit)) {
-    $sht(ipban=>$si|$sp) = "auth failures";
-    xlog("L_WARN", "edge: auth failures, banned $si:$sp\n");
+  if ($var(n_port) >= $var(port_limit)) {
+    $var(ban) = $si + "|" + $sp;
+    $var(reason) = "auth failures";
+    route(BAN);
   }
-  if ($var(m) >= AUTHFAIL_IP) {
+  if ($var(n) >= $var(s_fail_ip)) {
     $var(reason) = "auth failures";
     route(BAN_IP);
   }
+}
+
+# Bans $var(ban) for the configured time.
+route[BAN] {
+  $sht(ipban=>$var(ban)) = $var(reason);
+  $shtex(ipban=>$var(ban)) = $var(s_ban);
+  xlog("L_WARN", "edge: banned $var(ban) ($var(reason))\n");
 }
 
 # Bans the whole source address; an office IP is never banned as a whole: it is flagged for an
@@ -318,8 +349,8 @@ route[BAN_IP] {
     }
     return;
   }
-  $sht(ipban=>$si) = $var(reason);
-  xlog("L_WARN", "edge: banned $si ($var(reason))\n");
+  $var(ban) = $si;
+  route(BAN);
 }
 
 # Digest authentication against the credential hashes, realm = tenant domain ($var(realm)).

@@ -41,6 +41,15 @@ Kamailio gets its real config.
 
 ## Done
 
+- 2-4 follow-up (done): protection thresholds moved from Ansible variables to the admin panel
+  (Platform > SIP protection), applied by Kamailio within seconds with no restart (flood
+  detection now counts per address in 2-second buckets instead of pike, whose threshold is
+  fixed at start); every ban (one phone or a whole address) is stored in the database and a
+  restarted Kamailio loads it back with its expiry; active bans are listed on the same page
+  and can be lifted (Kamailio, database and firewall). Lab: `phase2-protect.py` 31/31 (adds:
+  a limit changed live, bans surviving a Kamailio restart, a 60 s ban ending on time after a
+  restart, lifting); 2-3, 2-2 and phase 1 checks still pass. 172 tests.
+
 - 2-4 Edge protection (done): in Kamailio, the platform SIP allowlist is never limited;
   scanner user agents and floods (pike) ban the address; REGISTER and INVITE limited per
   address and port (30 a minute by default, 503, a ban at three times); failed logins ban the
@@ -393,6 +402,9 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
   prefix list (see "Planned features").
 
 ## Known bugs
+
+- One unexplained test failure in a full `mix test` run on 2026-11-27 (2-4 follow-up); it did
+  not come back in 13 further runs and its name was not captured. Watch CI for a repeat.
 
 - FreeSWITCH depends on image libraries (cairo, X11) it does not need; harmless, planned to trim.
 

@@ -2,6 +2,19 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Protection settings in the admin panel; bans on disk; plain PostgreSQL
+
+- **Thresholds live in the database (`edge_settings`), read by Kamailio at run time** through
+  an htable reloaded on change, so an admin changes them without a restart. pike was replaced
+  by per-address counters in 2-second buckets, because pike's threshold is fixed at start.
+- **Bans are stored (`edge_bans`) and loaded by Kamailio at start with their expiry;** the
+  short-window counters stay in memory (a restart only resets a window).
+- **No TimescaleDB.** Nothing so far is time-series at a scale plain PostgreSQL 16 cannot
+  handle; the largest such table, the call log (2-8), is about 36 million rows a year at
+  100,000 calls a day, handled with indexes and, if needed, native monthly partitioning.
+  TimescaleDB would add an extension to package, back up and upgrade, with parts under its
+  own licence. Revisit only for heavy usage analytics.
+
 ## 2026-11-27: Edge protection (2-4)
 
 - **Kamailio detects and bans in memory at once; the app carries whole-address bans to
