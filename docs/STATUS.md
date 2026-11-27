@@ -135,7 +135,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 1b-2 2FA mandatory for tenant admins.
+- 1b-3 Login protection (IP rate limits, challenge providers).
 
 ## Next
 
@@ -148,6 +148,8 @@ Kamailio gets its real config.
   live pages get a disconnect broadcast; idle warning 2 minutes before the end; secure,
   HTTP-only cookie holding only the token. New CI check: translations complete, no fuzzy
   guesses (it caught a wrong Arabic label). 13 new tests (80 total).
+- 1b-2 2FA mandatory for tenant admins (done): they are sent to enrolment at login and cannot
+  skip it; tenant users still may. `QPBX.Core.totp_optional?/1`. 2 new tests (82 total).
 - Done after the phase 1 review: nginx in front (non-root, real client IP, optional
   ModSecurity), FreeSWITCH modules added (G.729, Opus/MP3 recording, loopback, CDR spool; all
   load in the lab), languages moved to one config list, firewall and plan forms now clear

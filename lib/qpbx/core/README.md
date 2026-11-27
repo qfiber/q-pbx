@@ -12,7 +12,7 @@ and writes an audit entry in the same transaction.
   `get_platform_admin/1`, `get_user/1`, `find_account_by_email/1`, `list_users/1`, `authenticate_platform_admin/2`,
   `authenticate_user/2`, `change_user/1`, `change_platform_admin/1`, `change_password/2`.
 - Setup links: `setup_token/1`, `account_from_setup_token/1`, `complete_setup/2`.
-- TOTP: `new_totp_secret/0`, `totp_uri/2`, `totp_enabled?/1`, `requires_totp?/1`,
+- TOTP: `new_totp_secret/0`, `totp_uri/2`, `totp_enabled?/1`, `requires_totp?/1` (platform and tenant admins always), `totp_optional?/1`,
   `enable_totp/3`, `verify_totp/2`.
 - Sessions: `create_session/2`, `fetch_session/2` (`touch: false` for checks that are not
   activity), `list_sessions/1`, `revoke_session/3`, `revoke_sessions/3` (`except:`),

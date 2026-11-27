@@ -131,9 +131,15 @@ defmodule QPBX.Core.Accounts do
 
   def totp_enabled?(%{totp_secret: secret}), do: is_binary(secret)
 
-  @doc "Platform admins must use 2FA; tenant users once they have enrolled."
+  @doc "Platform admins and tenant admins must use 2FA; tenant users once they have enrolled."
   def requires_totp?(%PlatformAdmin{}), do: true
-  def requires_totp?(account), do: totp_enabled?(account)
+  def requires_totp?(%User{} = user), do: admin?(user) or totp_enabled?(user)
+
+  @doc "Whether this account may skip 2FA enrolment (tenant users only)."
+  def totp_optional?(%User{} = user), do: not admin?(user)
+  def totp_optional?(_), do: false
+
+  defp admin?(user), do: User.role(Repo.preload(user, :user_role)) == "tenant_admin"
 
   def enable_totp(account, secret, code) do
     if valid_code?(secret, code, nil) do

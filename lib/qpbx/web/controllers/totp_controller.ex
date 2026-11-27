@@ -47,12 +47,13 @@ defmodule QPBX.Web.TotpController do
     end
   end
 
-  @doc "Tenant users may skip enrolment; platform admins may not."
+  @doc "Tenant users may skip enrolment; platform admins and tenant admins may not."
   def skip(conn, _params) do
-    case conn.assigns.pending do
-      %QPBX.Core.User{} = user -> Auth.log_in(conn, user)
-      _ -> redirect(conn, to: ~p"/2fa/setup")
-    end
+    account = conn.assigns.pending
+
+    if Core.totp_optional?(account),
+      do: Auth.log_in(conn, account),
+      else: redirect(conn, to: ~p"/2fa/setup")
   end
 
   defp render_setup(conn, secret, error) do
@@ -63,7 +64,7 @@ defmodule QPBX.Web.TotpController do
       form: Phoenix.Component.to_form(%{}, as: :totp),
       qr_svg: uri |> EQRCode.encode() |> EQRCode.svg(width: 220),
       secret: Base.encode32(secret, padding: false),
-      can_skip?: match?(%QPBX.Core.User{}, account),
+      can_skip?: Core.totp_optional?(account),
       error: error,
       page_title: gettext("Set up two-factor authentication")
     )

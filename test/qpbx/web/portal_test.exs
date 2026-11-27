@@ -42,6 +42,32 @@ defmodule QPBX.Web.PortalTest do
       assert get(recycle(conn), ~p"/platform") |> redirected_to() == ~p"/platform/login"
     end
 
+    test "a tenant admin without 2FA must enrol and cannot skip", %{conn: conn} do
+      admin = user_fixture(tenant_fixture(), "tenant_admin")
+      conn = post(conn, ~p"/login", login: %{email: admin.email, password: password()})
+      assert redirected_to(conn) == ~p"/2fa/setup"
+      refute html_response(get(recycle(conn), ~p"/2fa/setup"), 200) =~ "totp-skip-form"
+      conn = post(recycle(conn), ~p"/2fa/skip")
+      assert redirected_to(conn) == ~p"/2fa/setup"
+      assert get(recycle(conn), ~p"/app") |> redirected_to() == ~p"/login"
+    end
+
+    test "a tenant user may skip 2FA enrolment", %{conn: conn} do
+      {:ok, user} =
+        Core.create_user(
+          tenant_fixture(),
+          %{email: "skip@x.test", name: "S"},
+          "tenant_user",
+          {:system, "test"}
+        )
+
+      path = URI.parse(QPBX.Web.setup_url(Core.setup_token(user))).path
+      conn = put(conn, path, account: %{password: password(), password_confirmation: password()})
+      assert html_response(get(recycle(conn), ~p"/2fa/setup"), 200) =~ "totp-skip-form"
+      conn = post(recycle(conn), ~p"/2fa/skip")
+      assert redirected_to(conn) == ~p"/app"
+    end
+
     test "wrong password or wrong code gives no session", %{conn: conn} do
       {admin, _secret} = enable_totp(platform_admin_fixture())
 
@@ -57,7 +83,7 @@ defmodule QPBX.Web.PortalTest do
     end
 
     test "a tenant user cannot reach platform pages", %{conn: conn} do
-      user = user_fixture()
+      user = user_fixture(tenant_fixture(), "tenant_user")
       conn = post(conn, ~p"/login", login: %{email: user.email, password: password()})
       assert redirected_to(conn) == ~p"/app"
       assert get(recycle(conn), ~p"/platform") |> redirected_to() == ~p"/platform/login"

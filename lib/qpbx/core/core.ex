@@ -103,6 +103,7 @@ defmodule QPBX.Core do
   defdelegate totp_uri(account, secret), to: Accounts
   defdelegate totp_enabled?(account), to: Accounts
   defdelegate requires_totp?(account), to: Accounts
+  defdelegate totp_optional?(account), to: Accounts
   defdelegate enable_totp(account, secret, code), to: Accounts
   defdelegate verify_totp(account, code), to: Accounts
 

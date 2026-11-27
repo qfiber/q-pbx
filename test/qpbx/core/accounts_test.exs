@@ -119,9 +119,12 @@ defmodule QPBX.Core.AccountsTest do
   end
 
   describe "TOTP" do
-    test "platform admins always require it, tenant users once enrolled" do
+    test "platform and tenant admins always require it, tenant users once enrolled" do
       assert Core.requires_totp?(platform_admin_fixture())
-      user = user_fixture()
+      assert Core.requires_totp?(user_fixture(tenant_fixture(), "tenant_admin"))
+      refute Core.totp_optional?(user_fixture(tenant_fixture(), "tenant_admin"))
+      user = user_fixture(tenant_fixture(), "tenant_user")
+      assert Core.totp_optional?(user)
       refute Core.requires_totp?(user)
       secret = Core.new_totp_secret()
       {:ok, user} = Core.enable_totp(user, secret, totp_code(secret))
