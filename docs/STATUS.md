@@ -135,7 +135,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 2-0a Busy-lamp trial. Done so far: Kamailio 6.0.8 from the Kamailio project's repository on the lab (key pinned by checksum), with the presence, `pua_json` and PostgreSQL modules.
+- 2-1 Kamailio database view (next), then 2-2 onwards. 2-0b (Meow end to end) waits for call control (2-5).
 
 ## Next
 
