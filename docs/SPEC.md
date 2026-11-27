@@ -278,7 +278,7 @@ These are the call features Q-PBX will have. Queues, conferencing and paging com
 **Call routing building blocks**
 
 - **IVR / auto attendant:** prompts (upload or TTS), digit options, timeout and invalid handling, direct dial to extensions, nested menus.
-  - **Visual call-flow editor (proposed for 1.0, awaiting approval):** each DID's routing (time conditions, IVR menus and their options, ring groups, voicemail) shown as a diagram that can be edited by drag and drop, next to the forms. Built on the same LiveView canvas that the phase 8 flow builder extends.
+  - **Visual call-flow editor (in 1.0, phase 4):** each DID's routing (time conditions, IVR menus and their options, ring groups, voicemail) shown as a diagram that can be edited by drag and drop, next to the forms. Built on the same LiveView canvas that the phase 8 flow builder extends.
 - **Time conditions:** weekly schedules per tenant time zone, holiday calendars, manual override toggle ("office closed now").
 - **Ring groups:** ring all, sequential, round robin; per-member timeouts; external numbers as members; final destination on no answer.
 - **Queues (ACD):** strategies (longest idle, round robin, ring all, fewest calls), agent login/logout and pause with reasons, music on hold, position and estimated wait announcements, max wait and overflow destination, wrap-up time, live wallboard in the portal.
@@ -640,6 +640,7 @@ Version 1.0 is phases 1 to 4 and ends with one real tenant migrated from FreePBX
    - *Done when:* every resource so far is manageable through the API, `call.*` webhooks arrive signed within 1 second, a tenant crossing 80% of its minutes gets the email and the alert webhook with minutes remaining, and a webhook aimed at an internal address is refused.
 4. **Routing, recording, basic fax, Meow and migration (the 1.0 release)**
    - IVR, time conditions, holidays, ring groups, feature codes, parking, recording policies and file storage.
+   - Visual drag-and-drop call-flow editor for each DID's routing (the canvas the phase 8 flow builder extends).
    - Fax boxes, fax-to-email, sending from the portal and API, T.38 modes per trunk.
    - Meow: QR login and mobile wake-up through the push gateway adapter.
    - FreePBX 17 importer: extensions, DIDs, ring groups, IVRs, voicemail boxes and greetings.

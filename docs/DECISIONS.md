@@ -2,6 +2,12 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Visual call-flow editor in 1.0
+
+- Phase 4 adds a drag-and-drop editor for each DID's routing (time conditions, IVRs, ring
+  groups, voicemail), built on the LiveView canvas that the phase 8 flow builder extends.
+  Rejected: forms only until phase 8; a read-only diagram in 1.0.
+
 ## 2026-11-27: Trunks and carrier failover
 
 - **Several signalling addresses per trunk** with OPTIONS health checks (Kamailio dispatcher),
