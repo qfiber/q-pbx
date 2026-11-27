@@ -20,6 +20,12 @@ defmodule QPBX.Web.Router do
     plug :accepts, ["json"]
   end
 
+  # FreeSWITCH (this server only): no session, no CSRF; the controller checks the source and
+  # FreeSWITCH's password.
+  scope "/internal/freeswitch", QPBX.Web do
+    post "/dialplan", FreeswitchController, :dialplan
+  end
+
   scope "/health", QPBX.Web do
     pipe_through :health
 

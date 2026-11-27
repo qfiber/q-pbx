@@ -22,6 +22,10 @@ running endpoint).
 turns numbers typed the local way into E.164 with the scope's number rule before Core sees
 them. A device's SIP password is shown once, after creation or reset.
 
+**FreeSWITCH:** `POST /internal/freeswitch/dialplan` (`FreeswitchController`): loopback only
+(a request through nginx carries the client's address) and HTTP basic auth with FreeSWITCH's
+password; answers `QPBX.Telephony.dialplan_xml/1`. nginx returns 404 for `/internal/`.
+
 **Logo:** `priv/static/images/logo.svg` (source, brand teal `#174355`), `logo-dark.svg` (for
 dark backgrounds, used by the README), `logo-mark.svg` (the hexagon alone: the SVG favicon;
 `favicon.ico` is made from it). `QPBX.Web.Logo.logo/1` draws it inline from `logo.svg` (read

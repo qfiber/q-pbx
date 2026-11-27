@@ -57,6 +57,15 @@ if config_env() == :prod do
       jsonrpc_url: System.get_env("QPBX_KAMAILIO_JSONRPC_URL", "http://127.0.0.1:5071/RPC")
     ]
 
+  # Call control: the event socket to the local FreeSWITCH, and the password FreeSWITCH's
+  # mod_xml_curl sends when asking for a dialplan.
+  config :qpbx, QPBX.Telephony,
+    esl: true,
+    esl_host: System.get_env("QPBX_FS_ESL_HOST", "127.0.0.1"),
+    esl_port: String.to_integer(System.get_env("QPBX_FS_ESL_PORT", "8021")),
+    esl_password: System.fetch_env!("QPBX_FS_ESL_PASSWORD"),
+    curl_password: System.fetch_env!("QPBX_FS_CURL_PASSWORD")
+
   config :qpbx, :mail_from, {"Q-PBX", System.fetch_env!("QPBX_MAIL_FROM")}
 
   # Username and password only when set: the adapter rejects a nil username, and a local

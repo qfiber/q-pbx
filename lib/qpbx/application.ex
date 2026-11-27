@@ -3,7 +3,10 @@ defmodule QPBX.Application do
   # for more information on OTP Applications
   @moduledoc false
 
-  use Boundary, top_level?: true, deps: [QPBX.Repo, QPBX.Core, QPBX.Firewall, QPBX.Edge, QPBX.Web]
+  use Boundary,
+    top_level?: true,
+    deps: [QPBX.Repo, QPBX.Core, QPBX.Firewall, QPBX.Edge, QPBX.Telephony, QPBX.Web]
+
   use Application
 
   @impl true
@@ -22,6 +25,7 @@ defmodule QPBX.Application do
       # Off in tests: their actions are tested directly, and they would react to every test.
       Application.get_env(:qpbx, :edge_workers, true) && QPBX.Edge.Reloader,
       Application.get_env(:qpbx, :edge_workers, true) && QPBX.Edge.Bans,
+      QPBX.Telephony,
       QPBX.Web.Health,
       QPBX.Web.SessionReaper,
       QPBX.Web.Captcha.PowStore,

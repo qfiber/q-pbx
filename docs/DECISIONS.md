@@ -2,6 +2,22 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Call control (2-5)
+
+- **Inbound event socket, one connection:** Elixir connects to FreeSWITCH (127.0.0.1:8021),
+  receives channel events and starts one process per parked call; commands go back as
+  `sendmsg`. Rejected: outbound sockets (FreeSWITCH connecting per call), which add a listener
+  and a second failure path, for the same one-process-per-call result.
+- **The dialplan only parks;** the router decides after the park, as an action tree (busy /
+  no answer / failed branches), so every rule is a pure, tested function and FreeSWITCH holds
+  no tenant logic. Admission (limits) will run before the park answer in 2-6.
+- **Failover between carriers in Elixir,** across a trunk's addresses in Kamailio. Busy and no
+  answer are final; carrier errors move on.
+- **Outward caller ID is a number, never a name** (the name equals the number), so no internal
+  name or login reaches a carrier. Forwarded calls show the tenant's number that was called.
+- **Static fallback answers 503** (500 at the carrier through Kamailio): the carrier's
+  forward-on-failure to a backup number takes over.
+
 ## 2026-11-27: Protection settings in the admin panel; bans on disk; plain PostgreSQL
 
 - **Thresholds live in the database (`edge_settings`), read by Kamailio at run time** through

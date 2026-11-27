@@ -41,6 +41,19 @@ Kamailio gets its real config.
 
 ## Done
 
+- 2-5 Call control (done): new area `QPBX.Telephony`. FreeSWITCH asks the app for a dialplan
+  (`mod_xml_curl`, loopback and a password; nginx refuses `/internal/`) and parks every call;
+  one Elixir process per call drives it over the event socket. Routing: extension to
+  extension (all devices), forwarding (always, busy, no answer), do not disturb, call waiting,
+  follow-me, outbound with the number rule, routes, carrier failover and caller ID per trunk,
+  emergency numbers, inbound numbers (any form, backup numbers) to their destination; a
+  configuration cache in memory dropped on every change; a static fallback (503) when the app
+  does not answer. Lab: `lab/done-when/phase2-calls.py` 20/20 with real calls through Kamailio
+  and FreeSWITCH (phones and two simulated carriers); 2-4, 2-3, 2-2 and phase 1 checks still
+  pass. Found and fixed in the lab: FreeSWITCH hung up the caller after a failed bridge (no
+  failover could follow) until `continue_on_fail`; call waiting marked an extension busy only
+  after its call ended; the device login reached carriers as the caller's name. 199 tests.
+
 - Logo added (from the design file, cleaned of editor metadata; renders pixel-identical):
   header of every page, larger on the login page, favicons (SVG and ICO), README (light and
   dark variants). Colour follows the theme, including the system's dark mode.
@@ -225,7 +238,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 2-5 Call control (next). 2-0b (Meow end to end) waits for it.
+- 2-0b Meow end to end (next, now that calls work), then 2-6 admission and fraud.
   (Meow end to end) waits for call control (2-5).
 
 ## Next

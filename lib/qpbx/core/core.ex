@@ -280,6 +280,12 @@ defmodule QPBX.Core do
   defdelegate create_emergency_route(scope, attrs, actor), to: Numbering, as: :create_emergency
   defdelegate delete_emergency_route(scope, id, actor), to: Numbering, as: :delete_emergency
 
+  ## Call control snapshots (internal: QPBX.Telephony caches them)
+
+  defdelegate telephony_tenant(tenant_id), to: QPBX.Core.TelephonySnapshot, as: :tenant
+  defdelegate telephony_platform(), to: QPBX.Core.TelephonySnapshot, as: :platform
+  defdelegate telephony_dids(), to: QPBX.Core.TelephonySnapshot, as: :dids
+
   @doc "What a user typed (local formats allowed) as E.164, with the scope's number rule."
   def to_e164(scope, input), do: QPBX.Core.Numbers.to_e164(input, number_rule(scope))
 

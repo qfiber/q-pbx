@@ -67,6 +67,7 @@
     - autoload_configs/logfile.conf.xml
     - autoload_configs/console.conf.xml
     - autoload_configs/json_cdr.conf.xml
+    - autoload_configs/xml_curl.conf.xml
   notify: Restart freeswitch
 
 - name: Unit
