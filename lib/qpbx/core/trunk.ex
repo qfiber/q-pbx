@@ -56,7 +56,9 @@ defmodule QPBX.Core.Trunk do
     |> require_when(:caller_id_mode, "own_number", [:default_caller_id])
     |> cast_assoc(:addresses,
       with: &TrunkAddress.changeset(&1, &2, trunk.tenant_id),
-      required: true
+      required: true,
+      sort_param: :addresses_sort,
+      drop_param: :addresses_drop
     )
   end
 

@@ -118,6 +118,26 @@ defmodule QPBX.Web.Auth do
 
   @check_every 30_000
 
+  # :tenant_admin pages change the tenant's telephony configuration: tenant admins only.
+  def on_mount(:tenant_admin, params, session, socket) do
+    case on_mount(:tenant_user, params, session, socket) do
+      {:cont, %{assigns: %{current_account: user}} = socket} ->
+        if User.role(user) == "tenant_admin",
+          do: {:cont, socket},
+          else:
+            {:halt,
+             socket
+             |> Phoenix.LiveView.put_flash(
+               :error,
+               gettext("Only tenant admins can open this page.")
+             )
+             |> Phoenix.LiveView.redirect(to: ~p"/app")}
+
+      halt ->
+        halt
+    end
+  end
+
   def on_mount(kind, _params, session, socket) when kind in [:platform_admin, :tenant_user] do
     locale = session["locale"] || Locale.default()
     Gettext.put_locale(QPBX.Web.Gettext, locale)

@@ -15,7 +15,12 @@ running endpoint).
 
 **Portal routes:** `/login`, `/platform/login`, `/2fa`, `/2fa/setup`, `/2fa/skip`,
 `/setup/:token`, `/locale/:locale`, `/logout`; platform LiveViews under `/platform`
-(tenants, new tenant, plans); tenant LiveViews under `/app`.
+(tenants, new tenant, plans, firewall, trunks, numbers, numbering); tenant LiveViews under
+`/app`. The tenant configuration pages (`/app/extensions`, `/app/extensions/:id`,
+`/app/numbers`, `/app/routes`, `/app/office-ips`, `/app/number-format`) are in the
+`:tenant_admin` live session: tenant users are sent back to `/app`. `QPBX.Web.NumberInput`
+turns numbers typed the local way into E.164 with the scope's number rule before Core sees
+them. A device's SIP password is shown once, after creation or reset.
 
 **Auth (`QPBX.Web.Auth`):** the cookie holds `session_token` (checked in the database on every
 request, LiveView event and every 30 s) and `live_socket_id` (`sessions:<id>`);

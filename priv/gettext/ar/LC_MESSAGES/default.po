@@ -26,8 +26,8 @@ msgstr "الإجراءات"
 msgid "Allowed destination classes"
 msgstr "فئات الوجهات المسموح بها"
 
-#: lib/qpbx/web/components/layouts.ex:137
-#: lib/qpbx/web/components/layouts.ex:149
+#: lib/qpbx/web/components/layouts.ex:169
+#: lib/qpbx/web/components/layouts.ex:181
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
 msgstr "جارٍ محاولة إعادة الاتصال"
@@ -38,7 +38,7 @@ msgid "CRM"
 msgstr "إدارة علاقات العملاء (CRM)"
 
 #: lib/qpbx/web/controllers/auth_html.ex:45
-#: lib/qpbx/web/controllers/auth_html.ex:77
+#: lib/qpbx/web/controllers/auth_html.ex:79
 #, elixir-autogen, elixir-format
 msgid "Code"
 msgstr "الرمز"
@@ -75,6 +75,8 @@ msgid "Enter the 6-digit code from your authenticator app."
 msgstr "أدخل الرمز المكوّن من 6 أرقام من تطبيق المصادقة."
 
 #: lib/qpbx/web/live/platform/plans_live.ex:119
+#: lib/qpbx/web/live/platform/trunks_live.ex:114
+#: lib/qpbx/web/live/platform/trunks_live.ex:222
 #, elixir-autogen, elixir-format
 msgid "Fax"
 msgstr "الفاكس"
@@ -99,12 +101,14 @@ msgstr "أول مسؤول للمستأجر"
 msgid "Flow builder"
 msgstr "منشئ التدفقات"
 
-#: lib/qpbx/web/live/tenant/home_live.ex:7
+#: lib/qpbx/web/live/tenant/home_live.ex:10
 #, elixir-autogen, elixir-format
 msgid "Home"
 msgstr "الرئيسية"
 
+#: lib/qpbx/web/live/platform/numbering_live.ex:229
 #: lib/qpbx/web/live/platform/plans_live.ex:116
+#: lib/qpbx/web/live/tenant/routes_live.ex:198
 #, elixir-autogen, elixir-format
 msgid "International"
 msgstr "دولي"
@@ -120,19 +124,21 @@ msgstr "اللغة"
 msgid "Leave a limit empty for unlimited."
 msgstr "اترك الحد فارغًا ليكون غير محدود."
 
+#: lib/qpbx/web/live/platform/numbering_live.ex:227
 #: lib/qpbx/web/live/platform/plans_live.ex:114
+#: lib/qpbx/web/live/tenant/routes_live.ex:196
 #, elixir-autogen, elixir-format
 msgid "Local"
 msgstr "محلي"
 
 #: lib/qpbx/web/controllers/auth_html.ex:9
 #: lib/qpbx/web/controllers/auth_html.ex:28
-#: lib/qpbx/web/controllers/session_controller.ex:53
+#: lib/qpbx/web/controllers/session_controller.ex:51
 #, elixir-autogen, elixir-format
 msgid "Log in"
 msgstr "تسجيل الدخول"
 
-#: lib/qpbx/web/components/layouts.ex:76
+#: lib/qpbx/web/components/layouts.ex:105
 #, elixir-autogen, elixir-format
 msgid "Log out"
 msgstr "تسجيل الخروج"
@@ -172,7 +178,9 @@ msgstr "الحد الأقصى للتحويلات الداخلية"
 msgid "Max queues"
 msgstr "الحد الأقصى لطوابير الانتظار"
 
+#: lib/qpbx/web/live/platform/numbering_live.ex:228
 #: lib/qpbx/web/live/platform/plans_live.ex:115
+#: lib/qpbx/web/live/tenant/routes_live.ex:197
 #, elixir-autogen, elixir-format
 msgid "Mobile"
 msgstr "جوال"
@@ -181,11 +189,18 @@ msgstr "جوال"
 #: lib/qpbx/web/live/platform/plans_live.ex:62
 #: lib/qpbx/web/live/platform/tenants_live.ex:122
 #: lib/qpbx/web/live/platform/tenants_live.ex:136
+#: lib/qpbx/web/live/platform/trunks_live.ex:109
+#: lib/qpbx/web/live/platform/trunks_live.ex:140
+#: lib/qpbx/web/live/tenant/extension_live.ex:193
+#: lib/qpbx/web/live/tenant/extensions_live.ex:65
+#: lib/qpbx/web/live/tenant/extensions_live.ex:81
+#: lib/qpbx/web/live/tenant/routes_live.ex:116
+#: lib/qpbx/web/live/tenant/routes_live.ex:146
 #, elixir-autogen, elixir-format
 msgid "Name"
 msgstr "الاسم"
 
-#: lib/qpbx/web/controllers/auth_html.ex:103
+#: lib/qpbx/web/controllers/auth_html.ex:105
 #, elixir-autogen, elixir-format
 msgid "New password (at least 12 characters)"
 msgstr "كلمة مرور جديدة (12 حرفًا على الأقل)"
@@ -201,12 +216,12 @@ msgstr "خطة جديدة"
 msgid "New tenant"
 msgstr "مستأجر جديد"
 
-#: lib/qpbx/web/controllers/auth_html.ex:85
+#: lib/qpbx/web/controllers/auth_html.ex:87
 #, elixir-autogen, elixir-format
 msgid "Not now"
 msgstr "ليس الآن"
 
-#: lib/qpbx/web/controllers/auth_html.ex:69
+#: lib/qpbx/web/controllers/auth_html.ex:71
 #, elixir-autogen, elixir-format
 msgid "Or enter this key by hand:"
 msgstr "أو أدخل هذا المفتاح يدويًا:"
@@ -222,6 +237,7 @@ msgid "Outbound minutes per month"
 msgstr "الدقائق الصادرة في الشهر"
 
 #: lib/qpbx/web/controllers/auth_html.ex:23
+#: lib/qpbx/web/live/tenant/extension_live.ex:133
 #, elixir-autogen, elixir-format
 msgid "Password"
 msgstr "كلمة المرور"
@@ -255,7 +271,9 @@ msgstr "تسجيل دخول مسؤول المنصة"
 msgid "Please log in again."
 msgstr "يرجى تسجيل الدخول مرة أخرى."
 
+#: lib/qpbx/web/live/platform/numbering_live.ex:230
 #: lib/qpbx/web/live/platform/plans_live.ex:117
+#: lib/qpbx/web/live/tenant/routes_live.ex:199
 #, elixir-autogen, elixir-format
 msgid "Premium"
 msgstr "خدمات مميزة"
@@ -270,12 +288,13 @@ msgstr "التسجيل"
 msgid "Recording storage (GB)"
 msgstr "مساحة تخزين التسجيلات (غيغابايت)"
 
-#: lib/qpbx/web/controllers/auth_html.ex:110
+#: lib/qpbx/web/controllers/auth_html.ex:112
 #, elixir-autogen, elixir-format
 msgid "Repeat the password"
 msgstr "أعد إدخال كلمة المرور"
 
 #: lib/qpbx/web/live/platform/tenants_live.ex:137
+#: lib/qpbx/web/live/tenant/extension_live.ex:134
 #, elixir-autogen, elixir-format
 msgid "SIP domain"
 msgstr "نطاق SIP"
@@ -285,7 +304,7 @@ msgstr "نطاق SIP"
 msgid "SIP domain name"
 msgstr "اسم نطاق SIP"
 
-#: lib/qpbx/web/controllers/auth_html.ex:115
+#: lib/qpbx/web/controllers/auth_html.ex:117
 #, elixir-autogen, elixir-format
 msgid "Save password"
 msgstr "حفظ كلمة المرور"
@@ -295,18 +314,18 @@ msgstr "حفظ كلمة المرور"
 msgid "Saving..."
 msgstr "جارٍ الحفظ..."
 
-#: lib/qpbx/web/controllers/auth_html.ex:63
+#: lib/qpbx/web/controllers/auth_html.ex:65
 #, elixir-autogen, elixir-format
 msgid "Scan this code with an authenticator app, then enter the 6-digit code it shows."
 msgstr "امسح هذا الرمز بتطبيق مصادقة، ثم أدخل الرمز المكوّن من 6 أرقام الذي يظهره."
 
-#: lib/qpbx/web/controllers/auth_html.ex:61
+#: lib/qpbx/web/controllers/auth_html.ex:63
 #: lib/qpbx/web/controllers/totp_controller.ex:79
 #, elixir-autogen, elixir-format
 msgid "Set up two-factor authentication"
 msgstr "إعداد المصادقة الثنائية"
 
-#: lib/qpbx/web/controllers/auth_html.ex:95
+#: lib/qpbx/web/controllers/auth_html.ex:97
 #: lib/qpbx/web/controllers/setup_controller.ex:57
 #, elixir-autogen, elixir-format
 msgid "Set up your account"
@@ -317,12 +336,12 @@ msgstr "إعداد حسابك"
 msgid "Setup link for %{email} (also emailed). It works once and expires in 48 hours:"
 msgstr "رابط الإعداد لـ %{email} (أُرسل بالبريد أيضًا). يعمل مرة واحدة وتنتهي صلاحيته خلال 48 ساعة:"
 
-#: lib/qpbx/web/live/tenant/home_live.ex:23
+#: lib/qpbx/web/live/tenant/home_live.ex:29
 #, elixir-autogen, elixir-format
 msgid "Signed in as %{name}"
 msgstr "مسجّل الدخول باسم %{name}"
 
-#: lib/qpbx/web/components/layouts.ex:144
+#: lib/qpbx/web/components/layouts.ex:176
 #, elixir-autogen, elixir-format
 msgid "Something went wrong!"
 msgstr "حدث خطأ ما!"
@@ -332,12 +351,12 @@ msgstr "حدث خطأ ما!"
 msgid "Tenant %{name} created. A setup link was emailed to %{email}."
 msgstr "تم إنشاء المستأجر %{name}. أُرسل رابط الإعداد إلى %{email}."
 
-#: lib/qpbx/web/live/tenant/home_live.ex:36
+#: lib/qpbx/web/live/tenant/home_live.ex:42
 #, elixir-autogen, elixir-format
 msgid "Tenant admin"
 msgstr "مسؤول المستأجر"
 
-#: lib/qpbx/web/live/tenant/home_live.ex:37
+#: lib/qpbx/web/live/tenant/home_live.ex:43
 #, elixir-autogen, elixir-format
 msgid "Tenant user"
 msgstr "مستخدم المستأجر"
@@ -365,7 +384,7 @@ msgstr "رابط الإعداد هذا غير صالح أو منتهي الصل�
 msgid "Time zone"
 msgstr "المنطقة الزمنية"
 
-#: lib/qpbx/web/controllers/auth_html.ex:82
+#: lib/qpbx/web/controllers/auth_html.ex:84
 #, elixir-autogen, elixir-format
 msgid "Turn on 2FA"
 msgstr "تفعيل المصادقة الثنائية"
@@ -376,12 +395,12 @@ msgstr "تفعيل المصادقة الثنائية"
 msgid "Two-factor authentication"
 msgstr "المصادقة الثنائية"
 
-#: lib/qpbx/web/live/tenant/home_live.ex:29
+#: lib/qpbx/web/live/tenant/home_live.ex:35
 #, elixir-autogen, elixir-format
 msgid "Two-factor authentication is off."
 msgstr "المصادقة الثنائية غير مفعّلة."
 
-#: lib/qpbx/web/live/tenant/home_live.ex:26
+#: lib/qpbx/web/live/tenant/home_live.ex:32
 #, elixir-autogen, elixir-format
 msgid "Two-factor authentication is on."
 msgstr "المصادقة الثنائية مفعّلة."
@@ -397,12 +416,12 @@ msgstr "غير محدود"
 msgid "Verify"
 msgstr "تحقّق"
 
-#: lib/qpbx/web/components/layouts.ex:132
+#: lib/qpbx/web/components/layouts.ex:164
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
 msgstr "تعذّر الاتصال بالإنترنت"
 
-#: lib/qpbx/web/controllers/session_controller.ex:22
+#: lib/qpbx/web/controllers/session_controller.ex:18
 #, elixir-autogen, elixir-format
 msgid "Wrong email or password."
 msgstr "البريد الإلكتروني أو كلمة المرور غير صحيحة."
@@ -418,11 +437,16 @@ msgid "%{cidr} added. Every server applies it within seconds."
 msgstr "تمت إضافة %{cidr}. يطبّقه كل خادم خلال ثوانٍ."
 
 #: lib/qpbx/web/live/platform/firewall_live.ex:53
+#: lib/qpbx/web/live/tenant/office_ips_live.ex:58
 #, elixir-autogen, elixir-format
 msgid "%{cidr} removed."
 msgstr "تمت إزالة %{cidr}."
 
+#: lib/qpbx/web/live/platform/dids_live.ex:141
 #: lib/qpbx/web/live/platform/firewall_live.ex:134
+#: lib/qpbx/web/live/platform/numbering_live.ex:187
+#: lib/qpbx/web/live/platform/numbering_live.ex:221
+#: lib/qpbx/web/live/tenant/office_ips_live.ex:93
 #, elixir-autogen, elixir-format
 msgid "Add"
 msgstr "إضافة"
@@ -434,6 +458,7 @@ msgstr "إضافة إدخال"
 
 #: lib/qpbx/web/live/account/sessions_live.ex:56
 #: lib/qpbx/web/live/platform/firewall_live.ex:96
+#: lib/qpbx/web/live/tenant/office_ips_live.ex:77
 #, elixir-autogen, elixir-format
 msgid "Address"
 msgstr "العنوان"
@@ -468,6 +493,7 @@ msgstr "ينتهي"
 msgid "Expires (UTC, optional)"
 msgstr "ينتهي (بتوقيت UTC، اختياري)"
 
+#: lib/qpbx/web/components/layouts.ex:49
 #: lib/qpbx/web/live/platform/firewall_live.ex:10
 #: lib/qpbx/web/live/platform/firewall_live.ex:83
 #, elixir-autogen, elixir-format
@@ -481,6 +507,8 @@ msgstr "عنوان IP أو نطاق"
 
 #: lib/qpbx/web/live/platform/firewall_live.ex:97
 #: lib/qpbx/web/live/platform/firewall_live.ex:119
+#: lib/qpbx/web/live/tenant/extension_live.ex:145
+#: lib/qpbx/web/live/tenant/extension_live.ex:182
 #, elixir-autogen, elixir-format
 msgid "Kind"
 msgstr "النوع"
@@ -491,12 +519,19 @@ msgstr "النوع"
 msgid "Reason"
 msgstr "السبب"
 
+#: lib/qpbx/web/live/platform/dids_live.ex:112
 #: lib/qpbx/web/live/platform/firewall_live.ex:108
+#: lib/qpbx/web/live/platform/numbering_live.ex:167
+#: lib/qpbx/web/live/platform/numbering_live.ex:201
+#: lib/qpbx/web/live/platform/trunks_live.ex:189
+#: lib/qpbx/web/live/tenant/extension_live.ex:166
+#: lib/qpbx/web/live/tenant/office_ips_live.ex:86
 #, elixir-autogen, elixir-format
 msgid "Remove"
 msgstr "إزالة"
 
 #: lib/qpbx/web/live/platform/firewall_live.ex:105
+#: lib/qpbx/web/live/tenant/office_ips_live.ex:84
 #, elixir-autogen, elixir-format
 msgid "Remove %{cidr}?"
 msgstr "إزالة %{cidr}؟"
@@ -532,7 +567,7 @@ msgstr "آخر نشاط"
 msgid "Session ended."
 msgstr "انتهت الجلسة."
 
-#: lib/qpbx/web/components/layouts.ex:67
+#: lib/qpbx/web/components/layouts.ex:96
 #, elixir-autogen, elixir-format
 msgid "Sessions"
 msgstr "الجلسات"
@@ -562,7 +597,7 @@ msgstr "تاريخ الدخول"
 msgid "Signed out of %{count} other sessions."
 msgstr "تم تسجيل الخروج من %{count} جلسات أخرى."
 
-#: lib/qpbx/web/components/layouts.ex:100
+#: lib/qpbx/web/components/layouts.ex:129
 #, elixir-autogen, elixir-format
 msgid "Stay signed in"
 msgstr "البقاء متصلًا"
@@ -572,12 +607,12 @@ msgstr "البقاء متصلًا"
 msgid "This browser"
 msgstr "هذا المتصفح"
 
-#: lib/qpbx/web/components/layouts.ex:99
+#: lib/qpbx/web/components/layouts.ex:128
 #, elixir-autogen, elixir-format
 msgid "You will be signed out soon because of inactivity."
 msgstr "سيتم تسجيل خروجك قريبًا بسبب عدم النشاط."
 
-#: lib/qpbx/web/auth.ex:181
+#: lib/qpbx/web/auth.ex:205
 #, elixir-autogen, elixir-format
 msgid "Your session has ended. Please log in again."
 msgstr "انتهت جلستك. يرجى تسجيل الدخول مرة أخرى."
@@ -588,19 +623,841 @@ msgstr "انتهت جلستك. يرجى تسجيل الدخول مرة أخرى.
 msgid "Your sessions"
 msgstr "جلساتك"
 
-#: lib/qpbx/web/controllers/session_controller.ex:14
+#: lib/qpbx/web/controllers/session_controller.ex:21
 #: lib/qpbx/web/controllers/setup_controller.ex:39
 #, elixir-autogen, elixir-format
 msgid "The automatic check did not pass. Please try again."
 msgstr "لم ينجح التحقق التلقائي. يرجى المحاولة مرة أخرى."
 
-#: lib/qpbx/web/controllers/auth_html.ex:124
+#: lib/qpbx/web/controllers/auth_html.ex:126
 #: lib/qpbx/web/login_protection.ex:58
 #, elixir-autogen, elixir-format
 msgid "Too many attempts"
 msgstr "محاولات كثيرة جدًا"
 
-#: lib/qpbx/web/controllers/auth_html.ex:126
+#: lib/qpbx/web/controllers/auth_html.ex:128
 #, elixir-autogen, elixir-format
 msgid "Too many failed attempts from your network. Try again after %{time} (UTC)."
 msgstr "محاولات فاشلة كثيرة جدًا من شبكتك. حاول مرة أخرى بعد %{time} (بتوقيت UTC)."
+
+#: lib/qpbx/web/live/tenant/office_ips_live.ex:42
+#, elixir-autogen, elixir-format
+msgid "%{cidr} added."
+msgstr "تمت إضافة %{cidr}."
+
+#: lib/qpbx/web/live/tenant/routes_live.ex:192
+#, elixir-autogen, elixir-format
+msgid "%{name} (shared carrier)"
+msgstr "%{name} (مزوّد مشترك)"
+
+#: lib/qpbx/web/live/platform/dids_live.ex:37
+#: lib/qpbx/web/live/platform/numbering_live.ex:98
+#, elixir-autogen, elixir-format
+msgid "%{number} added."
+msgstr "تمت إضافة %{number}."
+
+#: lib/qpbx/web/live/platform/dids_live.ex:65
+#, elixir-autogen, elixir-format
+msgid "%{number} removed."
+msgstr "تمت إزالة %{number}."
+
+#: lib/qpbx/web/live/tenant/numbers_live.ex:50
+#, elixir-autogen, elixir-format
+msgid "%{number} saved."
+msgstr "تم حفظ %{number}."
+
+#: lib/qpbx/web/live/platform/numbering_live.ex:73
+#, elixir-autogen, elixir-format
+msgid "%{prefix} added."
+msgstr "تمت إضافة %{prefix}."
+
+#: lib/qpbx/web/live/platform/dids_live.ex:117
+#, elixir-autogen, elixir-format
+msgid "Add a number"
+msgstr "إضافة رقم"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:202
+#, elixir-autogen, elixir-format
+msgid "Add address"
+msgstr "إضافة عنوان"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:188
+#, elixir-autogen, elixir-format
+msgid "Add device"
+msgstr "إضافة جهاز"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:111
+#, elixir-autogen, elixir-format
+msgid "Addresses"
+msgstr "العناوين"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:124
+#, elixir-autogen, elixir-format
+msgid "All extensions"
+msgstr "كل التحويلات"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:135
+#, elixir-autogen, elixir-format
+msgid "All trunks"
+msgstr "كل الخطوط"
+
+#: lib/qpbx/web/live/tenant/numbers_live.ex:111
+#, elixir-autogen, elixir-format
+msgid "An extension"
+msgstr "تحويلة"
+
+#: lib/qpbx/web/live/tenant/numbers_live.ex:112
+#, elixir-autogen, elixir-format
+msgid "An outside number"
+msgstr "رقم خارجي"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:249
+#, elixir-autogen, elixir-format
+msgid "Analog adapter (ATA)"
+msgstr "محوّل تناظري (ATA)"
+
+#: lib/qpbx/web/live/platform/numbering_live.ex:150
+#, elixir-autogen, elixir-format
+msgid "Area code (optional)"
+msgstr "رمز المنطقة (اختياري)"
+
+#: lib/qpbx/web/live/tenant/number_format_live.ex:89
+#, elixir-autogen, elixir-format
+msgid "Area code for short local numbers (optional, e.g. 2)"
+msgstr "رمز المنطقة للأرقام المحلية القصيرة (اختياري، مثلًا 2)"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:110
+#: lib/qpbx/web/live/platform/trunks_live.ex:144
+#, elixir-autogen, elixir-format
+msgid "Authentication"
+msgstr "المصادقة"
+
+#: lib/qpbx/web/live/tenant/number_format_live.ex:51
+#, elixir-autogen, elixir-format
+msgid "Back to the platform's default."
+msgstr "تمت العودة إلى الإعداد الافتراضي للمنصة."
+
+#: lib/qpbx/web/live/tenant/numbers_live.ex:93
+#, elixir-autogen, elixir-format
+msgid "Backup number: calls to it go where its main number goes. Ask the main number's carrier to forward to it when this PBX does not answer."
+msgstr "رقم احتياطي: المكالمات إليه تذهب إلى حيث يذهب رقمه الرئيسي. اطلب من مزوّد الرقم الرئيسي تحويل المكالمات إليه عندما لا يردّ هذا المقسم."
+
+#: lib/qpbx/web/live/platform/dids_live.ex:91
+#, elixir-autogen, elixir-format
+msgid "Backup of"
+msgstr "احتياطي لـ"
+
+#: lib/qpbx/web/live/platform/dids_live.ex:137
+#, elixir-autogen, elixir-format
+msgid "Backup of (optional)"
+msgstr "احتياطي لـ (اختياري)"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:261
+#, elixir-autogen, elixir-format
+msgid "By IP address"
+msgstr "حسب عنوان IP"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:191
+#, elixir-autogen, elixir-format
+msgid "Call features"
+msgstr "ميزات المكالمات"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:200
+#, elixir-autogen, elixir-format
+msgid "Call waiting"
+msgstr "انتظار المكالمات"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:238
+#, elixir-autogen, elixir-format
+msgid "Caller ID"
+msgstr "هوية المتصل"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:164
+#, elixir-autogen, elixir-format
+msgid "Calls from any address are accepted. Outbound calls use the lowest priority first; weight shares calls within one priority."
+msgstr "تُقبل المكالمات من أي عنوان. المكالمات الصادرة تستخدم الأولوية الأدنى أولًا، والوزن يوزّع المكالمات ضمن الأولوية نفسها."
+
+#: lib/qpbx/web/live/tenant/numbers_live.ex:108
+#, elixir-autogen, elixir-format
+msgid "Calls go to"
+msgstr "تذهب المكالمات إلى"
+
+#: lib/qpbx/web/live/tenant/routes_live.ex:185
+#, elixir-autogen, elixir-format
+msgid "Cancel"
+msgstr "إلغاء"
+
+#: lib/qpbx/web/live/platform/dids_live.ex:123
+#, elixir-autogen, elixir-format
+msgid "Carrier trunk"
+msgstr "خط المزوّد"
+
+#: lib/qpbx/web/live/platform/dids_live.ex:124
+#: lib/qpbx/web/live/platform/numbering_live.ex:217
+#: lib/qpbx/web/live/platform/trunks_live.ex:146
+#, elixir-autogen, elixir-format
+msgid "Choose"
+msgstr "اختر"
+
+#: lib/qpbx/web/live/platform/numbering_live.ex:163
+#: lib/qpbx/web/live/platform/numbering_live.ex:182
+#: lib/qpbx/web/live/tenant/routes_live.ex:120
+#, elixir-autogen, elixir-format
+msgid "Class"
+msgstr "الفئة"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:216
+#, elixir-autogen, elixir-format
+msgid "Codecs"
+msgstr "الترميزات"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:131
+#, elixir-autogen, elixir-format
+msgid "Copy this password now. It is shown only once."
+msgstr "انسخ كلمة المرور هذه الآن. فهي تُعرض مرة واحدة فقط."
+
+#: lib/qpbx/web/live/platform/numbering_live.ex:137
+#, elixir-autogen, elixir-format
+msgid "Country code"
+msgstr "رمز الدولة"
+
+#: lib/qpbx/web/live/tenant/number_format_live.ex:74
+#, elixir-autogen, elixir-format
+msgid "Country code (e.g. 972)"
+msgstr "رمز الدولة (مثلًا 972)"
+
+#: lib/qpbx/web/live/tenant/extensions_live.ex:82
+#, elixir-autogen, elixir-format
+msgid "Create"
+msgstr "إنشاء"
+
+#: lib/qpbx/web/live/platform/numbering_live.ex:131
+#, elixir-autogen, elixir-format
+msgid "Default number format"
+msgstr "تنسيق الأرقام الافتراضي"
+
+#: lib/qpbx/web/live/tenant/routes_live.ex:137
+#, elixir-autogen, elixir-format
+msgid "Delete"
+msgstr "حذف"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:238
+#, elixir-autogen, elixir-format
+msgid "Delete extension"
+msgstr "حذف التحويلة"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:235
+#, elixir-autogen, elixir-format
+msgid "Delete extension %{number} and all its devices?"
+msgstr "حذف التحويلة %{number} وكل أجهزتها؟"
+
+#: lib/qpbx/web/live/tenant/routes_live.ex:135
+#, elixir-autogen, elixir-format
+msgid "Delete route %{name}?"
+msgstr "حذف المسار %{name}؟"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:254
+#, elixir-autogen, elixir-format
+msgid "Delete trunk"
+msgstr "حذف الخط"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:252
+#, elixir-autogen, elixir-format
+msgid "Delete trunk %{name}?"
+msgstr "حذف الخط %{name}؟"
+
+#: lib/qpbx/web/live/tenant/office_ips_live.ex:78
+#, elixir-autogen, elixir-format
+msgid "Description"
+msgstr "الوصف"
+
+#: lib/qpbx/web/live/tenant/office_ips_live.ex:92
+#, elixir-autogen, elixir-format
+msgid "Description (e.g. Tel Aviv office)"
+msgstr "الوصف (مثلًا مكتب تل أبيب)"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:247
+#, elixir-autogen, elixir-format
+msgid "Desk phone"
+msgstr "هاتف مكتبي"
+
+#: lib/qpbx/web/live/tenant/routes_live.ex:160
+#, elixir-autogen, elixir-format
+msgid "Destination class"
+msgstr "فئة الوجهة"
+
+#: lib/qpbx/web/live/platform/numbering_live.ex:155
+#, elixir-autogen, elixir-format
+msgid "Destination classes"
+msgstr "فئات الوجهات"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:84
+#, elixir-autogen, elixir-format
+msgid "Device removed. Its SIP login no longer works."
+msgstr "تمت إزالة الجهاز. لم يعد حساب SIP الخاص به يعمل."
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:139
+#: lib/qpbx/web/live/tenant/extensions_live.ex:66
+#, elixir-autogen, elixir-format
+msgid "Devices"
+msgstr "الأجهزة"
+
+#: lib/qpbx/web/live/tenant/routes_live.ex:179
+#, elixir-autogen, elixir-format
+msgid "Digits to remove before sending (after +)"
+msgstr "عدد الأرقام التي تُحذف قبل الإرسال (بعد +)"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:199
+#: lib/qpbx/web/live/tenant/extensions_live.ex:67
+#, elixir-autogen, elixir-format
+msgid "Do not disturb"
+msgstr "عدم الإزعاج"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:136
+#, elixir-autogen, elixir-format
+msgid "Done"
+msgstr "تم"
+
+#: lib/qpbx/web/live/tenant/extensions_live.ex:55
+#, elixir-autogen, elixir-format
+msgid "Each extension rings all of its devices. Each device has its own SIP login."
+msgstr "كل تحويلة ترنّ على جميع أجهزتها. لكل جهاز حساب SIP خاص به."
+
+#: lib/qpbx/web/live/tenant/routes_live.ex:128
+#, elixir-autogen, elixir-format
+msgid "Edit"
+msgstr "تعديل"
+
+#: lib/qpbx/web/live/tenant/routes_live.ex:143
+#, elixir-autogen, elixir-format
+msgid "Edit route"
+msgstr "تعديل المسار"
+
+#: lib/qpbx/web/live/platform/numbering_live.ex:192
+#, elixir-autogen, elixir-format
+msgid "Emergency numbers always go out through their trunk and skip spend and minute limits."
+msgstr "أرقام الطوارئ تخرج دائمًا عبر خطها ولا تخضع لحدود الإنفاق والدقائق."
+
+#: lib/qpbx/web/live/platform/numbering_live.ex:190
+#, elixir-autogen, elixir-format
+msgid "Emergency routes"
+msgstr "مسارات الطوارئ"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:115
+#: lib/qpbx/web/live/platform/trunks_live.ex:245
+#: lib/qpbx/web/live/tenant/routes_live.ex:124
+#: lib/qpbx/web/live/tenant/routes_live.ex:183
+#, elixir-autogen, elixir-format
+msgid "Enabled"
+msgstr "مفعّل"
+
+#: lib/qpbx/web/live/tenant/numbers_live.ex:118
+#, elixir-autogen, elixir-format
+msgid "Extension"
+msgstr "التحويلة"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:19
+#: lib/qpbx/web/live/tenant/extension_live.ex:120
+#, elixir-autogen, elixir-format
+msgid "Extension %{number}"
+msgstr "التحويلة %{number}"
+
+#: lib/qpbx/web/live/tenant/extensions_live.ex:35
+#, elixir-autogen, elixir-format
+msgid "Extension %{number} created."
+msgstr "تم إنشاء التحويلة %{number}."
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:101
+#, elixir-autogen, elixir-format
+msgid "Extension %{number} deleted."
+msgstr "تم حذف التحويلة %{number}."
+
+#: lib/qpbx/web/components/layouts.ex:63
+#: lib/qpbx/web/live/tenant/extensions_live.ex:10
+#: lib/qpbx/web/live/tenant/extensions_live.ex:53
+#, elixir-autogen, elixir-format
+msgid "Extensions"
+msgstr "التحويلات"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:229
+#, elixir-autogen, elixir-format
+msgid "Fax error correction (ECM)"
+msgstr "تصحيح أخطاء الفاكس (ECM)"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:215
+#, elixir-autogen, elixir-format
+msgid "Follow me"
+msgstr "اتبعني"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:220
+#, elixir-autogen, elixir-format
+msgid "Follow-me numbers (comma-separated, up to 5)"
+msgstr "أرقام «اتبعني» (مفصولة بفواصل، حتى 5)"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:201
+#, elixir-autogen, elixir-format
+msgid "Forward all calls to"
+msgstr "تحويل كل المكالمات إلى"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:202
+#, elixir-autogen, elixir-format
+msgid "Forward when busy to"
+msgstr "التحويل عند الانشغال إلى"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:205
+#, elixir-autogen, elixir-format
+msgid "Forward when not answered to"
+msgstr "التحويل عند عدم الرد إلى"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:226
+#, elixir-autogen, elixir-format
+msgid "G.711 passthrough"
+msgstr "تمرير G.711"
+
+#: lib/qpbx/web/live/tenant/number_format_live.ex:98
+#, elixir-autogen, elixir-format
+msgid "Go back to the platform's default?"
+msgstr "العودة إلى الإعداد الافتراضي للمنصة؟"
+
+#: lib/qpbx/web/live/tenant/office_ips_live.ex:91
+#, elixir-autogen, elixir-format
+msgid "IP address or small prefix"
+msgstr "عنوان IP أو نطاق صغير"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:172
+#, elixir-autogen, elixir-format
+msgid "IP or host name"
+msgstr "عنوان IP أو اسم المضيف"
+
+#: lib/qpbx/web/live/platform/numbering_live.ex:146
+#, elixir-autogen, elixir-format
+msgid "International prefixes"
+msgstr "البادئات الدولية"
+
+#: lib/qpbx/web/live/tenant/number_format_live.ex:83
+#, elixir-autogen, elixir-format
+msgid "International prefixes, comma-separated (e.g. 00, 012, 013)"
+msgstr "البادئات الدولية، مفصولة بفواصل (مثلًا 00، 012، 013)"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:244
+#, elixir-autogen, elixir-format
+msgid "Its own number (E.164)"
+msgstr "رقمه الخاص (E.164)"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:141
+#, elixir-autogen, elixir-format
+msgid "Label"
+msgstr "التسمية"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:175
+#, elixir-autogen, elixir-format
+msgid "Label (e.g. desk)"
+msgstr "التسمية (مثلًا desk)"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:146
+#, elixir-autogen, elixir-format
+msgid "MAC"
+msgstr "MAC"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:185
+#, elixir-autogen, elixir-format
+msgid "MAC (optional)"
+msgstr "MAC (اختياري)"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:153
+#, elixir-autogen, elixir-format
+msgid "Make a new password? The device stops working until it gets the new one."
+msgstr "إنشاء كلمة مرور جديدة؟ سيتوقف الجهاز عن العمل حتى يحصل على الجديدة."
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:233
+#, elixir-autogen, elixir-format
+msgid "Maximum calls (empty: no limit)"
+msgstr "الحد الأقصى للمكالمات (فارغ: بلا حد)"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:240
+#, elixir-autogen, elixir-format
+msgid "May show the tenant's numbers, even from other carriers"
+msgstr "يمكنه إظهار أرقام المستأجر، حتى من مزوّدين آخرين"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:250
+#, elixir-autogen, elixir-format
+msgid "Mobile app"
+msgstr "تطبيق الجوال"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:186
+#, elixir-autogen, elixir-format
+msgid "Model (optional)"
+msgstr "الطراز (اختياري)"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:241
+#, elixir-autogen, elixir-format
+msgid "Must show its own number"
+msgstr "يجب أن يُظهر رقمه الخاص"
+
+#: lib/qpbx/web/live/platform/numbering_live.ex:141
+#, elixir-autogen, elixir-format
+msgid "National prefix"
+msgstr "البادئة الوطنية"
+
+#: lib/qpbx/web/live/tenant/number_format_live.ex:78
+#, elixir-autogen, elixir-format
+msgid "National prefix (e.g. 0)"
+msgstr "البادئة الوطنية (مثلًا 0)"
+
+#: lib/qpbx/web/live/tenant/extensions_live.ex:72
+#, elixir-autogen, elixir-format
+msgid "New extension"
+msgstr "تحويلة جديدة"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:156
+#, elixir-autogen, elixir-format
+msgid "New password"
+msgstr "كلمة مرور جديدة"
+
+#: lib/qpbx/web/live/tenant/routes_live.ex:143
+#, elixir-autogen, elixir-format
+msgid "New route"
+msgstr "مسار جديد"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:104
+#: lib/qpbx/web/live/platform/trunks_live.ex:132
+#, elixir-autogen, elixir-format
+msgid "New trunk"
+msgstr "خط جديد"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:116
+#: lib/qpbx/web/live/tenant/routes_live.ex:125
+#, elixir-autogen, elixir-format
+msgid "No"
+msgstr "لا"
+
+#: lib/qpbx/web/live/tenant/numbers_live.ex:88
+#, elixir-autogen, elixir-format
+msgid "No numbers yet."
+msgstr "لا توجد أرقام بعد."
+
+#: lib/qpbx/web/live/platform/dids_live.ex:98
+#: lib/qpbx/web/live/platform/dids_live.ex:131
+#, elixir-autogen, elixir-format
+msgid "Not assigned"
+msgstr "غير مخصّص"
+
+#: lib/qpbx/web/live/platform/numbering_live.ex:164
+#: lib/qpbx/web/live/platform/numbering_live.ex:185
+#, elixir-autogen, elixir-format
+msgid "Note"
+msgstr "ملاحظة"
+
+#: lib/qpbx/web/live/tenant/numbers_live.ex:110
+#, elixir-autogen, elixir-format
+msgid "Nowhere (rejected)"
+msgstr "لا مكان (تُرفض)"
+
+#: lib/qpbx/web/live/platform/dids_live.ex:89
+#: lib/qpbx/web/live/platform/dids_live.ex:119
+#: lib/qpbx/web/live/platform/numbering_live.ex:197
+#: lib/qpbx/web/live/tenant/extensions_live.ex:64
+#: lib/qpbx/web/live/tenant/extensions_live.ex:76
+#, elixir-autogen, elixir-format
+msgid "Number"
+msgstr "الرقم"
+
+#: lib/qpbx/web/live/platform/numbering_live.ex:209
+#, elixir-autogen, elixir-format
+msgid "Number (e.g. 100)"
+msgstr "الرقم (مثلًا 100)"
+
+#: lib/qpbx/web/components/layouts.ex:75
+#: lib/qpbx/web/live/tenant/number_format_live.ex:8
+#: lib/qpbx/web/live/tenant/number_format_live.ex:64
+#, elixir-autogen, elixir-format
+msgid "Number format"
+msgstr "تنسيق الأرقام"
+
+#: lib/qpbx/web/live/tenant/routes_live.ex:152
+#, elixir-autogen, elixir-format
+msgid "Number prefixes in E.164, comma-separated (e.g. +972, +9725); empty for all"
+msgstr "بادئات الأرقام بصيغة E.164، مفصولة بفواصل (مثلًا +972، +9725)؛ اتركها فارغة لكل الأرقام"
+
+#: lib/qpbx/web/components/layouts.ex:58
+#: lib/qpbx/web/live/platform/numbering_live.ex:14
+#: lib/qpbx/web/live/platform/numbering_live.ex:129
+#, elixir-autogen, elixir-format
+msgid "Numbering"
+msgstr "الترقيم"
+
+#: lib/qpbx/web/components/layouts.ex:55
+#: lib/qpbx/web/components/layouts.ex:66
+#: lib/qpbx/web/live/platform/dids_live.ex:14
+#: lib/qpbx/web/live/platform/dids_live.ex:81
+#: lib/qpbx/web/live/tenant/numbers_live.ex:15
+#: lib/qpbx/web/live/tenant/numbers_live.ex:80
+#, elixir-autogen, elixir-format
+msgid "Numbers"
+msgstr "الأرقام"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:225
+#, elixir-autogen, elixir-format
+msgid "Numbers can be typed the local way, for example 02-123-4567."
+msgstr "يمكن كتابة الأرقام بالطريقة المحلية، مثلًا 02-123-4567."
+
+#: lib/qpbx/web/components/layouts.ex:72
+#: lib/qpbx/web/live/tenant/office_ips_live.ex:14
+#: lib/qpbx/web/live/tenant/office_ips_live.ex:71
+#, elixir-autogen, elixir-format
+msgid "Office IPs"
+msgstr "عناوين IP للمكاتب"
+
+#: lib/qpbx/web/live/tenant/extensions_live.ex:68
+#, elixir-autogen, elixir-format
+msgid "On"
+msgstr "مفعّل"
+
+#: lib/qpbx/web/auth.ex:132
+#, elixir-autogen, elixir-format
+msgid "Only tenant admins can open this page."
+msgstr "يمكن لمسؤولي المستأجر فقط فتح هذه الصفحة."
+
+#: lib/qpbx/web/components/layouts.ex:69
+#: lib/qpbx/web/live/tenant/routes_live.ex:17
+#: lib/qpbx/web/live/tenant/routes_live.ex:106
+#, elixir-autogen, elixir-format
+msgid "Outbound routes"
+msgstr "المسارات الصادرة"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:196
+#, elixir-autogen, elixir-format
+msgid "Outside caller ID (one of your numbers)"
+msgstr "هوية المتصل الخارجية (أحد أرقامك)"
+
+#: lib/qpbx/web/live/tenant/numbers_live.ex:123
+#, elixir-autogen, elixir-format
+msgid "Outside number"
+msgstr "الرقم الخارجي"
+
+#: lib/qpbx/web/live/platform/dids_live.ex:83
+#, elixir-autogen, elixir-format
+msgid "Phone numbers held at carriers. A backup number routes like its main number and belongs to the same tenant."
+msgstr "أرقام الهواتف لدى المزوّدين. الرقم الاحتياطي يُوجَّه مثل رقمه الرئيسي ويتبع المستأجر نفسه."
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:174
+#, elixir-autogen, elixir-format
+msgid "Port"
+msgstr "المنفذ"
+
+#: lib/qpbx/web/live/tenant/routes_live.ex:115
+#: lib/qpbx/web/live/tenant/routes_live.ex:163
+#, elixir-autogen, elixir-format
+msgid "Position"
+msgstr "الترتيب"
+
+#: lib/qpbx/web/live/platform/numbering_live.ex:162
+#, elixir-autogen, elixir-format
+msgid "Prefix"
+msgstr "البادئة"
+
+#: lib/qpbx/web/live/platform/numbering_live.ex:175
+#, elixir-autogen, elixir-format
+msgid "Prefix (e.g. +9725)"
+msgstr "البادئة (مثلًا +9725)"
+
+#: lib/qpbx/web/live/tenant/routes_live.ex:182
+#, elixir-autogen, elixir-format
+msgid "Prefix to add before sending"
+msgstr "بادئة تُضاف قبل الإرسال"
+
+#: lib/qpbx/web/live/tenant/routes_live.ex:117
+#, elixir-autogen, elixir-format
+msgid "Prefixes"
+msgstr "البادئات"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:181
+#, elixir-autogen, elixir-format
+msgid "Priority"
+msgstr "الأولوية"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:262
+#, elixir-autogen, elixir-format
+msgid "Registration"
+msgstr "التسجيل"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:155
+#, elixir-autogen, elixir-format
+msgid "Registration password"
+msgstr "كلمة مرور التسجيل"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:154
+#, elixir-autogen, elixir-format
+msgid "Registration password (empty: keep)"
+msgstr "كلمة مرور التسجيل (فارغ: إبقاء الحالية)"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:148
+#, elixir-autogen, elixir-format
+msgid "Registration user"
+msgstr "مستخدم التسجيل"
+
+#: lib/qpbx/web/live/platform/dids_live.ex:110
+#, elixir-autogen, elixir-format
+msgid "Remove %{number}?"
+msgstr "إزالة %{number}؟"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:164
+#, elixir-autogen, elixir-format
+msgid "Remove device %{label}?"
+msgstr "إزالة الجهاز %{label}؟"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:211
+#, elixir-autogen, elixir-format
+msgid "Ring for (seconds)"
+msgstr "مدة الرنين (بالثواني)"
+
+#: lib/qpbx/web/live/tenant/routes_live.ex:86
+#, elixir-autogen, elixir-format
+msgid "Route %{name} deleted."
+msgstr "تم حذف المسار %{name}."
+
+#: lib/qpbx/web/live/tenant/routes_live.ex:64
+#, elixir-autogen, elixir-format
+msgid "Route %{name} saved."
+msgstr "تم حفظ المسار %{name}."
+
+#: lib/qpbx/web/live/tenant/routes_live.ex:108
+#, elixir-autogen, elixir-format
+msgid "Routes are tried from the lowest position. A route without prefixes takes every number."
+msgstr "تُجرَّب المسارات بدءًا من أدنى ترتيب. المسار بلا بادئات يأخذ كل الأرقام."
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:132
+#: lib/qpbx/web/live/tenant/extension_live.ex:142
+#, elixir-autogen, elixir-format
+msgid "SIP user"
+msgstr "مستخدم SIP"
+
+#: lib/qpbx/web/live/platform/numbering_live.ex:152
+#: lib/qpbx/web/live/platform/trunks_live.ex:246
+#: lib/qpbx/web/live/tenant/extension_live.ex:227
+#: lib/qpbx/web/live/tenant/number_format_live.ex:92
+#: lib/qpbx/web/live/tenant/numbers_live.ex:127
+#: lib/qpbx/web/live/tenant/routes_live.ex:184
+#, elixir-autogen, elixir-format
+msgid "Save"
+msgstr "حفظ"
+
+#: lib/qpbx/web/live/platform/dids_live.ex:57
+#: lib/qpbx/web/live/platform/numbering_live.ex:57
+#: lib/qpbx/web/live/tenant/extension_live.ex:46
+#: lib/qpbx/web/live/tenant/number_format_live.ex:42
+#, elixir-autogen, elixir-format
+msgid "Saved."
+msgstr "تم الحفظ."
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:101
+#, elixir-autogen, elixir-format
+msgid "Shared carrier trunks. Every tenant's routes can use them."
+msgstr "خطوط المزوّدين المشتركة. يمكن لمسارات كل مستأجر استخدامها."
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:162
+#, elixir-autogen, elixir-format
+msgid "Signalling addresses"
+msgstr "عناوين الإشارات"
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:248
+#, elixir-autogen, elixir-format
+msgid "Softphone"
+msgstr "هاتف برمجي"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:225
+#, elixir-autogen, elixir-format
+msgid "T.38 passthrough"
+msgstr "تمرير T.38"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:224
+#, elixir-autogen, elixir-format
+msgid "T.38 re-INVITE"
+msgstr "T.38 عبر re-INVITE"
+
+#: lib/qpbx/web/live/platform/dids_live.ex:94
+#: lib/qpbx/web/live/platform/dids_live.ex:97
+#: lib/qpbx/web/live/platform/dids_live.ex:130
+#, elixir-autogen, elixir-format
+msgid "Tenant"
+msgstr "المستأجر"
+
+#: lib/qpbx/web/live/platform/numbering_live.ex:132
+#, elixir-autogen, elixir-format
+msgid "Tenants use this unless they set their own."
+msgstr "يستخدم المستأجرون هذا ما لم يضبطوا إعدادهم الخاص."
+
+#: lib/qpbx/web/live/platform/numbering_live.ex:157
+#, elixir-autogen, elixir-format
+msgid "The longest matching prefix decides. Numbers matching none are local at home and international abroad. Premium prefixes form the high-cost list: blocked unless the plan allows premium."
+msgstr "البادئة الأطول المطابقة هي التي تحدد. الأرقام التي لا تطابق أيًّا منها محلية داخل البلد ودولية خارجه. البادئات المميّزة تشكّل قائمة الأرقام مرتفعة التكلفة: محظورة ما لم تسمح الخطة بالفئة المميّزة."
+
+#: lib/qpbx/web/live/tenant/number_format_live.ex:68
+#, elixir-autogen, elixir-format
+msgid "The platform's default. Saving makes your own copy."
+msgstr "الإعداد الافتراضي للمنصة. الحفظ ينشئ نسخة خاصة بك."
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:178
+#, elixir-autogen, elixir-format
+msgid "Transport"
+msgstr "النقل"
+
+#: lib/qpbx/web/live/platform/dids_live.ex:90
+#: lib/qpbx/web/live/platform/numbering_live.ex:198
+#: lib/qpbx/web/live/platform/numbering_live.ex:216
+#, elixir-autogen, elixir-format
+msgid "Trunk"
+msgstr "الخط"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:55
+#, elixir-autogen, elixir-format
+msgid "Trunk %{name} saved."
+msgstr "تم حفظ الخط %{name}."
+
+#: lib/qpbx/web/live/tenant/routes_live.ex:171
+#, elixir-autogen, elixir-format
+msgid "Trunk %{n}"
+msgstr "الخط %{n}"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:70
+#, elixir-autogen, elixir-format
+msgid "Trunk deleted."
+msgstr "تم حذف الخط."
+
+#: lib/qpbx/web/components/layouts.ex:52
+#: lib/qpbx/web/live/platform/trunks_live.ex:8
+#: lib/qpbx/web/live/platform/trunks_live.ex:100
+#, elixir-autogen, elixir-format
+msgid "Trunks"
+msgstr "الخطوط"
+
+#: lib/qpbx/web/live/tenant/routes_live.ex:121
+#, elixir-autogen, elixir-format
+msgid "Trunks in order"
+msgstr "الخطوط بالترتيب"
+
+#: lib/qpbx/web/live/tenant/number_format_live.ex:100
+#, elixir-autogen, elixir-format
+msgid "Use the platform default"
+msgstr "استخدام الإعداد الافتراضي للمنصة"
+
+#: lib/qpbx/web/live/platform/trunks_live.ex:116
+#: lib/qpbx/web/live/tenant/routes_live.ex:125
+#, elixir-autogen, elixir-format
+msgid "Yes"
+msgstr "نعم"
+
+#: lib/qpbx/web/live/tenant/office_ips_live.ex:73
+#, elixir-autogen, elixir-format
+msgid "Your offices' public IP addresses. Phones there are never blocked automatically."
+msgstr "عناوين IP العامة لمكاتبك. الهواتف هناك لا تُحظر تلقائيًا أبدًا."
+
+#: lib/qpbx/web/live/tenant/number_format_live.ex:67
+#, elixir-autogen, elixir-format
+msgid "Your own settings."
+msgstr "إعداداتك الخاصة."
+
+#: lib/qpbx/web/live/tenant/numbers_live.ex:82
+#, elixir-autogen, elixir-format
+msgid "Your phone numbers and where their calls go. The platform adds and removes numbers."
+msgstr "أرقام هواتفك وإلى أين تذهب مكالماتها. المنصة هي التي تضيف الأرقام وتزيلها."

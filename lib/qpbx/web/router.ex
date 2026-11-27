@@ -57,6 +57,11 @@ defmodule QPBX.Web.Router do
       live "/tenants/new", TenantsLive, :new
       live "/plans", PlansLive, :index
       live "/firewall", FirewallLive, :index
+      live "/trunks", TrunksLive, :index
+      live "/trunks/new", TrunksLive, :new
+      live "/trunks/:id", TrunksLive, :edit
+      live "/numbers", DidsLive, :index
+      live "/numbering", NumberingLive, :index
 
       # Shared page: full module name, not the surrounding scope's alias.
       scope "/", alias: false do
@@ -67,6 +72,15 @@ defmodule QPBX.Web.Router do
 
   scope "/app", QPBX.Web.Tenant do
     pipe_through [:browser, :require_tenant_user]
+
+    live_session :tenant_admin, on_mount: {QPBX.Web.Auth, :tenant_admin} do
+      live "/extensions", ExtensionsLive, :index
+      live "/extensions/:id", ExtensionLive, :show
+      live "/numbers", NumbersLive, :index
+      live "/routes", RoutesLive, :index
+      live "/office-ips", OfficeIpsLive, :index
+      live "/number-format", NumberFormatLive, :index
+    end
 
     live_session :tenant_user, on_mount: {QPBX.Web.Auth, :tenant_user} do
       live "/", HomeLive, :index

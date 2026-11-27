@@ -48,6 +48,32 @@ defmodule QPBX.Web.Layouts do
           <.link navigate={~p"/platform/firewall"} class="btn btn-ghost btn-sm" id="nav-firewall">
             {gettext("Firewall")}
           </.link>
+          <.link navigate={~p"/platform/trunks"} class="btn btn-ghost btn-sm" id="nav-trunks">
+            {gettext("Trunks")}
+          </.link>
+          <.link navigate={~p"/platform/numbers"} class="btn btn-ghost btn-sm" id="nav-dids">
+            {gettext("Numbers")}
+          </.link>
+          <.link navigate={~p"/platform/numbering"} class="btn btn-ghost btn-sm" id="nav-numbering">
+            {gettext("Numbering")}
+          </.link>
+        </nav>
+        <nav :if={tenant_admin?(@current_account)} class="flex flex-wrap gap-2">
+          <.link navigate={~p"/app/extensions"} class="btn btn-ghost btn-sm" id="nav-extensions">
+            {gettext("Extensions")}
+          </.link>
+          <.link navigate={~p"/app/numbers"} class="btn btn-ghost btn-sm" id="nav-numbers">
+            {gettext("Numbers")}
+          </.link>
+          <.link navigate={~p"/app/routes"} class="btn btn-ghost btn-sm" id="nav-routes">
+            {gettext("Outbound routes")}
+          </.link>
+          <.link navigate={~p"/app/office-ips"} class="btn btn-ghost btn-sm" id="nav-office-ips">
+            {gettext("Office IPs")}
+          </.link>
+          <.link navigate={~p"/app/number-format"} class="btn btn-ghost btn-sm" id="nav-number-format">
+            {gettext("Number format")}
+          </.link>
         </nav>
       </div>
       <div class="flex-none flex items-center gap-2">
@@ -83,7 +109,7 @@ defmodule QPBX.Web.Layouts do
     </header>
 
     <main class="px-4 py-12 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-3xl space-y-4">
+      <div class="mx-auto max-w-5xl space-y-4">
         {render_slot(@inner_block)}
       </div>
     </main>
@@ -105,6 +131,9 @@ defmodule QPBX.Web.Layouts do
     </div>
     """
   end
+
+  defp tenant_admin?(%QPBX.Core.User{} = user), do: QPBX.Core.User.role(user) == "tenant_admin"
+  defp tenant_admin?(_), do: false
 
   defp account_path(%QPBX.Core.PlatformAdmin{}), do: ~p"/platform/account"
   defp account_path(_), do: ~p"/app/account"
