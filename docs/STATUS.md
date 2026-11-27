@@ -41,6 +41,16 @@ Kamailio gets its real config.
 
 ## Done
 
+- 2-0b Busy lamps with Meow (done): Meow's live engine test against the lab (tenant `meow`,
+  TLS and UDP lines, optional SRTP): its busy lamp section passes completely (idle, ringing as
+  the one called naming 101, on a call, idle), presence (Available) and the voicemail light are
+  served, and calls between the two lines pass (answer, busy 486, cancel 487). 60 of 95 checks
+  pass; every failure needs the `*43` echo service (feature codes, phase 4): echo, audio levels,
+  call statistics, hold, conference, recording, and redirect and transfers aimed at `*43`.
+  Found and fixed: FreeSWITCH refused optional SRTP (`a=crypto` on RTP/AVP, 488) until
+  `rtp_allow_crypto_in_avp`. Not yet verified: audio itself (no Meow check plays sound without
+  `*43`), following a 302, transfers. Grandstream check when a phone is available.
+
 - 2-5 Call control (done): new area `QPBX.Telephony`. FreeSWITCH asks the app for a dialplan
   (`mod_xml_curl`, loopback and a password; nginx refuses `/internal/`) and parks every call;
   one Elixir process per call drives it over the event socket. Routing: extension to
@@ -238,9 +248,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 2-0b Meow end to end (in progress): busy lamps, presence and voicemail lights are built and
-  pass the scripted lab check (`phase2-calls.py` 27/27); Meow's own live test is next (needs a
-  hosts entry for the lab tenant on the machine running Meow). Then 2-6 admission and fraud.
+- 2-6 Admission and fraud (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next
@@ -421,6 +429,10 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
   prefix list (see "Planned features").
 
 ## Known bugs
+
+- Kamailio logged one parse error on Meow's TLS connection (`bad header field [INVITE ...`)
+  during the first Meow run, alongside FreeSWITCH's 488 refusals; not seen again after the
+  SRTP fix. Watch for it.
 
 - The login page's "Log in" button renders as plain text, not a filled button (seen on
   2026-11-27; predates the logo). To check with the next portal work.

@@ -2,6 +2,12 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Accept optional SRTP offers (2-0b)
+
+- **`rtp_allow_crypto_in_avp=true` (global):** phones and Meow offer SRTP as `a=crypto` on
+  RTP/AVP (best effort, RFC 4568 practice); FreeSWITCH otherwise refuses the call with 488.
+  Set globally because the offer is checked before any dialplan runs.
+
 ## 2026-11-27: Busy lamps in production; a device may log in as its extension (2-0b)
 
 - **A device with no label logs in as the extension number** (one per extension). Most

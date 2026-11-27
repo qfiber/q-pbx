@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <!-- {{ ansible_managed }} -->
 <document type="freeswitch/xml">
+  <!-- Phones and softphones (Meow) offer optional SRTP as a=crypto on RTP/AVP; FreeSWITCH
+       refuses such offers (488) unless this is set. The offer is checked before any dialplan
+       runs, so it is a global variable (channel variables fall back to globals). -->
+  <X-PRE-PROCESS cmd="set" data="rtp_allow_crypto_in_avp=true"/>
   <section name="configuration" description="Various Configuration">
     <X-PRE-PROCESS cmd="include" data="autoload_configs/*.xml"/>
   </section>
