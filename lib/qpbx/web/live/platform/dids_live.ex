@@ -43,6 +43,9 @@ defmodule QPBX.Web.Platform.DidsLive do
     end
   end
 
+  def handle_event("validate", %{"did" => params}, socket),
+    do: {:noreply, assign(socket, form: to_form(Core.change_did(%Core.Did{}, params)))}
+
   def handle_event("assign", %{"id" => id, "tenant_id" => tid}, socket) do
     %{current_scope: scope, current_account: actor} = socket.assigns
 
@@ -115,7 +118,7 @@ defmodule QPBX.Web.Platform.DidsLive do
       </.table>
 
       <h2 class="text-lg font-semibold mt-8">{gettext("Add a number")}</h2>
-      <.form for={@form} id="did-form" phx-submit="save">
+      <.form for={@form} id="did-form" phx-change="validate" phx-submit="save">
         <.input field={@form[:number]} label={gettext("Number")} dir="ltr" required />
         <.input
           field={@form[:trunk_id]}

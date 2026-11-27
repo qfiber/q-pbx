@@ -43,14 +43,7 @@ defmodule QPBX.Web.Tenant.RoutesLive do
   @impl true
   def handle_event("save", %{"route" => params}, socket) do
     %{current_scope: scope, current_account: actor, editing: editing} = socket.assigns
-
-    params =
-      params
-      |> Map.put("prefixes", NumberInput.split(params["prefixes_text"]))
-      |> Map.put(
-        "trunk_ids",
-        Enum.reject([params["trunk_1"], params["trunk_2"], params["trunk_3"]], &(&1 in [nil, ""]))
-      )
+    params = route_params(params)
 
     result =
       if editing,
@@ -70,6 +63,12 @@ defmodule QPBX.Web.Tenant.RoutesLive do
     end
   end
 
+  # Tracking typed values on the server is what lets the form clear after a save.
+  def handle_event("validate", %{"route" => params}, socket) do
+    cs = Core.change_route(socket.assigns.editing || %Core.OutboundRoute{}, route_params(params))
+    {:noreply, assign(socket, form: route_form(cs))}
+  end
+
   def handle_event("edit", %{"id" => id}, socket) do
     route = Core.get_route!(socket.assigns.current_scope, id)
     {:noreply, assign(socket, editing: route, form: route_form(Core.change_route(route)))}
@@ -86,6 +85,15 @@ defmodule QPBX.Web.Tenant.RoutesLive do
      |> put_flash(:info, gettext("Route %{name} deleted.", name: route.name))
      |> new_form()
      |> load()}
+  end
+
+  defp route_params(params) do
+    params
+    |> Map.put("prefixes", NumberInput.split(params["prefixes_text"]))
+    |> Map.put(
+      "trunk_ids",
+      Enum.reject([params["trunk_1"], params["trunk_2"], params["trunk_3"]], &(&1 in [nil, ""]))
+    )
   end
 
   defp trunk_names(route, trunks) do
@@ -142,7 +150,7 @@ defmodule QPBX.Web.Tenant.RoutesLive do
       <h2 class="text-lg font-semibold mt-8">
         {if @editing, do: gettext("Edit route"), else: gettext("New route")}
       </h2>
-      <.form for={@form} id="route-form" phx-submit="save">
+      <.form for={@form} id="route-form" phx-change="validate" phx-submit="save">
         <.input field={@form[:name]} label={gettext("Name")} required />
         <.input
           name="route[prefixes_text]"

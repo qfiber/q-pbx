@@ -86,6 +86,10 @@ defmodule QPBX.Web.Tenant.ExtensionLive do
      |> reload()}
   end
 
+  # Tracking typed values on the server is what lets the form clear after an add.
+  def handle_event("validate_device", %{"device" => params}, socket),
+    do: {:noreply, assign(socket, device_form: to_form(Core.change_device(params)))}
+
   def handle_event("hide_secret", _, socket), do: {:noreply, assign(socket, secret: nil)}
 
   def handle_event("delete", _, socket) do
@@ -168,7 +172,13 @@ defmodule QPBX.Web.Tenant.ExtensionLive do
         </:action>
       </.table>
 
-      <.form for={@device_form} id="device-form" phx-submit="add_device" class="mt-4">
+      <.form
+        for={@device_form}
+        id="device-form"
+        phx-change="validate_device"
+        phx-submit="add_device"
+        class="mt-4"
+      >
         <div class="grid sm:grid-cols-4 gap-2">
           <.input
             field={@device_form[:label]}

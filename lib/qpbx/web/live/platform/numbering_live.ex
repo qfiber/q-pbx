@@ -79,6 +79,13 @@ defmodule QPBX.Web.Platform.NumberingLive do
     end
   end
 
+  # Tracking typed values on the server is what lets the forms clear after an add.
+  def handle_event("validate_class", %{"number_class" => params}, socket),
+    do: {:noreply, assign(socket, class_form: to_form(Core.change_number_class(params)))}
+
+  def handle_event("validate_emergency", %{"emergency_route" => params}, socket),
+    do: {:noreply, assign(socket, emergency_form: to_form(Core.change_emergency_route(params)))}
+
   def handle_event("delete_class", %{"id" => id}, socket) do
     {:ok, _} =
       Core.delete_number_class(socket.assigns.current_scope, id, socket.assigns.current_account)
@@ -168,7 +175,7 @@ defmodule QPBX.Web.Platform.NumberingLive do
           </.link>
         </:action>
       </.table>
-      <.form for={@class_form} id="class-form" phx-submit="add_class">
+      <.form for={@class_form} id="class-form" phx-change="validate_class" phx-submit="add_class">
         <div class="grid sm:grid-cols-3 gap-2">
           <.input
             field={@class_form[:prefix]}
@@ -202,7 +209,12 @@ defmodule QPBX.Web.Platform.NumberingLive do
           </.link>
         </:action>
       </.table>
-      <.form for={@emergency_form} id="emergency-form" phx-submit="add_emergency">
+      <.form
+        for={@emergency_form}
+        id="emergency-form"
+        phx-change="validate_emergency"
+        phx-submit="add_emergency"
+      >
         <div class="grid sm:grid-cols-2 gap-2">
           <.input
             field={@emergency_form[:number]}

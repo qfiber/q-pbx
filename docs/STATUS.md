@@ -41,6 +41,22 @@ Kamailio gets its real config.
 
 ## Done
 
+- 2-2 Telephony data and portal pages (done): extensions with call features (DND, call
+  waiting, forwarding, follow-me, outside caller ID; plan's `max_extensions` checked under a
+  lock); devices, each with its own SIP login `<extension>-<label>` and a password shown once;
+  platform and tenant trunks with several addresses, encrypted registration passwords, caller
+  ID mode, fax mode and an IP address owned by one IP trunk across tenants; DIDs with backup
+  numbers; outbound routes with ordered trunk failover and number rewrite; emergency routes on
+  platform trunks; number rules (platform default, tenant override, Israel built in) and
+  destination class prefixes (premium = the high-cost list); `QPBX.Core.Numbers` (local
+  dialing to E.164, display, class, route selection). Every change announces `ConfigChanged`.
+  Tenant admin pages: extensions, devices, numbers, outbound routes, office IPs, number format;
+  platform pages: trunks, numbers, numbering. Arabic texts added (to review). Lab:
+  `lab/done-when/phase2-config.mjs` 15/15 (a device's one-time password registers; removing
+  the device refuses it at once). Found and fixed in the lab: forms kept their old values after
+  a save. 153 tests. Not done: a portal page for tenant-owned trunks (Core functions exist);
+  country short forms (Israeli 1-800, star numbers) in number rules; DNS SRV for trunk hosts.
+
 - 2-1 Kamailio database view and phone login (done): `sip_credentials` (HA1 only; 24-character
   passwords from the cryptographic generator, shown once; RLS; audited without hashes);
   read-only views `kamailio.credentials` and `kamailio.domains` for the new `qpbx_kamailio`
@@ -160,10 +176,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 2-2 Telephony data and portal pages: 2-2a data and Core functions, 2-2b number handling,
-  2-2c tenant pages (extensions with devices, numbers, outbound routes, office IPs, number
-  format; tenant admins only) and 2-2d platform pages (trunks, numbers, numbering) done (153
-  tests); next 2-2e lab check. Tenant-owned trunks have Core functions but no portal page yet. 2-0b
+- 2-3 Kamailio edge (next). 2-0b (Meow end to end) waits for call control (2-5).
   (Meow end to end) waits for call control (2-5).
 
 ## Next

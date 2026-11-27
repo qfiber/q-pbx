@@ -92,6 +92,7 @@ uses two roles (`qpbx_owner` for migrations, `qpbx` for the app); development us
 | `cd ansible && ansible-playbook site.yml` | Install or update the server in the inventory (lab by default) |
 | `lab/acme/pebble.sh <vm-ip>` | Local test ACME server (Pebble) with DNS, to test the certificate modes |
 | `node lab/done-when/phase1b.mjs <vm-ip>` | Phase 1b security checks in the lab (needs `qpbx_session_idle_timeout=60`) |
+| `node lab/done-when/phase2-config.mjs <vm-ip>` | 2-2 lab check: telephony pages end to end, device registration |
 | `lab/tools/sip_register.py <ip> <user> <domain> <password>` | Test a SIP registration against the lab |
 | `cd ansible && ansible-lint` | Lint the playbook and roles |
 | `scripts/check_module_docs.sh <base>` | Fails if an area's public API module changed without its `README.md` |

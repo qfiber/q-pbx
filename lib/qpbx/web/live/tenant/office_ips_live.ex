@@ -48,6 +48,9 @@ defmodule QPBX.Web.Tenant.OfficeIpsLive do
     end
   end
 
+  def handle_event("validate", %{"entry" => params}, socket),
+    do: {:noreply, assign(socket, form: to_form(Firewall.change_entry(params)))}
+
   def handle_event("delete", %{"id" => id}, socket) do
     # Only this tenant's entries are listed, and only those can be removed.
     entry =
@@ -87,7 +90,7 @@ defmodule QPBX.Web.Tenant.OfficeIpsLive do
           </.link>
         </:action>
       </.table>
-      <.form for={@form} id="office-ip-form" phx-submit="save" class="mt-4">
+      <.form for={@form} id="office-ip-form" phx-change="validate" phx-submit="save" class="mt-4">
         <.input field={@form[:cidr]} label={gettext("IP address or small prefix")} dir="ltr" required />
         <.input field={@form[:reason]} label={gettext("Description (e.g. Tel Aviv office)")} required />
         <.button variant="primary">{gettext("Add")}</.button>
