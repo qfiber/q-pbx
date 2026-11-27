@@ -41,6 +41,29 @@ defmodule QPBX.Core do
     do: save(:update, Tenant.changeset(tenant, attrs, sip_base_domain()), "tenant.update", actor)
 
   @doc """
+  Creates a tenant and its first tenant admin in one transaction, so a tenant never exists
+  without an admin. Returns `{:ok, %{tenant: t, admin: u}}` or `{:error, :tenant | :admin, changeset}`.
+  """
+  def create_tenant_with_admin(tenant_attrs, admin_attrs, actor) do
+    Repo.transaction(fn ->
+      with {:ok, tenant} <- create_tenant(tenant_attrs, actor) |> tag(:tenant),
+           {:ok, admin} <-
+             Accounts.create_user(tenant, admin_attrs, "tenant_admin", actor) |> tag(:admin) do
+        %{tenant: Repo.preload(tenant, :plan), admin: admin}
+      else
+        {:error, step, cs} -> Repo.rollback({step, cs})
+      end
+    end)
+    |> case do
+      {:ok, result} -> {:ok, result}
+      {:error, {step, cs}} -> {:error, step, cs}
+    end
+  end
+
+  defp tag({:ok, v}, _step), do: {:ok, v}
+  defp tag({:error, cs}, step), do: {:error, step, cs}
+
+  @doc """
   The limits in force for a tenant: the plan's limits with the tenant's overrides on top.
   Returns a map of limit name (atom) to integer, or nil for unlimited.
   """
@@ -63,6 +86,7 @@ defmodule QPBX.Core do
   defdelegate change_platform_admin(attrs \\ %{}), to: Accounts
   defdelegate get_platform_admin(id), to: Accounts
   defdelegate get_user(id), to: Accounts
+  defdelegate find_account_by_email(email), to: Accounts
   defdelegate list_users(tenant), to: Accounts
   defdelegate authenticate_platform_admin(email, password), to: Accounts
   defdelegate authenticate_user(email, password), to: Accounts

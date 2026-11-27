@@ -21,6 +21,19 @@ defmodule QPBX.Web do
     deps: [QPBX.Core, QPBX.Notify, QPBX.Firewall],
     exports: [Endpoint, Telemetry]
 
+  @doc """
+  Absolute URL of an account setup link. Built from config rather than the running endpoint,
+  so the release CLI can print links without starting the web server.
+  """
+  def setup_url(token) do
+    url = Application.get_env(:qpbx, QPBX.Web.Endpoint)[:url] || []
+    scheme = url[:scheme] || "http"
+    port = url[:port]
+    default_port? = port in [nil, 80, 443]
+    host = url[:host] || "localhost"
+    "#{scheme}://#{host}#{if default_port?, do: "", else: ":#{port}"}/setup/#{token}"
+  end
+
   def static_paths, do: ~w(assets fonts images favicon.ico robots.txt)
 
   def router do

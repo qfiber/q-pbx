@@ -47,6 +47,12 @@ defmodule QPBX.Core.Accounts do
   def get_user(id), do: User |> Repo.get(id) |> Repo.preload([:user_role, :tenant])
   def get_user!(id), do: User |> Repo.get!(id) |> Repo.preload([:user_role, :tenant])
 
+  @doc "A platform admin or tenant user with this email, platform admins first."
+  def find_account_by_email(email) do
+    Repo.get_by(PlatformAdmin, email: email) ||
+      Repo.get_by(User, email: email) |> Repo.preload([:user_role, :tenant])
+  end
+
   def list_users(%Tenant{id: tenant_id}),
     do:
       Repo.all(

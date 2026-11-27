@@ -26,6 +26,17 @@ if config_env() == :prod do
   config :qpbx, :sip_base_domain, System.fetch_env!("QPBX_SIP_BASE_DOMAIN")
   config :qpbx, :token_secret, System.fetch_env!("SECRET_KEY_BASE")
 
+  config :qpbx, :mail_from, {"Q-PBX", System.fetch_env!("QPBX_MAIL_FROM")}
+
+  config :qpbx, QPBX.Notify.Mailer,
+    adapter: Swoosh.Adapters.SMTP,
+    relay: System.fetch_env!("QPBX_SMTP_HOST"),
+    port: String.to_integer(System.get_env("QPBX_SMTP_PORT", "587")),
+    username: System.get_env("QPBX_SMTP_USERNAME"),
+    password: System.get_env("QPBX_SMTP_PASSWORD"),
+    tls: :always,
+    auth: if(System.get_env("QPBX_SMTP_USERNAME"), do: :always, else: :never)
+
   config :qpbx, QPBX.Core.Vault,
     ciphers: [
       default:

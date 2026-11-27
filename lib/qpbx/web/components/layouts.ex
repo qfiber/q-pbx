@@ -26,44 +26,48 @@ defmodule QPBX.Web.Layouts do
 
   """
   attr :flash, :map, required: true, doc: "the map of flash messages"
-
-  attr :current_scope, :map,
-    default: nil,
-    doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
-
+  attr :locale, :string, default: "en"
+  attr :current_account, :map, default: nil
   slot :inner_block, required: true
 
   def app(assigns) do
     ~H"""
-    <header class="navbar px-4 sm:px-6 lg:px-8">
-      <div class="flex-1">
-        <a href="/" class="flex-1 flex w-fit items-center gap-2">
-          <img src={~p"/images/logo.svg"} width="36" />
-          <span class="text-sm font-semibold">v{Application.spec(:phoenix, :vsn)}</span>
-        </a>
+    <header class="navbar px-4 sm:px-6 lg:px-8 border-b border-base-300">
+      <div class="flex-1 flex items-center gap-4">
+        <a href={home(@current_account)} class="text-lg font-semibold">Q-PBX</a>
+        <nav :if={match?(%QPBX.Core.PlatformAdmin{}, @current_account)} class="flex gap-2">
+          <.link navigate={~p"/platform"} class="btn btn-ghost btn-sm">{gettext("Tenants")}</.link>
+          <.link navigate={~p"/platform/plans"} class="btn btn-ghost btn-sm">
+            {gettext("Plans")}
+          </.link>
+        </nav>
       </div>
-      <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li>
-            <a href="https://phoenixframework.org/" class="btn btn-ghost">Website</a>
-          </li>
-          <li>
-            <a href="https://github.com/phoenixframework/phoenix" class="btn btn-ghost">GitHub</a>
-          </li>
-          <li>
-            <.theme_toggle />
-          </li>
-          <li>
-            <a href="https://hexdocs.pm/phoenix/overview.html" class="btn btn-primary">
-              Get Started <span aria-hidden="true">&rarr;</span>
-            </a>
-          </li>
-        </ul>
+      <div class="flex-none flex items-center gap-2">
+        <.link
+          :for={{code, name} <- [{"en", "English"}, {"ar", "العربية"}]}
+          :if={code != @locale}
+          href={~p"/locale/#{code}"}
+          lang={code}
+          class="btn btn-ghost btn-sm"
+          id={"locale-#{code}"}
+        >
+          {name}
+        </.link>
+        <.link
+          :if={@current_account}
+          href={~p"/logout"}
+          method="delete"
+          class="btn btn-ghost btn-sm"
+          id="logout"
+        >
+          {gettext("Log out")}
+        </.link>
+        <.theme_toggle />
       </div>
     </header>
 
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl space-y-4">
+    <main class="px-4 py-12 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-3xl space-y-4">
         {render_slot(@inner_block)}
       </div>
     </main>
@@ -71,6 +75,10 @@ defmodule QPBX.Web.Layouts do
     <.flash_group flash={@flash} />
     """
   end
+
+  defp home(%QPBX.Core.PlatformAdmin{}), do: ~p"/platform"
+  defp home(%QPBX.Core.User{}), do: ~p"/app"
+  defp home(_), do: ~p"/login"
 
   @doc """
   Shows the flash group with standard titles and content.

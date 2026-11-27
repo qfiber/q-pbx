@@ -1,0 +1,158 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: ar\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);\n"
+
+msgid "can't be blank"
+msgstr "لا يمكن أن يكون فارغًا"
+
+msgid "has already been taken"
+msgstr "مستخدم بالفعل"
+
+msgid "is invalid"
+msgstr "غير صالح"
+
+msgid "must be accepted"
+msgstr "يجب قبوله"
+
+msgid "has invalid format"
+msgstr "تنسيقه غير صالح"
+
+msgid "has an invalid entry"
+msgstr "يحتوي على قيمة غير صالحة"
+
+msgid "is reserved"
+msgstr "محجوز"
+
+msgid "does not match confirmation"
+msgstr "لا يطابق التأكيد"
+
+msgid "is still associated with this entry"
+msgstr "لا يزال مرتبطًا بهذا السجل"
+
+msgid "are still associated with this entry"
+msgstr "لا تزال مرتبطة بهذا السجل"
+
+msgid "should have %{count} item(s)"
+msgid_plural "should have %{count} item(s)"
+msgstr[0] "يجب أن يحتوي على %{count} عنصر"
+msgstr[1] "يجب أن يحتوي على %{count} عنصر"
+msgstr[2] "يجب أن يحتوي على %{count} عنصر"
+msgstr[3] "يجب أن يحتوي على %{count} عنصر"
+msgstr[4] "يجب أن يحتوي على %{count} عنصر"
+msgstr[5] "يجب أن يحتوي على %{count} عنصر"
+
+msgid "should be %{count} character(s)"
+msgid_plural "should be %{count} character(s)"
+msgstr[0] "يجب أن يتكون من %{count} حرف"
+msgstr[1] "يجب أن يتكون من %{count} حرف"
+msgstr[2] "يجب أن يتكون من %{count} حرف"
+msgstr[3] "يجب أن يتكون من %{count} حرف"
+msgstr[4] "يجب أن يتكون من %{count} حرف"
+msgstr[5] "يجب أن يتكون من %{count} حرف"
+
+msgid "should be %{count} byte(s)"
+msgid_plural "should be %{count} byte(s)"
+msgstr[0] "يجب أن يكون %{count} بايت"
+msgstr[1] "يجب أن يكون %{count} بايت"
+msgstr[2] "يجب أن يكون %{count} بايت"
+msgstr[3] "يجب أن يكون %{count} بايت"
+msgstr[4] "يجب أن يكون %{count} بايت"
+msgstr[5] "يجب أن يكون %{count} بايت"
+
+msgid "should have at least %{count} item(s)"
+msgid_plural "should have at least %{count} item(s)"
+msgstr[0] "يجب أن يحتوي على %{count} عنصر على الأقل"
+msgstr[1] "يجب أن يحتوي على %{count} عنصر على الأقل"
+msgstr[2] "يجب أن يحتوي على %{count} عنصر على الأقل"
+msgstr[3] "يجب أن يحتوي على %{count} عنصر على الأقل"
+msgstr[4] "يجب أن يحتوي على %{count} عنصر على الأقل"
+msgstr[5] "يجب أن يحتوي على %{count} عنصر على الأقل"
+
+msgid "should be at least %{count} character(s)"
+msgid_plural "should be at least %{count} character(s)"
+msgstr[0] "يجب أن يتكون من %{count} حرف على الأقل"
+msgstr[1] "يجب أن يتكون من %{count} حرف على الأقل"
+msgstr[2] "يجب أن يتكون من %{count} حرف على الأقل"
+msgstr[3] "يجب أن يتكون من %{count} حرف على الأقل"
+msgstr[4] "يجب أن يتكون من %{count} حرف على الأقل"
+msgstr[5] "يجب أن يتكون من %{count} حرف على الأقل"
+
+msgid "should be at least %{count} byte(s)"
+msgid_plural "should be at least %{count} byte(s)"
+msgstr[0] "يجب أن يكون %{count} بايت على الأقل"
+msgstr[1] "يجب أن يكون %{count} بايت على الأقل"
+msgstr[2] "يجب أن يكون %{count} بايت على الأقل"
+msgstr[3] "يجب أن يكون %{count} بايت على الأقل"
+msgstr[4] "يجب أن يكون %{count} بايت على الأقل"
+msgstr[5] "يجب أن يكون %{count} بايت على الأقل"
+
+msgid "should have at most %{count} item(s)"
+msgid_plural "should have at most %{count} item(s)"
+msgstr[0] "يجب أن يحتوي على %{count} عنصر على الأكثر"
+msgstr[1] "يجب أن يحتوي على %{count} عنصر على الأكثر"
+msgstr[2] "يجب أن يحتوي على %{count} عنصر على الأكثر"
+msgstr[3] "يجب أن يحتوي على %{count} عنصر على الأكثر"
+msgstr[4] "يجب أن يحتوي على %{count} عنصر على الأكثر"
+msgstr[5] "يجب أن يحتوي على %{count} عنصر على الأكثر"
+
+msgid "should be at most %{count} character(s)"
+msgid_plural "should be at most %{count} character(s)"
+msgstr[0] "يجب أن يتكون من %{count} حرف على الأكثر"
+msgstr[1] "يجب أن يتكون من %{count} حرف على الأكثر"
+msgstr[2] "يجب أن يتكون من %{count} حرف على الأكثر"
+msgstr[3] "يجب أن يتكون من %{count} حرف على الأكثر"
+msgstr[4] "يجب أن يتكون من %{count} حرف على الأكثر"
+msgstr[5] "يجب أن يتكون من %{count} حرف على الأكثر"
+
+msgid "should be at most %{count} byte(s)"
+msgid_plural "should be at most %{count} byte(s)"
+msgstr[0] "يجب أن يكون %{count} بايت على الأكثر"
+msgstr[1] "يجب أن يكون %{count} بايت على الأكثر"
+msgstr[2] "يجب أن يكون %{count} بايت على الأكثر"
+msgstr[3] "يجب أن يكون %{count} بايت على الأكثر"
+msgstr[4] "يجب أن يكون %{count} بايت على الأكثر"
+msgstr[5] "يجب أن يكون %{count} بايت على الأكثر"
+
+msgid "must be less than %{number}"
+msgstr "يجب أن يكون أقل من %{number}"
+
+msgid "must be greater than %{number}"
+msgstr "يجب أن يكون أكبر من %{number}"
+
+msgid "must be less than or equal to %{number}"
+msgstr "يجب أن يكون أقل من أو يساوي %{number}"
+
+msgid "must be greater than or equal to %{number}"
+msgstr "يجب أن يكون أكبر من أو يساوي %{number}"
+
+msgid "must be equal to %{number}"
+msgstr "يجب أن يساوي %{number}"
+
+#: lib/qpbx/web/error_messages.ex:11
+#, elixir-autogen, elixir-format, fuzzy
+msgid "does not match"
+msgstr "غير متطابق"
+
+#: lib/qpbx/web/error_messages.ex:14
+#, elixir-autogen, elixir-format
+msgid "is not a known time zone"
+msgstr "ليست منطقة زمنية معروفة"
+
+#: lib/qpbx/web/error_messages.ex:12
+#, elixir-autogen, elixir-format
+msgid "lowercase letters, digits and dashes, not starting or ending with a dash"
+msgstr "أحرف إنجليزية صغيرة وأرقام وشرطات، دون شرطة في البداية أو النهاية"
+
+#: lib/qpbx/web/error_messages.ex:13
+#, elixir-autogen, elixir-format
+msgid "must be a valid email"
+msgstr "يجب أن يكون بريدًا إلكترونيًا صالحًا"

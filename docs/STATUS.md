@@ -66,17 +66,28 @@ Kamailio gets its real config.
   (`QPBX.Core.Vault`, key `QPBX_CLOAK_KEY`); `audit_logs` written in the same transaction as
   every change, never containing passwords or secrets; RLS (`QPBX.Repo.RLS`) on `users`,
   `user_roles`, `audit_logs` with `QPBX.Core.with_tenant/2`. 11 tests.
+- P1-04 remainder: setup-link email (`QPBX.Notify.deliver_setup_link/2`, Oban queue `notify`,
+  English/Arabic RTL, SMTP via `QPBX_SMTP_*` in prod; completed jobs pruned after a day) and
+  the release CLI `QPBX.Release` (`migrate/0`, `create_platform_admin/2`, `setup_link/1`).
+- P1-05 Portal shell: English and Arabic (`dir="rtl"`) with a language switch kept across
+  login; separate logins `/platform/login` and `/login`; two-step login with TOTP; setup link
+  page then 2FA enrolment (mandatory for platform admins, skippable for tenant users);
+  12-hour sessions; platform pages for plans and for creating a tenant together with its first
+  tenant admin in one transaction (the setup link is shown once and emailed); tenant landing
+  page. Tests cover the whole Done-when portal flow in both languages, plus wrong password,
+  wrong code, enrol-or-no-session, role separation, expiry, one-time links and the
+  open-redirect guard. 39 tests in total.
 
 - License: AGPL-3.0 kept, `CLA.md` and `CONTRIBUTING.md`
   added, copyright notice in `README.md`. Code pushed to `github.com/qfiber/q-pbx` (public).
 
 ## In progress
 
-- P1-04 remainder: setup-link email (`QPBX.Notify`) and CLI command, built with P1-05 because they need the portal routes.
+- P1-06 Health endpoint.
 
 ## Next
 
-- P1-05 Portal shell.
+- P1-07 `qpbx-fwd` helper (Go).
 
 ## Blockers / open questions for phase 1
 
@@ -90,7 +101,12 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
 
 ## Known bugs
 
-None (no code yet).
+- Validation messages built at runtime (for example "unknown feature x") are not translated;
+  the fixed ones are.
+- Arabic portal texts were written by Claude; a native speaker should review the wording
+  (for example "التحويلات الداخلية" for extensions).
+- No login rate limit or lockout yet; brute-force alerts are phase 3 (Argon2 slows guessing).
+- Sessions are signed cookies; they expire but cannot be revoked server-side before expiry.
 
 ## Done-when results (phase 1)
 

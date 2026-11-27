@@ -6,9 +6,10 @@
 Every changing function takes an `actor` (`%PlatformAdmin{}`, `%User{}` or `{:system, name}`)
 and writes an audit entry in the same transaction.
 - Plans: `list_plans/0`, `get_plan!/1`, `change_plan/2`, `create_plan/2`, `update_plan/3`.
-- Tenants: `list_tenants/0`, `get_tenant!/1`, `change_tenant/2`, `create_tenant/2`, `update_tenant/3`.
+- Tenants: `list_tenants/0`, `get_tenant!/1`, `change_tenant/2`, `create_tenant/2`, `update_tenant/3`,
+  `create_tenant_with_admin/3` (tenant and first tenant admin in one transaction).
 - Accounts: `create_platform_admin/2`, `create_user/4` (role `tenant_admin` | `tenant_user`),
-  `get_platform_admin/1`, `get_user/1`, `list_users/1`, `authenticate_platform_admin/2`,
+  `get_platform_admin/1`, `get_user/1`, `find_account_by_email/1`, `list_users/1`, `authenticate_platform_admin/2`,
   `authenticate_user/2`, `change_user/1`, `change_platform_admin/1`, `change_password/2`.
 - Setup links: `setup_token/1`, `account_from_setup_token/1`, `complete_setup/2`.
 - TOTP: `new_totp_secret/0`, `totp_uri/2`, `totp_enabled?/1`, `requires_totp?/1`,

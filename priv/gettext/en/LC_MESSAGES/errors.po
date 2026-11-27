@@ -110,3 +110,24 @@ msgstr ""
 
 msgid "must be equal to %{number}"
 msgstr ""
+
+## From Ecto.Changeset.validate_confirmation/3
+#: lib/qpbx/web/error_messages.ex:11
+#, elixir-autogen, elixir-format, fuzzy
+msgid "does not match"
+msgstr ""
+
+#: lib/qpbx/web/error_messages.ex:14
+#, elixir-autogen, elixir-format
+msgid "is not a known time zone"
+msgstr ""
+
+#: lib/qpbx/web/error_messages.ex:12
+#, elixir-autogen, elixir-format
+msgid "lowercase letters, digits and dashes, not starting or ending with a dash"
+msgstr ""
+
+#: lib/qpbx/web/error_messages.ex:13
+#, elixir-autogen, elixir-format
+msgid "must be a valid email"
+msgstr ""

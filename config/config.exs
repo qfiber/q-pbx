@@ -46,7 +46,9 @@ config :qpbx, QPBX.Core.Vault,
 config :qpbx, Oban,
   engine: Oban.Engines.Basic,
   repo: QPBX.Repo,
-  queues: [notify: 5]
+  queues: [notify: 5],
+  # Completed jobs (which carry setup links) are deleted after a day.
+  plugins: [{Oban.Plugins.Pruner, max_age: 86_400}]
 
 # Configure the mailer
 #

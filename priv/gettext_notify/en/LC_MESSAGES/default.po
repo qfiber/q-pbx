@@ -1,0 +1,32 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: lib/qpbx/notify/setup_link_email.ex:23
+#, elixir-autogen, elixir-format
+msgid "An account was created for you on Q-PBX. Open this link to choose your password and set up two-factor authentication:"
+msgstr ""
+
+#: lib/qpbx/notify/setup_link_email.ex:20
+#, elixir-autogen, elixir-format
+msgid "Hello %{name},"
+msgstr ""
+
+#: lib/qpbx/notify/setup_link_email.ex:32
+#, elixir-autogen, elixir-format
+msgid "Set up your Q-PBX account"
+msgstr ""
+
+#: lib/qpbx/notify/setup_link_email.ex:27
+#, elixir-autogen, elixir-format
+msgid "The link works once and expires in 48 hours."
+msgstr ""

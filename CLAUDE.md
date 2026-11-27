@@ -76,6 +76,7 @@ then `podman exec qpbx-pg psql -U postgres -c "create role qpbx login password '
 | `mix phx.server` | Run the app on localhost:4000 |
 | `mix test` | Test suite |
 | `mix precommit` | Compile with warnings as errors, format, Credo strict, tests |
+| `mix run -e 'QPBX.Release.create_platform_admin("you@example.com", "You")'` | Dev: first platform admin; prints its setup link (prod: `bin/qpbx eval '...'`) |
 | `mix dialyzer` | Dialyzer (PLT cached in `priv/plts/`) |
 | `scripts/check_boundary_enforced.sh` | Proves a cross-boundary reference fails the build |
 | `scripts/check_module_docs.sh <base>` | Fails if an area's public API module changed without its `CLAUDE.md` |
