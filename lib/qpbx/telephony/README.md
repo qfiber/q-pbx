@@ -39,11 +39,12 @@ platform's and the DID index, loaded on first use and all dropped on `ConfigChan
 **Public API:** `dialplan_xml/1`, `connected?/0`, `active_calls/0`, `curl_password/0`;
 `fraud_settings/0`, `change_fraud_settings/2`, `update_fraud_settings/2`, `list_fraud_blocks/0`,
 `lift_fraud_block/2`; call records for tenant admins: `search_cdrs/4` (filters `from`, `to`,
-`number`, `direction`, `disposition`, `leg`; `limit`, `offset`), `stream_cdrs/4` (all matches,
+`number`, `direction`, `disposition`, `leg`, `extension` (one extension's calls: its own a-legs
+and the legs that rang it, one row per call); `limit`, `offset`), `stream_cdrs/4` (all matches,
 oldest first, inside a transaction), `usage_daily/2`, `cdr_directions/0`; voicemail for tenant admins (scope first): `mailbox/2`, `change_mailbox/2`,
 `save_mailbox/4`, `delete_mailbox/3` (rows and files; call it before deleting the extension),
-`list_voicemails/1` (`{message, extension_id}`), `voicemail_audio/2`, `save_voicemail/3`,
-`delete_voicemail/3`, `greetings/2`, `greeting_kinds/0`, `put_greeting/5` (MP3 or WAV by
+`list_voicemails/2` (`{message, extension_id}`), `voicemail_audio/3`, `save_voicemail/4`,
+`delete_voicemail/4` (a last `ext_id` limits each to one extension's mailbox: a tenant user's own), `greetings/2`, `greeting_kinds/0`, `put_greeting/5` (MP3 or WAV by
 content, up to 5 MB), `delete_greeting/4`; `voicemail_counts/1` (`%{extension_id => {new,
 saved}}`, for the voicemail lights);
 `child_spec/1` (started by the application; the event socket only with `config :qpbx,

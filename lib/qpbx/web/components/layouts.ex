@@ -66,6 +66,11 @@ defmodule QPBX.Web.Layouts do
             {gettext("Fraud protection")}
           </.link>
         </nav>
+        <nav :if={tenant_user?(@current_account)} class="flex flex-wrap gap-2">
+          <.link navigate={~p"/app/me"} class="btn btn-ghost btn-sm" id="nav-me">
+            {gettext("My extension")}
+          </.link>
+        </nav>
         <nav :if={tenant_admin?(@current_account)} class="flex flex-wrap gap-2">
           <.link navigate={~p"/app/extensions"} class="btn btn-ghost btn-sm" id="nav-extensions">
             {gettext("Extensions")}
@@ -75,6 +80,9 @@ defmodule QPBX.Web.Layouts do
           </.link>
           <.link navigate={~p"/app/calls"} class="btn btn-ghost btn-sm" id="nav-calls">
             {gettext("Calls")}
+          </.link>
+          <.link navigate={~p"/app/users"} class="btn btn-ghost btn-sm" id="nav-users">
+            {gettext("Users")}
           </.link>
           <.link navigate={~p"/app/numbers"} class="btn btn-ghost btn-sm" id="nav-numbers">
             {gettext("Numbers")}
@@ -148,6 +156,8 @@ defmodule QPBX.Web.Layouts do
 
   defp tenant_admin?(%QPBX.Core.User{} = user), do: QPBX.Core.User.role(user) == "tenant_admin"
   defp tenant_admin?(_), do: false
+
+  defp tenant_user?(account), do: match?(%QPBX.Core.User{}, account)
 
   defp account_path(%QPBX.Core.PlatformAdmin{}), do: ~p"/platform/account"
   defp account_path(_), do: ~p"/app/account"

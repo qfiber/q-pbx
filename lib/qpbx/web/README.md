@@ -24,13 +24,17 @@ config reports `not_configured` and does not count.
 `/app/numbers`, `/app/routes`, `/app/office-ips`, `/app/number-format`,
 `/app/extensions/:id/voicemail` (mailbox and greetings), `/app/voicemail` (messages, played
 in the browser; playing marks heard), `/app/calls` (call history with filters in the URL,
-daily totals)) are in the
+daily totals), `/app/users` (invite, extension, role, remove)) are in the
 `:tenant_admin` live session: tenant users are sent back to `/app`. `QPBX.Web.NumberInput`
 turns numbers typed the local way into E.164 with the scope's number rule before Core sees
 them. A device's SIP password is shown once, after creation or reset.
 
+**My extension:** `/app/me` (`:tenant_user` live session, every tenant user): the user's own
+extension's voicemail, recent calls, forwarding and DND, and devices (read only).
+
 **Voicemail audio:** `GET /app/voicemail/:id/audio` (`VoicemailController`): the decrypted
-message for a signed-in tenant admin of its tenant (404 otherwise), `cache-control: private,
+message for a signed-in tenant admin of its tenant, or for the tenant user whose own extension
+it belongs to (404 otherwise), `cache-control: private,
 no-store`. Deleting an extension deletes its mailbox (files included) first.
 
 **Call records export:** `GET /app/calls/export` (`CallsController`, tenant admins; the same

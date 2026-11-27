@@ -10,6 +10,8 @@ defmodule QPBX.Core.User do
   schema "users" do
     Credentials.fields()
     belongs_to :tenant, Tenant
+    # The user's own extension (nil: none yet); set by a tenant admin.
+    field :extension_id, :binary_id
     has_one :user_role, UserRole
     timestamps(type: :utc_datetime)
   end

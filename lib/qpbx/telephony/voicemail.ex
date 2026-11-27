@@ -70,23 +70,26 @@ defmodule QPBX.Telephony.Voicemail do
     :ok
   end
 
-  @doc "The tenant's messages, newest first, each with its mailbox's extension id."
-  def list_messages(%Scope{kind: :tenant, tenant_id: tid} = scope) do
-    Scope.run(scope, fn ->
-      Repo.all(
-        from v in Message,
-          join: m in Mailbox,
-          on: m.id == v.mailbox_id,
-          where: v.tenant_id == ^tid,
-          order_by: [desc: v.inserted_at],
-          select: {v, m.extension_id}
-      )
-    end)
+  @doc """
+  The tenant's messages, newest first, each with its mailbox's extension id; with `ext_id`
+  only that extension's (a tenant user's own).
+  """
+  def list_messages(%Scope{kind: :tenant, tenant_id: tid} = scope, ext_id \\ nil) do
+    q =
+      from v in Message,
+        join: m in Mailbox,
+        on: m.id == v.mailbox_id,
+        where: v.tenant_id == ^tid,
+        order_by: [desc: v.inserted_at],
+        select: {v, m.extension_id}
+
+    q = if ext_id, do: where(q, [_v, m], m.extension_id == ^ext_id), else: q
+    Scope.run(scope, fn -> Repo.all(q) end)
   end
 
-  @doc "A message's audio: `{:ok, binary, format}`."
-  def message_audio(%Scope{kind: :tenant} = scope, id) do
-    with %Message{} = v <- get_message(scope, id),
+  @doc "A message's audio: `{:ok, binary, format}`; with `ext_id`, only that extension's."
+  def message_audio(%Scope{kind: :tenant} = scope, id, ext_id \\ nil) do
+    with %Message{} = v <- get_message(scope, id, ext_id),
          {:ok, audio} <- Storage.get(v.file_key) do
       {:ok, audio, v.format}
     else
@@ -95,24 +98,34 @@ defmodule QPBX.Telephony.Voicemail do
     end
   end
 
-  def mark_saved(%Scope{kind: :tenant} = scope, id, actor) do
-    with %Message{} = v <- get_message(scope, id) do
+  def mark_saved(%Scope{kind: :tenant} = scope, id, actor, ext_id \\ nil) do
+    with %Message{} = v <- get_message(scope, id, ext_id) do
       Core.audit(actor, "voicemail.save", nil, %{tenant_id: v.tenant_id, voicemail_id: v.id})
       set_folder(v, "saved")
     end
   end
 
-  def delete_message(%Scope{kind: :tenant} = scope, id, actor) do
-    with %Message{} = v <- get_message(scope, id) do
+  def delete_message(%Scope{kind: :tenant} = scope, id, actor, ext_id \\ nil) do
+    with %Message{} = v <- get_message(scope, id, ext_id) do
       Core.audit(actor, "voicemail.delete", nil, %{tenant_id: v.tenant_id, voicemail_id: v.id})
       remove(v)
     end
   end
 
-  defp get_message(%Scope{tenant_id: tid} = scope, id) do
+  defp get_message(%Scope{tenant_id: tid} = scope, id, ext_id) do
     case Ecto.UUID.cast(id) do
-      {:ok, id} -> Scope.run(scope, fn -> Repo.get_by(Message, id: id, tenant_id: tid) end)
-      :error -> nil
+      {:ok, id} ->
+        q =
+          from v in Message,
+            join: m in Mailbox,
+            on: m.id == v.mailbox_id,
+            where: v.id == ^id and v.tenant_id == ^tid
+
+        q = if ext_id, do: where(q, [_v, m], m.extension_id == ^ext_id), else: q
+        Scope.run(scope, fn -> Repo.one(q) end)
+
+      :error ->
+        nil
     end
   end
 

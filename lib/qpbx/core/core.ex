@@ -150,6 +150,24 @@ defmodule QPBX.Core do
   defdelegate enable_totp(account, secret, code), to: Accounts
   defdelegate verify_totp(account, code), to: Accounts
 
+  ## A tenant's users (tenant admins; see QPBX.Core.Users)
+
+  defdelegate list_tenant_users(scope), to: QPBX.Core.Users, as: :list
+  defdelegate invite_user(scope, attrs, actor), to: QPBX.Core.Users, as: :invite
+
+  defdelegate set_user_extension(scope, user_id, ext_id, actor),
+    to: QPBX.Core.Users,
+    as: :set_extension
+
+  defdelegate set_user_role(scope, user_id, role, actor), to: QPBX.Core.Users, as: :set_role
+  defdelegate delete_user(scope, user_id, actor), to: QPBX.Core.Users, as: :delete
+
+  @doc "The signed-in tenant user's own extension (with devices), or nil."
+  defdelegate my_extension(scope), to: QPBX.Core.Users
+
+  @doc "A tenant user changes their own extension's call features (forwarding, DND, follow-me)."
+  defdelegate update_my_extension(scope, attrs, actor), to: QPBX.Core.Users
+
   ## Sessions (see QPBX.Core.Sessions)
 
   defdelegate create_session(account, meta \\ %{}), to: QPBX.Core.Sessions, as: :create

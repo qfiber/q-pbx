@@ -25,10 +25,15 @@ defmodule QPBX.Telephony do
   defdelegate change_mailbox(mailbox, attrs \\ %{}), to: Voicemail
   defdelegate save_mailbox(scope, ext_id, attrs, actor), to: Voicemail
   defdelegate delete_mailbox(scope, ext_id, actor), to: Voicemail
-  defdelegate list_voicemails(scope), to: Voicemail, as: :list_messages
-  defdelegate voicemail_audio(scope, id), to: Voicemail, as: :message_audio
-  defdelegate save_voicemail(scope, id, actor), to: Voicemail, as: :mark_saved
-  defdelegate delete_voicemail(scope, id, actor), to: Voicemail, as: :delete_message
+  # The optional `ext_id` limits these to one extension's mailbox (a tenant user's own).
+  defdelegate list_voicemails(scope, ext_id \\ nil), to: Voicemail, as: :list_messages
+  defdelegate voicemail_audio(scope, id, ext_id \\ nil), to: Voicemail, as: :message_audio
+  defdelegate save_voicemail(scope, id, actor, ext_id \\ nil), to: Voicemail, as: :mark_saved
+
+  defdelegate delete_voicemail(scope, id, actor, ext_id \\ nil),
+    to: Voicemail,
+    as: :delete_message
+
   defdelegate greetings(scope, ext_id), to: Voicemail
   defdelegate greeting_kinds(), to: Voicemail.Greeting, as: :kinds
   defdelegate put_greeting(scope, ext_id, kind, audio, actor), to: Voicemail

@@ -219,14 +219,33 @@ defmodule QPBX.Telephony.Cdrs do
   end
 
   defp query(tid, f, tz, opts) do
-    q =
-      from c in Cdr,
-        where: c.tenant_id == ^tid,
-        order_by: [desc: c.started_at],
-        limit: ^Keyword.get(opts, :limit, 50),
-        offset: ^Keyword.get(opts, :offset, 0)
+    filtered = filters(from(c in Cdr, where: c.tenant_id == ^tid), f, tz)
 
-    q = if f["leg"] == "all", do: q, else: where(q, [c], c.leg == "a")
+    base =
+      case f["extension"] do
+        n when is_binary(n) and n != "" ->
+          # One extension's calls: it called (its a-leg) or was rung (a leg to it), one row a
+          # call (the a-leg when there is one).
+          mine =
+            where(filtered, [c], (c.leg == "a" and c.caller_number == ^n) or c.destination == ^n)
+
+          from(
+            c in subquery(
+              from(c in mine, distinct: c.call_uuid, order_by: [c.call_uuid, asc: c.leg])
+            )
+          )
+
+        _ ->
+          if f["leg"] == "all", do: filtered, else: where(filtered, [c], c.leg == "a")
+      end
+
+    from c in base,
+      order_by: [desc: c.started_at],
+      limit: ^Keyword.get(opts, :limit, 50),
+      offset: ^Keyword.get(opts, :offset, 0)
+  end
+
+  defp filters(q, f, tz) do
     q = if d = date(f["from"]), do: where(q, [c], c.started_at >= ^day_start(d, tz)), else: q
 
     q =

@@ -2,6 +2,15 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Tenant users and their own extension (2-11)
+
+- **One user per extension, one extension per user** (`users.extension_id`, unique), set by a
+  tenant admin; linking an extension to a new user unlinks it from the previous one.
+- **What a tenant user may change is a fixed list** (DND, call waiting, forwarding, ring time,
+  follow-me), enforced in Core, not only in the page; name, number, outside caller ID and
+  devices stay with admins (spec: tenant users see their devices).
+- **Recordings and the fax inbox** join My extension when those features exist (phases 3 and 4).
+
 ## 2026-11-27: Our own libshout in the FreeSWITCH package (2-11)
 
 - **Cairo and X11 came from Debian's libshout3** (through libtheora, a video codec), which

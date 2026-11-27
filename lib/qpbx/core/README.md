@@ -8,6 +8,13 @@
 `EmergencyRoute`, `NumberRule`, `NumberClass`; `Vault`, `Scope`, `KeyProvider`; and `Numbers`).
 Every changing function takes an `actor` (`%PlatformAdmin{}`, `%User{}` or `{:system, name}`)
 and writes an audit entry in the same transaction.
+- A tenant's users (tenant scope, for tenant admins; `QPBX.Core.Users`): `list_tenant_users/1`,
+  `invite_user/3` (role, optional `extension_id`; the caller sends the setup link),
+  `set_user_extension/4` (one user per extension: it moves from whoever had it),
+  `set_user_role/4`, `delete_user/3` (ends their sessions); the last tenant admin cannot be
+  demoted or removed, nobody removes themselves. For the signed-in tenant user:
+  `my_extension/1`, `update_my_extension/3` (call features only: DND, call waiting,
+  forwarding, ring time, follow-me). `users.extension_id` is cleared when the extension goes.
 - Plans: `list_plans/0`, `get_plan!/1`, `change_plan/2`, `create_plan/2`, `update_plan/3`
   (announces `ConfigChanged` "plans", so call control uses the new limits at once).
 - Tenants: `list_tenants/0`, `get_tenant!/1`, `change_tenant/2`, `create_tenant/2`, `update_tenant/3`,

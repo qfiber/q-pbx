@@ -92,6 +92,7 @@ defmodule QPBX.Web.Router do
       live "/extensions/:id/voicemail", MailboxLive, :show
       live "/voicemail", VoicemailLive, :index
       live "/calls", CallsLive, :index
+      live "/users", UsersLive, :index
       live "/numbers", NumbersLive, :index
       live "/routes", RoutesLive, :index
       live "/office-ips", OfficeIpsLive, :index
@@ -100,6 +101,7 @@ defmodule QPBX.Web.Router do
 
     live_session :tenant_user, on_mount: {QPBX.Web.Auth, :tenant_user} do
       live "/", HomeLive, :index
+      live "/me", MyExtensionLive, :index
 
       # Shared page: full module name, not the surrounding scope's alias.
       scope "/", alias: false do

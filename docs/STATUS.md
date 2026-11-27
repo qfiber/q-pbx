@@ -51,7 +51,11 @@ Kamailio gets its real config.
   encrypted backup was done in 2-10. Also fixed: `<.button>` with an extra class lost its own
   classes (the login page's buttons were unstyled). Lab with the new FreeSWITCH: voicemail
   19/19 (MP3 through our libshout), calls 29/29, CDRs 16/16, admission 21/21, SIPp 11/11, Meow
-  94/94. 239 tests.
+  94/94. Then (added to 2-11 on 2026-11-27): tenant users linked to their own extension:
+  tenant admins get a Users page (invite with a setup link, link an extension, change role,
+  remove; the last admin stays), and every tenant user gets My extension (its voicemail with
+  playback, recent calls, forwarding and DND, devices); the audio endpoint serves a tenant user
+  their own extension's messages only. 247 tests.
 
 - 2-10 Backups and restore (done): roles `backup` (pgBackRest with continuous WAL archiving,
   AES-256 encrypted with a cipher in the secrets file, full on Sundays and differential
@@ -452,7 +456,7 @@ a measured time.
 | 2-8 | CDRs | One row per call leg from event-socket events, written in batches; import of the FreeSWITCH JSON spool (no CDR lost while the app is down); search and CSV export; daily usage roll-up |
 | 2-9 | Automated call tests | SIPp scenarios in CI against real Kamailio and FreeSWITCH (containers in CI only): register, internal call, inbound DID, outbound with limits and failover, voicemail, two tenants with the same extension numbers |
 | 2-10 | Backups and restore | pgBackRest (encrypted, point-in-time) and restic (files and the secrets file, separate password) to an off-server target (lab: a second VM), on timers, with backup status in health; a restore playbook; one timed restore onto a fresh VM |
-| 2-11 | Leftovers | Trim FreeSWITCH image dependencies; watch tenant certificate renewals; secrets file in the encrypted backup; edit form for plans (today plans can only be created) |
+| 2-11 | Leftovers | Trim FreeSWITCH image dependencies; watch tenant certificate renewals; secrets file in the encrypted backup; edit form for plans (today plans can only be created); tenant users linked to their own extension |
 | 2-12 | Done-when verification | Lab and CI: the spec's checks, measured restore time |
 
 ## Phase 1b task breakdown
@@ -520,9 +524,6 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
 
 ## Open questions for later phases
 
-- Voicemail for tenant users: users are not linked to an extension yet, so only tenant admins
-  see and play messages in the portal (phones use `*97`). The spec gives tenant users their
-  own extension's voicemail: needs a user-extension link (proposed for 2-11 or phase 3).
 - Voice prompts: FreeSWITCH's "Callie" English set; packagers (including FreeSWITCH's own
   spec file) list it as MPL. To confirm before the first public release.
 
