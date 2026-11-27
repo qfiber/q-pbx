@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="priv/static/images/logo-dark.svg">
+    <img src="priv/static/images/logo.svg" alt="Q-PBX" width="420">
+  </picture>
+</p>
+
 # Q-PBX
 
 API-first, multi-tenant cloud PBX with first-class fax, built on FreeSWITCH and Kamailio with

@@ -5,6 +5,9 @@ defmodule QPBX.Web.AuthHTML do
   def login(assigns) do
     ~H"""
     <Layouts.app flash={@flash} locale={@locale}>
+      <div class="flex justify-center py-4">
+        <QPBX.Web.Logo.logo class="h-20 w-auto" />
+      </div>
       <.header>
         {if @platform?, do: gettext("Platform admin login"), else: gettext("Log in")}
       </.header>

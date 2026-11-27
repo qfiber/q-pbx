@@ -39,8 +39,8 @@ defmodule QPBX.Web.Layouts do
     ~H"""
     <header class="navbar px-4 sm:px-6 lg:px-8 border-b border-base-300">
       <div class="flex-1 flex items-center gap-4">
-        <a href={home(@current_account)} class="text-lg font-semibold whitespace-nowrap" dir="ltr">
-          Q-PBX
+        <a href={home(@current_account)} class="shrink-0" id="home-logo" aria-label="Q-PBX">
+          <QPBX.Web.Logo.logo class="h-7 w-auto" />
         </a>
         <nav :if={match?(%QPBX.Core.PlatformAdmin{}, @current_account)} class="flex gap-2">
           <.link navigate={~p"/platform"} class="btn btn-ghost btn-sm">{gettext("Tenants")}</.link>

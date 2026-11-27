@@ -99,6 +99,14 @@
 /* Use the data attribute for dark mode  */
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
+/* The logo: the brand's dark teal on light themes, a light teal on dark ones (an explicit
+   dark theme, or the system's when no theme is chosen). */
+.qpbx-logo { color: #174355; }
+[data-theme=dark] .qpbx-logo { color: #8cc8d8; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .qpbx-logo { color: #8cc8d8; }
+}
+
 /* Make LiveView wrapper divs transparent for layout */
 [data-phx-session], [data-phx-teleported-src] { display: contents }
 
