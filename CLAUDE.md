@@ -76,6 +76,11 @@ Toolchain: see `.tool-versions` (Elixir 1.18.4 / OTP 28). Dev Postgres 16:
 | `mix precommit` | Compile with warnings as errors, format, Credo strict, tests |
 | `mix dialyzer` | Dialyzer (PLT cached in `priv/plts/`) |
 | `scripts/check_boundary_enforced.sh` | Proves a cross-boundary reference fails the build |
+| `scripts/check_module_docs.sh <base>` | Fails if an area's public API module changed without its `CLAUDE.md` |
+| `scripts/test/doc_checks_test.sh` | Tests for the session hook and the module-doc check |
+
+Session hook (`.claude/settings.json`): finishing a session is blocked if code changed and
+`docs/STATUS.md` did not. Needs `jq`.
 
 Each area's public API module lives inside its folder (`lib/qpbx/core/core.ex` defines
 `QPBX.Core`) and declares its boundary with `use Boundary, deps: [...], exports: [...]`.

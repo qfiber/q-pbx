@@ -47,14 +47,20 @@ Kamailio gets its real config.
   inside their folders (`lib/qpbx/core/core.ex`). `QPBX.Repo` is its own boundary. Credo
   strict and Dialyzer pass. `scripts/check_boundary_enforced.sh` proves a forbidden reference
   fails the build. AGPL-3.0 `LICENSE` added.
+- P1-02 Session hook and doc checks: `.claude/settings.json` runs
+  `scripts/hooks/session_start.sh` (records the starting commit) and
+  `scripts/hooks/require_status_update.sh` (Stop hook; blocks when non-Markdown files outside
+  `docs/` changed and `docs/STATUS.md` did not). `scripts/check_module_docs.sh <base>` fails
+  when `lib/qpbx/<area>/<area>.ex` changed without `lib/qpbx/<area>/CLAUDE.md`. Tests:
+  `scripts/test/doc_checks_test.sh` (8 cases). Hooks need `jq` and `git`.
 
 ## In progress
 
-- P1-02 Session hook and doc checks.
+- P1-03 Core: plans and tenants.
 
 ## Next
 
-- P1-03 Core: plans and tenants.
+- P1-04 Core: accounts, roles, audit log.
 
 ## Blockers / open questions for phase 1
 
