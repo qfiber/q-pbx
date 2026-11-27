@@ -1,0 +1,9 @@
+# Minimal ruleset for the integration test: the managed sets plus one rule that uses them.
+table inet qpbx {
+  set mgmt_v4 { type ipv4_addr; flags interval; }
+  set mgmt_v6 { type ipv6_addr; flags interval; }
+  chain input {
+    type filter hook input priority 0; policy accept;
+    ip saddr @mgmt_v4 tcp dport 22 accept
+  }
+}

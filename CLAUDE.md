@@ -61,6 +61,8 @@ its public API module or its events. No module touches another module's tables o
 | `qpbx_firewall` | `lib/qpbx/firewall/` | `QPBX.Firewall` | Allow/block lists, nftables and Kamailio sync |
 | `qpbx_web` | `lib/qpbx/web/` | `QPBX.Web` | Phoenix: LiveView portal, REST API, health endpoint |
 
+The firewall helper `qpbx-fwd` is a separate Go program in `fwd/` (see `fwd/CLAUDE.md`).
+
 Each module folder has its own `CLAUDE.md`: purpose, public API, events emitted and consumed, gotchas.
 
 ## Commands
@@ -79,6 +81,8 @@ then `podman exec qpbx-pg psql -U postgres -c "create role qpbx login password '
 | `mix run -e 'QPBX.Release.create_platform_admin("you@example.com", "You")'` | Dev: first platform admin; prints its setup link (prod: `bin/qpbx eval '...'`) |
 | `mix dialyzer` | Dialyzer (PLT cached in `priv/plts/`) |
 | `scripts/check_boundary_enforced.sh` | Proves a cross-boundary reference fails the build |
+| `cd fwd && go test ./...` | `qpbx-fwd` unit tests |
+| `fwd/integration_test.sh` | `qpbx-fwd` against real nftables in a Debian 12 container |
 | `scripts/check_module_docs.sh <base>` | Fails if an area's public API module changed without its `CLAUDE.md` |
 | `scripts/test/doc_checks_test.sh` | Tests for the session hook and the module-doc check |
 

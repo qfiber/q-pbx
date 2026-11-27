@@ -85,17 +85,22 @@ Kamailio gets its real config.
   `core.version`, trunk registrations (`not_configured` until phase 2). `down` = a critical
   component (PostgreSQL, FreeSWITCH, Kamailio) in error. 10 new tests; smoke-tested on a dev
   server.
+- P1-07 `qpbx-fwd` helper (Go, stdlib only) in `fwd/`: see `fwd/CLAUDE.md`. Unit tests for
+  parsing, validation (injection attempts, wrong family, zones, unknown ops/sets/fields,
+  size limit), script generation, save/restore and tampered state; integration test against
+  real nftables in a Debian 12 container (replace/add/remove, refusals leave rules unchanged,
+  state restored after a simulated reboot): passing.
 
 - License: AGPL-3.0 kept, `CLA.md` and `CONTRIBUTING.md`
   added, copyright notice in `README.md`. Code pushed to `github.com/qfiber/q-pbx` (public).
 
 ## In progress
 
-- P1-07 `qpbx-fwd` helper (Go).
+- P1-08 Firewall module.
 
 ## Next
 
-- P1-08 Firewall module.
+- P1-09 Ansible roles and playbook.
 
 ## Blockers / open questions for phase 1
 
