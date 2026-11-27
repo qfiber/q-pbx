@@ -2,6 +2,14 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Phase 2 closed; known limits moved to a deferred phase
+
+- Phase 2 is closed on its done-when conditions (all met in the lab). The real Grandstream
+  phone test agreed for phase 2 is deferred, and the known limits (design pass, real
+  carrier, IPv6, S3 and append-only backups, tenant deletion, prompt license, email delivery,
+  runtime translations, an unused API) go to "Phase D" in `docs/STATUS.md`, to be scheduled
+  later.
+
 ## 2026-11-27: Tenant users and their own extension (2-11)
 
 - **One user per extension, one extension per user** (`users.extension_id`, unique), set by a

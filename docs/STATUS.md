@@ -446,6 +446,25 @@ Kamailio gets its real config.
   load in the lab), languages moved to one config list, firewall and plan forms now clear
   after a save (live validation added).
 
+## Phase D: deferred fixes (scheduled later, added 2026-11-27)
+
+Known limits found in phases 1 and 2, kept here so they are fixed rather than forgotten. Not
+part of the spec's numbered phases; it runs when scheduled.
+
+| # | Item | Notes |
+| --- | --- | --- |
+| D-1 | Real Grandstream phone test | Deferred: busy lamps, voicemail light, transfers and audio on a desk phone, with the server logs watched |
+| D-2 | Portal design pass | Every page works but none is designed; a proper visual and usability pass |
+| D-3 | Real carrier | Carriers are simulated in the lab; test a real one (registration and IP) on a public server |
+| D-4 | IPv6 end to end | Kamailio and nftables are templated for dual stack; the lab LAN has no IPv6, so it was never exercised |
+| D-5 | S3 backup targets | Only SFTP is built and tested; pgBackRest and restic both support S3 (Garage, Hetzner, Backblaze) |
+| D-6 | Append-only backup target | Today the server's key could delete its own backups; use restic rest-server `--append-only` and a pgBackRest repository host |
+| D-7 | Deleting a tenant | No portal action yet; deleting one by hand leaves its encrypted media files on disk (rows cascade, files do not) |
+| D-8 | Voice prompt license | The "Callie" English prompts are listed as MPL by packagers; confirm before a public release, or record our own |
+| D-9 | Voicemail email delivery | The lab has no mail server: the email is built and checked, never delivered; test with a real SMTP relay |
+| D-10 | Runtime validation messages | Messages built at runtime (for example "unknown feature x") are not translated |
+| D-11 | Unused SIP credential API | `create_sip_credential` and friends are used only by their tests since devices took over; remove them |
+
 ## Phase 2 task breakdown (proposed 2026-11-27)
 
 Answers (2026-11-27): tests use a real Grandstream phone and Meow on the lab
@@ -560,14 +579,6 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
 - One unexplained test failure in a full `mix test` run on 2026-11-27 (2-4 follow-up); it did
   not come back in 13 further runs and its name was not captured. Watch CI for a repeat.
 
-- Deleting a tenant (no portal action yet; only by hand) leaves its encrypted media files on
-  disk: the database cascade removes the rows only.
-
-- The lab LAN has no IPv6, so dual-stack listening (Kamailio, nftables rules) is templated but
-  not yet exercised end to end.
-
-- Validation messages built at runtime (for example "unknown feature x") are not translated;
-  the fixed ones are.
 - Arabic portal texts need review by a native speaker
   (for example "التحويلات الداخلية" for extensions).
 - No login rate limit or lockout yet; brute-force alerts are phase 3 (Argon2 slows guessing).
