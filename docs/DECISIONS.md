@@ -2,6 +2,17 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: License: AGPL-3.0 plus a contributor agreement
+
+- **What:** Q-PBX stays AGPL-3.0, as the spec says. Outside contributors sign a CLA
+  (`CLA.md`) that lets qFiber relicense their contributions, including under commercial terms.
+  Copyright holder: qFiber.
+- **Why:** the goal is free software that only qFiber can sell under closed, commercial terms.
+  The AGPL alone does not stop others from selling or hosting it, but it forces them to publish
+  their changes; the CLA keeps qFiber able to dual-license.
+- **Rejected:** PolyForm Noncommercial and FSL-1.1 (source-available, not open source, against
+  the spec's goal of an open source release).
+
 ## 2026-11-27: Accounts (P1-04)
 
 - **Row-level security semantics:** inside `QPBX.Core.with_tenant/2`, `app.tenant_id` is set

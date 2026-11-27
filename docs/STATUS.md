@@ -67,6 +67,9 @@ Kamailio gets its real config.
   every change, never containing passwords or secrets; RLS (`QPBX.Repo.RLS`) on `users`,
   `user_roles`, `audit_logs` with `QPBX.Core.with_tenant/2`. 11 tests.
 
+- License: AGPL-3.0 kept, `CLA.md` and `CONTRIBUTING.md`
+  added, copyright notice in `README.md`. Code pushed to `github.com/qfiber/q-pbx` (public).
+
 ## In progress
 
 - P1-04 remainder: setup-link email (`QPBX.Notify`) and CLI command, built with P1-05 because they need the portal routes.

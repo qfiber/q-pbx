@@ -653,7 +653,7 @@ The order after 1.0 can change with what paying tenants ask for first. Direct AP
 - [ ] Which SIP carriers will Q-PBX use first, and which of them support T.38? This sets the default fax mode per trunk.
 - [ ] Which client migrates first? (The importer targets FreePBX 17, the version in production.)
 - [ ] Push gateway as a paid service: the pricing model (per operator, per device or per push), to be decided later. The gateway serves only qFiber today; support for other operators (keys, metering, rate limits) is built later, before it is sold.
-- [ ] Should outside contributors sign a contributor agreement, so qFiber can also offer Q-PBX under commercial terms next to the AGPL?
+- [x] Should outside contributors sign a contributor agreement, so qFiber can also offer Q-PBX under commercial terms next to the AGPL? **Yes (2026-11-27):** AGPL-3.0 plus a CLA (`CLA.md`), so qFiber can dual-license.
 - [ ] Does voicemail and call transcription belong in a later phase, and should it run on a local model or an external service?
 - [ ] Do tenants need their own branding (logo and colours on the portal)?
 - [ ] Which CRM adapter comes first in phase 8: HubSpot, Zoho or Odoo?
