@@ -15,6 +15,17 @@ defmodule QPBX.Web.Router do
     plug :fetch_current_account
   end
 
+  pipeline :health do
+    plug :accepts, ["json"]
+  end
+
+  scope "/health", QPBX.Web do
+    pipe_through :health
+
+    get "/", HealthController, :show
+    get "/details", HealthController, :details
+  end
+
   scope "/", QPBX.Web do
     pipe_through :browser
 

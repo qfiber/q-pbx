@@ -7,6 +7,11 @@ Later: REST API `/v1`, WebSocket event stream.
 `QPBX.Web.setup_url/1` (absolute setup-link URL built from endpoint config, usable without a
 running endpoint).
 
+**Health:** `QPBX.Web.Health` (exported; started by `QPBX.Application`): `current/0`, `run/1`,
+`put/1`, `overall/1`. Routes `/health` and `/health/details`. Config `:qpbx, QPBX.Web.Health`
+(`interval`, and per-check keyword lists `disk`, `certificate`, `freeswitch`, `kamailio`,
+`oban_backlog`); a check with no config reports `not_configured` and does not count.
+
 **Portal routes:** `/login`, `/platform/login`, `/2fa`, `/2fa/setup`, `/2fa/skip`,
 `/setup/:token`, `/locale/:locale`, `/logout`; platform LiveViews under `/platform`
 (tenants, new tenant, plans); tenant LiveViews under `/app`.
@@ -18,7 +23,8 @@ TOTP for 5 minutes.
 **Events emitted:** none. **Events consumed:** none yet.
 
 **Gotchas:**
-- The web layer calls other areas only through their public API modules.
+- The web layer calls other areas only through their public API modules. It depends on
+  `QPBX.Repo` only for the health check's `SELECT 1` and the Oban backlog count.
 - Messages written in other areas' changesets must be listed in `QPBX.Web.ErrorMessages`
   to be translated. After `mix gettext.extract --merge`, fill in the `ar` `.po` files.
 - Wrap LTR values (emails, domains, codes) in `dir="ltr"` so they render right in Arabic.

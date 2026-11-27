@@ -42,3 +42,7 @@ config :phoenix,
   sort_verified_routes_query_params: true
 
 config :qpbx, Oban, testing: :manual
+
+# Checks run on demand in tests, not on a timer.
+config :qpbx, QPBX.Web.Health, interval: :timer.hours(24)
+config :qpbx, :health_token, "test-health-token-0123456789"

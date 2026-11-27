@@ -77,17 +77,25 @@ Kamailio gets its real config.
   page. Tests cover the whole Done-when portal flow in both languages, plus wrong password,
   wrong code, enrol-or-no-session, role separation, expiry, one-time links and the
   open-redirect guard. 39 tests in total.
+- P1-06 Health endpoint: `QPBX.Web.Health` runs checks every 10 s (each in its own task,
+  3 s timeout) and caches in ETS. `GET /health` returns 200 `ok` or 503 `degraded`/`down`
+  with no details; `GET /health/details` needs `Authorization: Bearer $QPBX_HEALTH_TOKEN`
+  (16+ chars). Checks: PostgreSQL, disk free %, Oban backlog, certificate expiry (warn under
+  14 days), FreeSWITCH event socket (TCP connect; ESL login in phase 2), Kamailio JSON-RPC
+  `core.version`, trunk registrations (`not_configured` until phase 2). `down` = a critical
+  component (PostgreSQL, FreeSWITCH, Kamailio) in error. 10 new tests; smoke-tested on a dev
+  server.
 
 - License: AGPL-3.0 kept, `CLA.md` and `CONTRIBUTING.md`
   added, copyright notice in `README.md`. Code pushed to `github.com/qfiber/q-pbx` (public).
 
 ## In progress
 
-- P1-06 Health endpoint.
+- P1-07 `qpbx-fwd` helper (Go).
 
 ## Next
 
-- P1-07 `qpbx-fwd` helper (Go).
+- P1-08 Firewall module.
 
 ## Blockers / open questions for phase 1
 

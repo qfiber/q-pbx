@@ -41,6 +41,10 @@ config :qpbx, QPBX.Core.Vault,
        iv_length: 12}
   ]
 
+# Health checks. FreeSWITCH, Kamailio and the certificate count only where configured
+# (prod: runtime.exs from QPBX_* environment variables).
+config :qpbx, QPBX.Web.Health, interval: 10_000, disk: [paths: ["/"]]
+
 # Oban: one queue per area (spec: calls, fax, webhooks, notify, crm, provisioning).
 # Phase 1 only has work for notify; the others are added with their areas.
 config :qpbx, Oban,

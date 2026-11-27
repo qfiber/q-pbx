@@ -17,6 +17,7 @@ defmodule QPBX.Application do
       # Start a worker by calling: QPBX.Worker.start_link(arg)
       # {QPBX.Worker, arg},
       # Start to serve requests, typically the last entry
+      QPBX.Web.Health,
       QPBX.Web.Endpoint
     ]
 

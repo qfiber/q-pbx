@@ -18,8 +18,9 @@ defmodule QPBX.Web do
   """
 
   use Boundary,
-    deps: [QPBX.Core, QPBX.Notify, QPBX.Firewall],
-    exports: [Endpoint, Telemetry]
+    # Repo only for the health check's SELECT 1 and Oban backlog count; no area tables.
+    deps: [QPBX.Core, QPBX.Notify, QPBX.Firewall, QPBX.Repo],
+    exports: [Endpoint, Telemetry, Health]
 
   @doc """
   Absolute URL of an account setup link. Built from config rather than the running endpoint,

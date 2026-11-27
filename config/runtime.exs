@@ -26,6 +26,21 @@ if config_env() == :prod do
   config :qpbx, :sip_base_domain, System.fetch_env!("QPBX_SIP_BASE_DOMAIN")
   config :qpbx, :token_secret, System.fetch_env!("SECRET_KEY_BASE")
 
+  config :qpbx, :health_token, System.get_env("QPBX_HEALTH_TOKEN")
+
+  config :qpbx, QPBX.Web.Health,
+    interval: 10_000,
+    disk: [paths: String.split(System.get_env("QPBX_HEALTH_DISK_PATHS", "/ /var/lib/qpbx"))],
+    certificate: [path: System.get_env("QPBX_TLS_CERT_FILE")],
+    freeswitch: [
+      event_socket:
+        {System.get_env("QPBX_FS_ESL_HOST", "127.0.0.1"),
+         String.to_integer(System.get_env("QPBX_FS_ESL_PORT", "8021"))}
+    ],
+    kamailio: [
+      jsonrpc_url: System.get_env("QPBX_KAMAILIO_JSONRPC_URL", "http://127.0.0.1:5071/RPC")
+    ]
+
   config :qpbx, :mail_from, {"Q-PBX", System.fetch_env!("QPBX_MAIL_FROM")}
 
   config :qpbx, QPBX.Notify.Mailer,
