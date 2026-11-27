@@ -41,6 +41,18 @@ Kamailio gets its real config.
 
 ## Done
 
+- 2-0a Busy-lamp trial (done): Kamailio 6.0.8 from the Kamailio project's repository (key
+  pinned by checksum, presence, `pua_json` and PostgreSQL modules). On the lab, with a spike
+  config (`lab/spike/kamailio-presence.cfg`) and a scripted subscriber
+  (`lab/spike/subscribe.py`): JSON updates posted to Kamailio produced correct NOTIFYs for
+  busy lamps (early, confirmed, terminated, with the other party's identity), presence (open,
+  "On the Phone", on-the-phone activity) and voicemail lights (2 new / 5 saved, then 0 / 7);
+  presence ran entirely in memory with no database. Found: a never-used extension came out
+  with an empty body (fixed with `force_dummy_dialog`, now a proper idle document), and the
+  first voicemail notification is empty until Elixir publishes counts (a design rule now).
+  Meow's parser (read in its source) accepts all of these. Design written into the spec
+  (Architecture). The lab is back on the production config.
+
 - Project docs created: `docs/DEVELOPING.md`, `docs/STATUS.md`, `docs/DECISIONS.md`, `CHANGELOG.md`.
 - P1-01 Repo and Mix project: Phoenix 1.8 app (`QPBX`, binary ids), Oban (queue `notify`),
   areas `core`, `events`, `firewall`, `notify`, `web` with boundaries; public API modules live
