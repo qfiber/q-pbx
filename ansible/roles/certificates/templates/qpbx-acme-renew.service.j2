@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Renew Q-PBX certificates
+
+[Service]
+Type=oneshot
+User=qpbx-acme
+Group=qpbx-acme
+ExecStart=/usr/local/sbin/qpbx-acme --cron
+{% include 'acme-hardening.j2' %}

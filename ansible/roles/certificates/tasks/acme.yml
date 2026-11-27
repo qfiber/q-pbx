@@ -1,4 +1,4 @@
-# acme.sh, pinned by commit, plus the reload hook and the daily renewal timer.
+# acme.sh, pinned by commit; code owned by root, state owned by qpbx-acme.
 - name: Packages
   ansible.builtin.apt:
     name: [git, socat]
@@ -21,41 +21,65 @@
   when: certificates_acme_src.changed  # noqa: no-handler
   changed_when: true
 
-- name: Reload hook (after every issue or renewal)
-  ansible.builtin.template:
-    src: qpbx-tls-reload.j2
-    dest: /usr/local/sbin/qpbx-tls-reload
-    mode: "0750"
+- name: Code of acme.sh readable and runnable by qpbx-acme, writable by root only
+  ansible.builtin.file:
+    path: "{{ certificates_acme_home }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "u=rwX,go=rX"
+    recurse: true
+
+- name: State folder owned by qpbx-acme (accounts, keys, saved DNS credentials)
+  ansible.builtin.file:
+    path: "{{ certificates_acme_config }}"
+    state: directory
+    owner: qpbx-acme
+    group: qpbx-acme
+    mode: "0700"
+    recurse: true
+
+# acme.sh remembers each certificate's webroot for renewals; installs before 1b-8 used
+# /var/lib/qpbx/acme, which qpbx-acme cannot write.
+- name: Certificate settings saved by acme.sh
+  ansible.builtin.find:
+    paths: "{{ certificates_acme_config }}"
+    patterns: "*.conf"
+    recurse: true
+    excludes: [account.conf, ca.conf]
+  register: certificates_domain_confs
+
+- name: Point saved renewals at the current webroot
+  ansible.builtin.replace:
+    path: "{{ item.path }}"
+    regexp: "/var/lib/qpbx/acme"
+    replace: "{{ certificates_webroot }}"
+  loop: "{{ certificates_domain_confs.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+
+- name: Webroot for HTTP-01 answers (nginx reads it)
+  ansible.builtin.file:
+    path: "{{ certificates_webroot }}/.well-known/acme-challenge"
+    state: directory
+    owner: qpbx-acme
+    group: qpbx-acme
+    mode: "0755"
 
 - name: Wrapper with the server and options this installation uses
   ansible.builtin.template:
     src: qpbx-acme.j2
     dest: /usr/local/sbin/qpbx-acme
-    mode: "0700"
+    owner: root
+    group: qpbx-acme
+    mode: "0750"
 
-- name: Renewal service and timer
-  ansible.builtin.copy:
-    dest: "/etc/systemd/system/{{ item.name }}"
-    content: "{{ item.content }}"
+- name: Renewal service and timer (runs as qpbx-acme)
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/systemd/system/{{ item }}"
     mode: "0644"
-  loop:
-    - name: qpbx-acme-renew.service
-      content: |
-        [Unit]
-        Description=Renew Q-PBX certificates
-        [Service]
-        Type=oneshot
-        ExecStart=/usr/local/sbin/qpbx-acme --cron
-    - name: qpbx-acme-renew.timer
-      content: |
-        [Unit]
-        Description=Daily Q-PBX certificate renewal
-        [Timer]
-        OnCalendar=daily
-        RandomizedDelaySec=3h
-        Persistent=true
-        [Install]
-        WantedBy=timers.target
+  loop: [qpbx-acme-renew.service, qpbx-acme-renew.timer]
 
 - name: Renewal timer enabled
   ansible.builtin.systemd:

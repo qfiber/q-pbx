@@ -1,17 +1,74 @@
 # Certificates for the portal, API, provisioning and SIP TLS, in {{ qpbx_tls_dir }}:
-# fullchain.pem and privkey.pem, readable by the qpbx-tls group (app and Kamailio).
+# fullchain.pem and privkey.pem, readable by the qpbx-tls group (nginx and Kamailio).
+# acme.sh runs as its own user; a root-owned path unit reloads nginx and Kamailio when the
+# files change, so the certificate tool never needs root.
 - name: TLS group
   ansible.builtin.group:
     name: qpbx-tls
     system: true
 
-- name: TLS folder
+- name: Certificate user
+  ansible.builtin.user:
+    name: qpbx-acme
+    system: true
+    shell: /usr/sbin/nologin
+    home: "{{ certificates_acme_config }}"
+    create_home: false
+
+- name: TLS folder (written by qpbx-acme, read by the qpbx-tls group)
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: qpbx-acme
+    group: qpbx-tls
+    mode: "2750"
+  loop: ["{{ qpbx_tls_dir }}", "{{ qpbx_tls_dir }}/tenants"]
+
+- name: Existing certificate files owned by qpbx-acme (installs before 1b-8 used root)
   ansible.builtin.file:
     path: "{{ qpbx_tls_dir }}"
-    state: directory
-    owner: root
+    owner: qpbx-acme
     group: qpbx-tls
+    recurse: true
+
+- name: Reload script (fix permissions, reload nginx and Kamailio)
+  ansible.builtin.template:
+    src: qpbx-tls-reload.j2
+    dest: /usr/local/sbin/qpbx-tls-reload
     mode: "0750"
+
+- name: Reload when certificate files change
+  ansible.builtin.copy:
+    dest: "/etc/systemd/system/{{ item.name }}"
+    content: "{{ item.content }}"
+    mode: "0644"
+  loop:
+    - name: qpbx-tls.path
+      content: |
+        [Unit]
+        Description=Watch Q-PBX certificates
+        [Path]
+        PathChanged={{ qpbx_tls_dir }}/fullchain.pem
+        # shortcut: sees tenant folders being added, not renewals inside them; watch each
+        # tenant file when Kamailio serves tenant certificates by SNI (phase 2).
+        PathChanged={{ qpbx_tls_dir }}/tenants
+        Unit=qpbx-tls-apply.service
+        [Install]
+        WantedBy=multi-user.target
+    - name: qpbx-tls-apply.service
+      content: |
+        [Unit]
+        Description=Apply new Q-PBX certificates (nginx, Kamailio)
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/local/sbin/qpbx-tls-reload
+
+- name: Certificate watcher enabled
+  ansible.builtin.systemd:
+    name: qpbx-tls.path
+    enabled: true
+    state: started
+    daemon_reload: true
 
 - name: Certificate for the chosen mode
   ansible.builtin.include_tasks: "{{ qpbx_cert_mode }}.yml"

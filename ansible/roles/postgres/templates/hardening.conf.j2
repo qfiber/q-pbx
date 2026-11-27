@@ -1,0 +1,25 @@
+# {{ ansible_managed }}
+# PostgreSQL starts as postgres (not root that drops later), with no capabilities, writing only
+# its data, run and log folders. MemoryDenyWriteExecute stays off: it breaks the JIT.
+[Service]
+User=postgres
+Group=postgres
+NoNewPrivileges=true
+CapabilityBoundingSet=
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ReadWritePaths=/var/lib/postgresql /var/run/postgresql /var/log/postgresql
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+SystemCallFilter=@system-service
+SystemCallArchitectures=native

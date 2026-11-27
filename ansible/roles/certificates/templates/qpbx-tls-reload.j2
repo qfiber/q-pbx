@@ -4,6 +4,7 @@
 # Kamailio load the new files without a restart.
 set -u
 find {{ qpbx_tls_dir }} -name '*.pem' -exec chgrp qpbx-tls {} + -exec chmod 0640 {} +
+systemctl is-active -q kamailio || true
 # nginx re-reads its certificate on reload (graceful: open connections keep running).
 systemctl is-active -q nginx && systemctl reload nginx || true
 systemctl is-active -q kamailio && curl -s -m 5 -d '{"jsonrpc":"2.0","method":"tls.reload","id":1}' \

@@ -28,9 +28,23 @@
     mode: "0644"
   notify: Restart kamailio
 
+- name: Unit drop-in folder
+  ansible.builtin.file:
+    path: /etc/systemd/system/kamailio.service.d
+    state: directory
+    mode: "0755"
+
+- name: Hardening drop-in
+  ansible.builtin.template:
+    src: hardening.conf.j2
+    dest: /etc/systemd/system/kamailio.service.d/qpbx.conf
+    mode: "0644"
+  notify: Restart kamailio
+
 - name: Running
   ansible.builtin.systemd:
     name: kamailio
+    daemon_reload: true
     enabled: true
     state: started
 

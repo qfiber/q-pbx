@@ -1,6 +1,8 @@
 #!/bin/sh
 # {{ ansible_managed }}
 # acme.sh with this installation's home, server and options. Usage: qpbx-acme --issue ...
+# Runs as qpbx-acme only (never root).
+[ "$(id -un)" = qpbx-acme ] || { echo "run as qpbx-acme" >&2; exit 1; }
 {% for k, v in qpbx_acme_dns_env.items() %}
 export {{ k }}={{ v | quote }}
 {% endfor %}

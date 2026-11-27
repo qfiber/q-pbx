@@ -20,7 +20,7 @@ server {
   server_name _;
 
   location /.well-known/acme-challenge/ {
-    root {{ qpbx_data_dir }}/acme;
+    root /var/lib/qpbx-acme-webroot;
     default_type text/plain;
   }
 

@@ -135,7 +135,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 1b-8 Least privilege (Kamailio and PostgreSQL hardening, acme.sh without root).
+- 1b-9 Sobelow security scan in CI.
 
 ## Next
 
@@ -187,6 +187,16 @@ Kamailio gets its real config.
   in `/run/nginx/{body,proxy}` (tmpfs, 0700, www-data). Verified in the lab: a 3 MB request is
   buffered under `/run/nginx/body`. Fixed on the way: nginx created those folders as `nobody`
   (now named `www-data`), and its file-handle limit was 1024 (now 65536).
+- 1b-8 Least privilege (done): hardening drop-ins for Kamailio (no capabilities, read-only
+  system, `systemd-analyze security` 9.2 -> 1.9) and PostgreSQL (now starts as `postgres`,
+  9.6 -> 1.9); acme.sh runs as `qpbx-acme` (state 0700, webroot readable by nginx, code
+  root-owned), and a root-owned path unit (`qpbx-tls.path`) reloads nginx and Kamailio when
+  certificate files change. Existing installs are migrated (file ownership, acme.sh's saved
+  webroot). Verified in the lab: per_host and wildcard issue and forced renewals as
+  `qpbx-acme`, picked up live on 443 and 5061; tenant certificates 0640 for Kamailio; only
+  base system daemons run as root (systemd, journald, logind, udevd, sshd, getty,
+  unattended-upgrades, qemu guest agent); every Q-PBX-related unit rates "OK". Fixed on the
+  way: the nginx switch had left the ACME webroot where nginx could not read it.
 - Done after the phase 1 review: nginx in front (non-root, real client IP, optional
   ModSecurity), FreeSWITCH modules added (G.729, Opus/MP3 recording, loopback, CDR spool; all
   load in the lab), languages moved to one config list, firewall and plan forms now clear

@@ -20,7 +20,7 @@ profile qpbx-nginx /usr/sbin/nginx flags=(complain) {
   /etc/modsecurity/** r,
   /usr/share/modsecurity-crs/** r,
   {{ qpbx_tls_dir }}/*.pem r,
-  {{ qpbx_data_dir }}/acme/** r,
+  /var/lib/qpbx-acme-webroot/** r,
   /var/log/nginx/** rw,
   /var/lib/nginx/** rwk,
   /run/nginx/** rwk,

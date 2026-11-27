@@ -25,6 +25,26 @@
     line: "listen_addresses = 'localhost'"
   notify: Restart postgresql
 
+- name: Unit drop-in folder
+  ansible.builtin.file:
+    path: /etc/systemd/system/postgresql@16-main.service.d
+    state: directory
+    mode: "0755"
+
+- name: Hardening drop-in
+  ansible.builtin.template:
+    src: hardening.conf.j2
+    dest: /etc/systemd/system/postgresql@16-main.service.d/qpbx.conf
+    mode: "0644"
+  register: postgres_hardening
+
+- name: Apply hardening now (the database must be up for the next tasks)
+  ansible.builtin.systemd:
+    name: postgresql@16-main
+    state: restarted
+    daemon_reload: true
+  when: postgres_hardening.changed  # noqa: no-handler
+
 - name: Running
   ansible.builtin.systemd:
     name: postgresql

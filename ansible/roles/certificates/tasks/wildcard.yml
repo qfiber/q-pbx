@@ -13,6 +13,8 @@
   register: certificates_wildcard
 
 - name: Issue the wildcard certificate
+  become: true
+  become_user: qpbx-acme
   ansible.builtin.command:
     # The wildcard is the main name, so its files never collide with per_host mode's.
     argv: >-
@@ -23,15 +25,17 @@
   no_log: true
 
 - name: Install it where the app and Kamailio read it
+  become: true
+  become_user: qpbx-acme
   ansible.builtin.command:
     argv: [/usr/local/sbin/qpbx-acme, --install-cert, -d, "*.{{ qpbx_domain }}", --ecc,
            --fullchain-file, "{{ qpbx_tls_dir }}/fullchain.pem", --key-file, "{{ qpbx_tls_dir }}/privkey.pem",
-           --reloadcmd, /usr/local/sbin/qpbx-tls-reload]
-    creates: "{{ qpbx_tls_dir }}/.acme-installed-wildcard"
+           --reloadcmd, "true"]
+    creates: "{{ qpbx_tls_dir }}/.acme-installed-wildcard-v2"
 
 - name: Mark the ACME certificate as installed (replaces the bootstrap one)
   ansible.builtin.file:
-    path: "{{ qpbx_tls_dir }}/.acme-installed-wildcard"
+    path: "{{ qpbx_tls_dir }}/.acme-installed-wildcard-v2"
     state: touch
     modification_time: preserve
     access_time: preserve

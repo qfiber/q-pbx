@@ -6,3 +6,4 @@
   ansible.builtin.systemd:
     name: kamailio
     state: restarted
+    daemon_reload: true

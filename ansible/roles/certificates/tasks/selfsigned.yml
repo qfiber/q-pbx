@@ -11,7 +11,7 @@
 - name: Key and certificate permissions
   ansible.builtin.file:
     path: "{{ qpbx_tls_dir }}/{{ item }}"
-    owner: root
+    owner: qpbx-acme
     group: qpbx-tls
     mode: "0640"
   loop: [privkey.pem, fullchain.pem]

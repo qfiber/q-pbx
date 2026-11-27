@@ -2,6 +2,14 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Certificates without root (1b-8)
+
+- **acme.sh runs as `qpbx-acme`;** reloading nginx and Kamailio, which needs root, moved to a
+  root-owned systemd path unit that watches the certificate files. Rejected: a sudo rule for
+  the reload (a wider door), or keeping acme.sh as root.
+- **Tenant certificate renewals inside `tenants/` are not watched yet:** Kamailio does not
+  serve them until phase 2, which adds a watch per tenant certificate.
+
 ## 2026-11-27: Master key in AWS KMS (1b-6)
 
 - **The same master key is wrapped by KMS** (Encrypt), not replaced by a new KMS data key, so

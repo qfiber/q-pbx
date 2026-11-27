@@ -1,6 +1,8 @@
 certificates_acme_version: 36d7fb616455b0f60b4dc45f2ebdea91019bcd95  # acme.sh v3.1.7
 certificates_acme_home: /opt/acme.sh
+# acme.sh state (accounts, keys, saved DNS credentials): qpbx-acme only.
 certificates_acme_config: /var/lib/qpbx-acme
-certificates_webroot: "{{ qpbx_data_dir }}/acme"
+# HTTP-01 answers, readable by nginx.
+certificates_webroot: /var/lib/qpbx-acme-webroot
 # Platform names covered by the per_host certificate.
 certificates_platform_names: ["{{ qpbx_domain }}", "{{ qpbx_portal_host }}", "{{ qpbx_sip_host }}", "provisioning.{{ qpbx_domain }}"]
