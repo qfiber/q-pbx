@@ -266,14 +266,19 @@ These are the call features Q-PBX will have. Queues, conferencing and paging com
 
 - **Extensions:** SIP credentials, caller ID (internal and external), multiple devices per extension, DND, call waiting, follow-me, unconditional/busy/no-answer forwarding.
 - **Trunks:** platform-level carrier trunks (shared) and tenant-owned trunks (bring your own carrier), registration or IP auth, codec preferences, T.38 flag, max channels.
+  - **Several addresses per trunk** (IPs, host names or DNS SRV), because carriers give one, two or four signalling addresses: calls from any of them are accepted; outbound calls go to them by priority (or weight); Kamailio pings each one with SIP OPTIONS, stops using one that does not answer, and brings it back when it answers again. A trunk is "down" (and alerts) only when all of its addresses are.
+  - **Caller ID per trunk:** whether a trunk may present the tenant's own number (DID) from another carrier, or must use a number of its own, as each carrier's policy requires.
 - **DIDs:** numbers assigned to tenants, each pointing at a destination (extension, ring group, queue, IVR, fax, flow, voicemail, external number).
+  - **Backup numbers for incoming calls:** a DID can have alias numbers from other carriers that route exactly like it. Incoming failover between carriers needs the number's own carrier to forward calls to such a backup number when Q-PBX does not answer ("forward on unreachable"); another carrier cannot receive calls for a number it does not hold. The portal documents this per DID.
 - **Outbound routes:** pattern-based on E.164, ordered trunk failover, prefix strip/add, per-route destination class.
+  - **Failover between carriers:** when the first carrier is down or rejects the call (for example Partner offline), the call goes out through the next carrier on the route (for example Cellcom), still showing the tenant's number where that carrier allows it (see caller ID per trunk).
 - **Emergency routes:** a generic route type that bypasses spend limits and always uses a configured trunk. The operator sets the numbers for their country.
 - **Codecs:** G.711 a/u, G.722, Opus. G.729 optional.
 
 **Call routing building blocks**
 
 - **IVR / auto attendant:** prompts (upload or TTS), digit options, timeout and invalid handling, direct dial to extensions, nested menus.
+  - **Visual call-flow editor (proposed for 1.0, awaiting approval):** each DID's routing (time conditions, IVR menus and their options, ring groups, voicemail) shown as a diagram that can be edited by drag and drop, next to the forms. Built on the same LiveView canvas that the phase 8 flow builder extends.
 - **Time conditions:** weekly schedules per tenant time zone, holiday calendars, manual override toggle ("office closed now").
 - **Ring groups:** ring all, sequential, round robin; per-member timeouts; external numbers as members; final destination on no answer.
 - **Queues (ACD):** strategies (longest idle, round robin, ring all, fewest calls), agent login/logout and pause with reasons, music on hold, position and estimated wait announcements, max wait and overflow destination, wrap-up time, live wallboard in the portal.

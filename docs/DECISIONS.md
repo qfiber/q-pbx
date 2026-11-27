@@ -2,6 +2,17 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Trunks and carrier failover
+
+- **Several signalling addresses per trunk** with OPTIONS health checks (Kamailio dispatcher),
+  because carriers differ (Partner gives one IP, others two or four).
+- **Outbound failover between carriers** is standard and is already in the spec's ordered
+  trunk failover; added: per-trunk caller ID rules, because a carrier may refuse to present a
+  number it does not hold.
+- **Incoming failover between carriers** cannot be done by the PBX alone: only the carrier
+  holding a number can deliver its calls. Q-PBX supports it by accepting backup (alias)
+  numbers that route like the DID, for use with the carrier's "forward on unreachable".
+
 ## 2026-11-27: Phase 1 review answers
 
 - **FreeSWITCH modules confirmed, plus additions:** mod_opusfile and mod_shout (recordings as

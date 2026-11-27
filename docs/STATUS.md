@@ -194,6 +194,10 @@ proof of work as the default challenge; full-disk encryption later.
 | Tenant portal page for office IPs (tenant firewall entries; API already exists) | 2 | Phase 2 brings the tenant portal's telephony pages and Kamailio's per-tenant use of these IPs |
 | Login rate limits and lockout (S5) | 1b | Security plan |
 | Trim FreeSWITCH image dependencies (cairo, X11 came in with the recording codecs' build packages) | 2 | With the FreeSWITCH config work |
+| Several addresses per trunk with OPTIONS health checks and failover between them | 2 | Part of trunks (Kamailio dispatcher) |
+| Failover between carriers for outbound calls, with caller ID rules per trunk | 2 | Part of outbound routes |
+| Backup (alias) numbers for incoming calls, and per-DID guidance on carrier-side forwarding | 2 | Part of DIDs |
+| Visual drag-and-drop call-flow editor for IVRs, time conditions and ring groups | 4 (proposed) | Needs those objects; awaiting a decision |
 
 **Spend caps (approved on 2026-11-27; to confirm at phase 2 start whether
 that means money-based caps from the start or the recommendation below):** phase 2 uses minute caps per
