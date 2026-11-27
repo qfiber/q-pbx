@@ -1,0 +1,16 @@
+- name: Load AppArmor profile qpbx-fwd
+  ansible.builtin.command: apparmor_parser -r /etc/apparmor.d/qpbx-fwd
+  changed_when: true
+
+# A reload empties the managed sets, so qpbx-fwd restarts to restore them from its state file.
+- name: Reload nftables
+  ansible.builtin.systemd:
+    name: nftables
+    state: reloaded
+  notify: Restart qpbx-fwd
+
+- name: Restart qpbx-fwd
+  ansible.builtin.systemd:
+    name: qpbx-fwd
+    state: restarted
+    daemon_reload: true

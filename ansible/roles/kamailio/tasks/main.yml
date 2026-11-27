@@ -1,0 +1,43 @@
+# Phase 1: Kamailio installed, listening on the service IPs (UDP/TCP 5060, TLS 5061) and
+# answering 503 to every request; JSON-RPC over HTTP on localhost for the health check.
+# Authentication, routing and bans arrive in phase 2.
+- name: Packages
+  ansible.builtin.apt:
+    name: [kamailio, kamailio-tls-modules]
+    state: present
+
+- name: Kamailio can read the TLS certificate
+  ansible.builtin.user:
+    name: kamailio
+    groups: [qpbx-tls]
+    append: true
+  notify: Restart kamailio
+
+- name: Main config
+  ansible.builtin.template:
+    src: kamailio.cfg.j2
+    dest: /etc/kamailio/kamailio.cfg
+    mode: "0644"
+    validate: kamailio -c -f %s
+  notify: Restart kamailio
+
+- name: TLS config
+  ansible.builtin.template:
+    src: tls.cfg.j2
+    dest: /etc/kamailio/tls.cfg
+    mode: "0644"
+  notify: Restart kamailio
+
+- name: Running
+  ansible.builtin.systemd:
+    name: kamailio
+    enabled: true
+    state: started
+
+- name: AppArmor profile (complain mode)
+  ansible.builtin.template:
+    src: apparmor.j2
+    dest: /etc/apparmor.d/qpbx-kamailio
+    mode: "0644"
+    validate: apparmor_parser -Q %s
+  notify: [Load AppArmor profile qpbx-kamailio, Restart kamailio]

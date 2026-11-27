@@ -7,17 +7,10 @@ import Config
 # before starting your production server.
 config :qpbx, QPBX.Web.Endpoint, cache_static_manifest: "priv/static/cache_manifest.json"
 
-# Force using SSL in production. This also sets the "strict-security-transport" header,
-# known as HSTS. If you have a health check endpoint, you may want to exclude it below.
-# Note `:force_ssl` is required to be set at compile-time.
+# HTTPS only (with HSTS), except ACME HTTP-01 challenges and requests to localhost. The app
+# terminates TLS itself, so X-Forwarded-Proto is not trusted. Must be set at compile time.
 config :qpbx, QPBX.Web.Endpoint,
-  force_ssl: [
-    rewrite_on: [:x_forwarded_proto],
-    exclude: [
-      # paths: ["/health"],
-      hosts: ["localhost", "127.0.0.1"]
-    ]
-  ]
+  force_ssl: [hsts: true, exclude: [conn: {QPBX.Web.SSLExclude, :excluded?, []}]]
 
 # Configure Swoosh API Client
 config :swoosh, api_client: Swoosh.ApiClient.Req

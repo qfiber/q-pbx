@@ -1,0 +1,83 @@
+- name: Secrets
+  ansible.builtin.include_tasks: secrets.yml
+
+- name: Package cache folder
+  ansible.builtin.file:
+    path: /var/cache/qpbx
+    state: directory
+    mode: "0755"
+
+- name: Copy package
+  ansible.builtin.copy:
+    src: "{{ qpbx_app_deb }}"
+    dest: /var/cache/qpbx/
+    mode: "0644"
+
+- name: Install package
+  ansible.builtin.apt:
+    deb: "/var/cache/qpbx/{{ qpbx_app_deb | basename }}"
+  notify: Restart qpbx
+
+- name: Environment
+  ansible.builtin.template:
+    src: qpbx.env.j2
+    dest: /etc/qpbx/qpbx.env
+    owner: root
+    group: qpbx
+    mode: "0640"
+  no_log: true
+  notify: Restart qpbx
+
+- name: CLI wrapper (runs release commands as qpbx with the environment)
+  ansible.builtin.copy:
+    dest: /usr/local/sbin/qpbx
+    mode: "0750"
+    content: |
+      #!/bin/sh
+      # Usage: qpbx eval 'QPBX.Release.setup_link("someone@example.com")'
+      set -a
+      . /etc/qpbx/qpbx.env
+      set +a
+      export HOME={{ qpbx_data_dir }} RELEASE_TMP=/tmp
+      exec runuser -u qpbx -- /opt/qpbx/bin/qpbx "$@"
+
+- name: Unit
+  ansible.builtin.template:
+    src: qpbx.service.j2
+    dest: /etc/systemd/system/qpbx.service
+    mode: "0644"
+  notify: Restart qpbx
+
+- name: Running
+  ansible.builtin.systemd:
+    name: qpbx
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Restart now if anything changed, before checking health
+  ansible.builtin.meta: flush_handlers
+
+- name: Healthy
+  ansible.builtin.uri:
+    url: "https://127.0.0.1/health"
+    validate_certs: false
+    status_code: [200, 503]
+  register: health
+  until: health.status in [200, 503] and health.json is defined
+  retries: 30
+  delay: 2
+
+- name: Seed management IPs into the database (only if none exist yet)
+  ansible.builtin.command:
+    argv: [/usr/local/sbin/qpbx, eval, "QPBX.Release.seed_management_ips({{ qpbx_management_ips | to_json }})"]
+  register: seed
+  changed_when: "'added' in seed.stdout"
+
+- name: AppArmor profile (complain mode)
+  ansible.builtin.template:
+    src: apparmor.j2
+    dest: /etc/apparmor.d/qpbx-app
+    mode: "0644"
+    validate: apparmor_parser -Q %s
+  notify: [Load AppArmor profile qpbx-app, Restart qpbx]

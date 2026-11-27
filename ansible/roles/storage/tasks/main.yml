@@ -1,0 +1,42 @@
+# Local file storage (the Storage behaviour's local backend). FreeSWITCH writes recordings and
+# faxes, the app reads and serves them: both are in the qpbx-media group.
+- name: Groups
+  ansible.builtin.group:
+    name: "{{ item }}"
+    system: true
+  loop: [qpbx, qpbx-media, qpbx-tls]
+
+- name: App user
+  ansible.builtin.user:
+    name: qpbx
+    group: qpbx
+    groups: [qpbx-media, qpbx-tls, qpbx-fwd]
+    system: true
+    shell: /usr/sbin/nologin
+    home: "{{ qpbx_data_dir }}"
+    create_home: false
+
+- name: Data folder
+  ansible.builtin.file:
+    path: "{{ qpbx_data_dir }}"
+    state: directory
+    owner: qpbx
+    group: qpbx
+    mode: "0750"
+
+- name: Media folders
+  ansible.builtin.file:
+    path: "{{ qpbx_data_dir }}/{{ item }}"
+    state: directory
+    owner: qpbx
+    group: qpbx-media
+    mode: "2770"
+  loop: [recordings, voicemail, faxes, prompts]
+
+- name: Media group can enter the data folder
+  ansible.posix.acl:
+    path: "{{ qpbx_data_dir }}"
+    entity: qpbx-media
+    etype: group
+    permissions: x
+    state: present

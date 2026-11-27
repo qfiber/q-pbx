@@ -1,0 +1,91 @@
+# FreeSWITCH from the Q-PBX package. SIP on 127.0.0.1 only (Kamailio is the only way in),
+# RTP on the service IP, event socket on localhost. Dialplan and routing come from Elixir in
+# phase 2; phase 1 has only the static fallback (503).
+- name: User
+  ansible.builtin.user:
+    name: freeswitch
+    system: true
+    shell: /usr/sbin/nologin
+    home: /var/lib/freeswitch
+    create_home: false
+    groups: [qpbx-media]
+    append: true
+
+- name: Folders
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: freeswitch
+    group: freeswitch
+    mode: "0750"
+  loop: [/var/lib/freeswitch, /var/lib/freeswitch/db, /var/lib/freeswitch/storage, /var/log/freeswitch]
+
+- name: Package cache folder
+  ansible.builtin.file:
+    path: /var/cache/qpbx
+    state: directory
+    mode: "0755"
+
+- name: Copy package
+  ansible.builtin.copy:
+    src: "{{ qpbx_freeswitch_deb }}"
+    dest: /var/cache/qpbx/
+    mode: "0644"
+
+- name: Install package
+  ansible.builtin.apt:
+    deb: "/var/cache/qpbx/{{ qpbx_freeswitch_deb | basename }}"
+  notify: Restart freeswitch
+
+- name: Config folders
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: freeswitch
+    mode: "0750"
+  loop: [/etc/freeswitch, /etc/freeswitch/autoload_configs]
+
+- name: Secrets
+  ansible.builtin.include_role:
+    name: qpbx_app
+    tasks_from: secrets
+
+- name: Config
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/freeswitch/{{ item }}"
+    owner: root
+    group: freeswitch
+    mode: "0640"
+  loop:
+    - freeswitch.xml
+    - autoload_configs/modules.conf.xml
+    - autoload_configs/switch.conf.xml
+    - autoload_configs/event_socket.conf.xml
+    - autoload_configs/sofia.conf.xml
+    - autoload_configs/logfile.conf.xml
+    - autoload_configs/console.conf.xml
+  notify: Restart freeswitch
+
+- name: Unit
+  ansible.builtin.template:
+    src: freeswitch.service.j2
+    dest: /etc/systemd/system/freeswitch.service
+    mode: "0644"
+  notify: Restart freeswitch
+
+- name: Running
+  ansible.builtin.systemd:
+    name: freeswitch
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: AppArmor profile (complain mode)
+  ansible.builtin.template:
+    src: apparmor.j2
+    dest: /etc/apparmor.d/qpbx-freeswitch
+    mode: "0644"
+    validate: apparmor_parser -Q %s
+  notify: [Load AppArmor profile qpbx-freeswitch, Restart freeswitch]

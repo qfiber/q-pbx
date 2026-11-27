@@ -2,6 +2,37 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Packaging and server layout (P1-09)
+
+- **FreeSWITCH modules:** the spec's list (sofia, xml_curl, event_socket, spandsp, conference,
+  callcenter, opus) plus the core modules FreeSWITCH cannot run calls without: mod_dptools
+  (answer, park, bridge, playback), mod_commands (API commands), mod_dialplan_xml (static
+  fallback), mod_sndfile, mod_native_file, mod_tone_stream, mod_local_stream, mod_say_en,
+  mod_console and mod_logfile.
+- **FreeSWITCH is built from public GitHub sources** (signalwire/freeswitch v1.10.12,
+  freeswitch/sofia-sip v1.13.17, freeswitch/spandsp at commit 0d2e6ac, because newer spandsp
+  breaks mod_spandsp in 1.10.12). No SignalWire token is needed for this.
+- **The app terminates TLS itself on 443** (Bandit) with HTTP on 80 only for redirects and ACME
+  challenges; the spec allowed "behind nginx or directly". Rejected: nginx (one more service).
+- **Secrets are generated on the server** (`/etc/qpbx/secrets.json`, root only) on first
+  install and never leave it. It must be in the backups: losing the Cloak key makes TOTP
+  secrets unreadable.
+- **PostgreSQL 16 comes from the PostgreSQL project's apt repository** (Debian 12 ships 15).
+- **Kamailio is Debian 12's 5.6 package** for phase 1; the version for phase 2 is chosen with
+  its real config.
+- **App package versions carry a build stamp** (`0.1.0+YYYYMMDDHHMMSS`), so every build upgrades.
+
+## 2026-11-27: Dual-stack IPv4 and IPv6
+
+- **What:** every client-facing part (SIP edge, RTP, portal, API, provisioning, firewall)
+  supports IPv4 and IPv6; the service IP gets one address of each family. Spec updated.
+- **Why:** IPv6 is common on mobile networks and some ISPs, and native IPv6 avoids NAT, which
+  causes most SIP audio problems. Carriers are often IPv4-only, so trunks pick their family
+  and FreeSWITCH bridges between the two.
+- **Rejected:** IPv4 only (the spec did not mention IPv6).
+- **Lab gap:** the local libvirt network is IPv4-only, so IPv6 is tested in containers and
+  unit tests until a lab network with IPv6 exists.
+
 ## 2026-11-27: Developer documentation layout
 
 - **What:** the developer guide is `docs/DEVELOPING.md`; each module documents its purpose,

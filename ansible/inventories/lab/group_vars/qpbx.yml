@@ -1,0 +1,6 @@
+qpbx_domain: pbx.lab.test
+# The lab host on the LAN (the VM is bridged to br0); set to your own machine.
+qpbx_management_ips: ["192.168.10.236/32"]
+qpbx_cert_mode: selfsigned
+qpbx_mail_from: noreply@pbx.lab.test
+qpbx_smtp_host: localhost

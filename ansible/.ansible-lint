@@ -1,0 +1,5 @@
+# Variables are shared across roles on purpose (qpbx_*); a per-role prefix would only rename them.
+skip_list:
+  - var-naming[no-role-prefix]
+exclude_paths:
+  - requirements.yml

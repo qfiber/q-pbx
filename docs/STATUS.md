@@ -32,7 +32,7 @@ Each task ends with tests passing and this file updated in the same commit.
 | P1-09 | Ansible roles and playbook | Roles `kamailio`, `freeswitch`, `qpbx_app`, `postgres`, `storage`, `nftables`, `hardening`, `monitoring`; one `site.yml`; single-host inventory. Phase 1 depth: packages installed, systemd units with the spec's hardening, nftables default deny with named sets, PostgreSQL 16 on localhost, storage folder, unattended upgrades, AppArmor profiles in complain mode, `qpbx-fwd` installed. Kamailio and FreeSWITCH installed and running with minimal config (FreeSWITCH SIP on 127.0.0.1 only); real call config is phase 2 | `ansible-lint`; playbook run twice against a fresh Debian 12 VM with no changes on the second run |
 | P1-10 | Certificates | Ansible role `certificates` with acme.sh, two modes: wildcard through DNS-01 (Cloudflare default, any acme.sh DNS provider) or per-hostname through HTTP-01 (portal, SIP name, provisioning, and each tenant domain on tenant create); reload hooks for the web server and Kamailio; expiry feeds the health check | Issuance against a local ACME test server (Pebble) in both modes; renewal hook dry run |
 | P1-11 | CI | Format, Credo, Dialyzer, boundary, tests with a Postgres service; doc check from P1-02; build the app as a `mix release` `.deb` on Debian 12; build a FreeSWITCH `.deb` from source (SignalWire token as a CI secret) with only sofia, xml_curl, event_socket, spandsp, conference, callcenter, opus | CI green; both packages install on a fresh Debian 12 VM |
-| P1-12 | Lab bring-up and Done-when | Run the playbook on the local Debian 12 VM lab with the CI packages; run the three Done-when checks and record the results here honestly | Done-when results below |
+| P1-12 | Lab bring-up and Done-when | Run the playbook on the local Debian 12 VM lab (bridged to the host LAN; no IPv6 on that LAN yet) with the CI packages; run the three Done-when checks and record the results here honestly | Done-when results below |
 
 Out of scope for phase 1, on purpose: the modules `telephony`, `edge`, `fax`, `storage`,
 `integrations` and `provisioning` are created in the phase that first needs them,
@@ -97,17 +97,28 @@ Kamailio gets its real config.
   of `OR`, and the leftover setting is `''`). Policies now use `NULLIF` before the cast
   (migration `fix_rls_policy_cast`); regression check added. Found by repeated test runs.
 - Docs renamed for the open source repo: `docs/DEVELOPING.md` and a `README.md` per module.
+- P1-09 Ansible roles and playbook (`ansible/`): `site.yml` with roles `hardening`, `nftables`,
+  `postgres`, `storage`, `certificates` (self-signed mode only so far), `kamailio`,
+  `freeswitch`, `qpbx_app`, `monitoring`. Packages built in Debian 12 containers
+  (`packaging/`): FreeSWITCH 1.10.12 (sofia-sip 1.13.17, spandsp pinned, only the listed
+  modules, dependencies derived from the linked libraries), the app release and `qpbx-fwd`.
+  Lab VM script `lab/create-vm.sh` (Debian 12 cloud image, bridged to the host LAN).
+  Verified on the lab VM: ansible-lint passes (production profile); a fresh install, then a
+  second run with `changed=0`; all services active; `/health` `ok`; SIP OPTIONS answered `503`
+  (phase 1 placeholder); management IP seeded into the database reaches nftables through
+  `qpbx-fwd`; everything recovers after a reboot; AppArmor profiles for FreeSWITCH,
+  Kamailio, the app and `qpbx-fwd` loaded in complain mode.
 
 - License: AGPL-3.0 kept, `CLA.md` and `CONTRIBUTING.md`
   added, copyright notice in `README.md`. Code pushed to `github.com/qfiber/q-pbx` (public).
 
 ## In progress
 
-- P1-09 Ansible roles and playbook.
+- P1-10 Certificates (wildcard DNS-01 and per-hostname HTTP-01 modes).
 
 ## Next
 
-- P1-10 Certificates.
+- P1-11 CI.
 
 ## Blockers / open questions for phase 1
 
@@ -120,6 +131,9 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
   and month only. Where do rates come from, and are hourly caps needed?
 
 ## Known bugs
+
+- The lab LAN has no IPv6, so dual-stack listening (Kamailio, nftables rules) is templated but
+  not yet exercised end to end.
 
 - Validation messages built at runtime (for example "unknown feature x") are not translated;
   the fixed ones are.

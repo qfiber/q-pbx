@@ -1,0 +1,53 @@
+# PostgreSQL 16 from the PostgreSQL project's repository (Debian 12 ships 15).
+- name: Repository key
+  ansible.builtin.get_url:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    dest: /usr/share/keyrings/pgdg.asc
+    mode: "0644"
+
+- name: Repository
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/pgdg.list
+    content: "deb [signed-by=/usr/share/keyrings/pgdg.asc] https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main\n"
+    mode: "0644"
+  register: pgdg_repo
+
+- name: Packages
+  ansible.builtin.apt:
+    name: [postgresql-16, python3-psycopg2]
+    state: present
+    update_cache: "{{ pgdg_repo.changed }}"
+
+- name: Listen on localhost only
+  ansible.builtin.lineinfile:
+    path: /etc/postgresql/16/main/postgresql.conf
+    regexp: "^#?listen_addresses"
+    line: "listen_addresses = 'localhost'"
+  notify: Restart postgresql
+
+- name: Running
+  ansible.builtin.systemd:
+    name: postgresql
+    enabled: true
+    state: started
+
+- name: Database password
+  ansible.builtin.include_role:
+    name: qpbx_app
+    tasks_from: secrets
+
+- name: App role (not a superuser, so row-level security applies)
+  community.postgresql.postgresql_user:
+    name: qpbx
+    password: "{{ qpbx_secrets.db_password }}"
+    role_attr_flags: NOSUPERUSER,NOCREATEDB,NOCREATEROLE
+  become: true
+  become_user: postgres
+
+- name: App database
+  community.postgresql.postgresql_db:
+    name: qpbx
+    owner: qpbx
+    encoding: UTF8
+  become: true
+  become_user: postgres

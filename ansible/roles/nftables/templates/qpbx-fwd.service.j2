@@ -1,0 +1,39 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Q-PBX firewall helper (nftables set updates)
+After=nftables.service
+Requires=nftables.service
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+User=qpbx-fwd
+Group=qpbx-fwd
+ExecStart=/usr/sbin/qpbx-fwd -socket /run/qpbx-fwd/fwd.sock -table "inet qpbx" -state /var/lib/qpbx-fwd/sets.json -nft /usr/sbin/nft -sets {{ qpbx_fwd_sets | join(",") }}
+RuntimeDirectory=qpbx-fwd
+RuntimeDirectoryMode=0750
+StateDirectory=qpbx-fwd
+StateDirectoryMode=0700
+UMask=0007
+Restart=on-failure
+RestartSec=2
+
+AmbientCapabilities=CAP_NET_ADMIN
+CapabilityBoundingSet=CAP_NET_ADMIN
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_NETLINK
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallFilter=@system-service
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,13 @@
+<!-- {{ ansible_managed }} -->
+<configuration name="logfile.conf" description="File logging">
+  <settings><param name="rotate-on-hup" value="true"/></settings>
+  <profiles>
+    <profile name="default">
+      <settings>
+        <param name="rollover" value="104857600"/>
+        <param name="maximum-rotate" value="10"/>
+      </settings>
+      <mappings><map name="all" value="info,notice,warning,err,crit,alert"/></mappings>
+    </profile>
+  </profiles>
+</configuration>

@@ -1,0 +1,54 @@
+#!KAMAILIO
+# {{ ansible_managed }}
+# Phase 1 placeholder: every SIP request gets 503 until phase 2 adds auth and routing.
+
+debug=2
+log_stderror=no
+log_facility=LOG_LOCAL0
+children=4
+tcp_children=4
+enable_tls=yes
+auto_aliases=no
+server_header="Server: Q-PBX"
+user_agent_header="User-Agent: Q-PBX"
+
+listen=udp:{{ qpbx_service_ipv4 }}:5060
+listen=tcp:{{ qpbx_service_ipv4 }}:5060
+listen=tls:{{ qpbx_service_ipv4 }}:5061
+{% if qpbx_service_ipv6 %}
+listen=udp:[{{ qpbx_service_ipv6 }}]:5060
+listen=tcp:[{{ qpbx_service_ipv6 }}]:5060
+listen=tls:[{{ qpbx_service_ipv6 }}]:5061
+{% endif %}
+# JSON-RPC over HTTP for the Q-PBX health check, localhost only.
+listen=tcp:127.0.0.1:5071
+
+loadmodule "sl.so"
+loadmodule "pv.so"
+loadmodule "tls.so"
+loadmodule "xhttp.so"
+loadmodule "jsonrpcs.so"
+
+modparam("tls", "config", "/etc/kamailio/tls.cfg")
+modparam("jsonrpcs", "transport", 1)
+
+request_route {
+  if ($Rp == 5071) {
+    drop;
+  }
+  sl_send_reply("503", "Service Unavailable");
+  exit;
+}
+
+event_route[xhttp:request] {
+  if ($Rp != 5071 || $si != "127.0.0.1") {
+    xhttp_reply("403", "Forbidden", "", "");
+    exit;
+  }
+  if ($hu =~ "^/RPC") {
+    jsonrpc_dispatch();
+  } else {
+    xhttp_reply("404", "Not Found", "", "");
+  }
+  exit;
+}

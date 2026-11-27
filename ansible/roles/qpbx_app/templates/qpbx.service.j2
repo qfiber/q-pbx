@@ -1,0 +1,41 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Q-PBX control plane
+After=network-online.target postgresql.service qpbx-fwd.service
+Wants=network-online.target postgresql.service
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+User=qpbx
+Group=qpbx
+EnvironmentFile=/etc/qpbx/qpbx.env
+Environment=HOME={{ qpbx_data_dir }} RELEASE_TMP=/run/qpbx LANG=C.UTF-8
+ExecStartPre=/opt/qpbx/bin/qpbx eval QPBX.Release.migrate
+ExecStart=/opt/qpbx/bin/qpbx start
+ExecStop=/opt/qpbx/bin/qpbx stop
+RuntimeDirectory=qpbx
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+# Binds 80 and 443; no other capability. MemoryDenyWriteExecute stays off: it breaks the BEAM JIT.
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ReadWritePaths={{ qpbx_data_dir }}
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+RestrictNamespaces=true
+LockPersonality=true
+SystemCallFilter=@system-service
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

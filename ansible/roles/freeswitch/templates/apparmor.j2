@@ -1,0 +1,28 @@
+# {{ ansible_managed }}
+# Complain mode during lab phases; enforced in phase 4. No exec rules: FreeSWITCH may not run
+# other programs (closes the `system` dialplan path to a shell).
+abi <abi/3.0>,
+include <tunables/global>
+
+profile qpbx-freeswitch /opt/qpbx-freeswitch/bin/freeswitch flags=(complain) {
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/openssl>
+  capability sys_nice,
+  capability net_bind_service,
+  network inet,
+  network inet6,
+  network unix,
+  network netlink raw,
+  /opt/qpbx-freeswitch/** mr,
+  /etc/freeswitch/** r,
+  /var/lib/freeswitch/** rwk,
+  /var/log/freeswitch/** rw,
+  /run/freeswitch/** rwk,
+  {{ qpbx_data_dir }}/recordings/** rwk,
+  {{ qpbx_data_dir }}/faxes/** rwk,
+  {{ qpbx_data_dir }}/voicemail/** rwk,
+  {{ qpbx_data_dir }}/prompts/** r,
+  @{PROC}/** r,
+  /sys/devices/system/cpu/** r,
+}

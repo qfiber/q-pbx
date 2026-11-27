@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!-- {{ ansible_managed }} -->
+<document type="freeswitch/xml">
+  <section name="configuration" description="Various Configuration">
+    <X-PRE-PROCESS cmd="include" data="autoload_configs/*.xml"/>
+  </section>
+  <section name="dialplan" description="Static fallback, used only when Elixir does not answer">
+    <context name="public">
+      <extension name="unavailable">
+        <condition field="destination_number" expression=".*">
+          <action application="respond" data="503 Service Unavailable"/>
+        </condition>
+      </extension>
+    </context>
+  </section>
+</document>

@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+[server:default]
+method = TLSv1.2+
+verify_certificate = no
+require_certificate = no
+certificate = {{ qpbx_tls_dir }}/fullchain.pem
+private_key = {{ qpbx_tls_dir }}/privkey.pem
+
+[client:default]
+method = TLSv1.2+
+verify_certificate = yes
+require_certificate = yes

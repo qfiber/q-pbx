@@ -3,7 +3,10 @@
 # Needs podman or docker. The container gets CAP_NET_ADMIN in its own network namespace only.
 set -euo pipefail
 cd "$(dirname "$0")"
-CGO_ENABLED=0 go build -o qpbx-fwd .
-trap 'rm -f qpbx-fwd' EXIT
+# Copy to a temp dir so SELinux relabeling (:Z) never touches the repo.
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+CGO_ENABLED=0 go build -o "$tmp/qpbx-fwd" .
+cp -a testdata "$tmp/"
 engine=$(command -v podman || command -v docker)
-"$engine" run --rm --cap-add NET_ADMIN -v "$PWD:/fwd:ro,Z" docker.io/library/debian:12 bash /fwd/testdata/integration.sh
+"$engine" run --rm --cap-add NET_ADMIN -v "$tmp:/fwd:ro,Z" docker.io/library/debian:12 bash /fwd/testdata/integration.sh

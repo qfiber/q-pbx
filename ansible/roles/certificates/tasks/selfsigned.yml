@@ -1,0 +1,17 @@
+# Labs only: a self-signed certificate for the base domain and its wildcard.
+- name: Self-signed certificate
+  ansible.builtin.command:
+    cmd: >-
+      openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-256 -nodes -days 825
+      -subj "/CN={{ qpbx_domain }}"
+      -addext "subjectAltName=DNS:{{ qpbx_domain }},DNS:*.{{ qpbx_domain }}"
+      -keyout {{ qpbx_tls_dir }}/privkey.pem -out {{ qpbx_tls_dir }}/fullchain.pem
+    creates: "{{ qpbx_tls_dir }}/fullchain.pem"
+
+- name: Key and certificate permissions
+  ansible.builtin.file:
+    path: "{{ qpbx_tls_dir }}/{{ item }}"
+    owner: root
+    group: qpbx-tls
+    mode: "0640"
+  loop: [privkey.pem, fullchain.pem]

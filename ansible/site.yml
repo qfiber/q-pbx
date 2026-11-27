@@ -1,0 +1,19 @@
+# Builds a complete single Q-PBX server. Every host is in every group in version 1.
+- name: Q-PBX server
+  hosts: qpbx
+  become: true
+  pre_tasks:
+    - name: Debian 12 only
+      ansible.builtin.assert:
+        that: ansible_distribution == "Debian" and ansible_distribution_major_version == "12"
+        fail_msg: Q-PBX targets Debian 12.
+  roles:
+    - hardening
+    - nftables
+    - postgres
+    - storage
+    - certificates
+    - kamailio
+    - freeswitch
+    - qpbx_app
+    - monitoring

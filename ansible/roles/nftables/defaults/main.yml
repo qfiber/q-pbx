@@ -1,0 +1,4 @@
+# The 12 managed sets, as `qpbx-fwd -sets` expects them (must match QPBX.Firewall.Sets.all/0).
+qpbx_fwd_sets: >-
+  {{ ['allow', 'block'] | product(['ssh', 'sip', 'https']) | map('join', '_')
+     | product(['v4:ipv4', 'v6:ipv6']) | map('join', '_') | list }}

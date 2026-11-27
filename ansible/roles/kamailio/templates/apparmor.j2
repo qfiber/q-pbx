@@ -1,0 +1,22 @@
+# {{ ansible_managed }}
+# Complain mode during lab phases; enforced in phase 4. Reads its config, writes runtime files,
+# runs nothing else.
+abi <abi/3.0>,
+include <tunables/global>
+
+profile qpbx-kamailio /usr/sbin/kamailio flags=(complain) {
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/openssl>
+  network inet,
+  network inet6,
+  network unix,
+  network netlink raw,
+  /usr/sbin/kamailio mr,
+  /usr/lib/x86_64-linux-gnu/kamailio/** mr,
+  /etc/kamailio/** r,
+  {{ qpbx_tls_dir }}/* r,
+  /run/kamailio/** rwk,
+  /tmp/** rw,
+  @{PROC}/** r,
+}

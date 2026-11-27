@@ -1,0 +1,25 @@
+<!-- {{ ansible_managed }} -->
+<configuration name="sofia.conf" description="SIP: from Kamailio on localhost only">
+  <global_settings>
+    <param name="log-level" value="0"/>
+  </global_settings>
+  <profiles>
+    <profile name="qpbx">
+      <settings>
+        <param name="sip-ip" value="127.0.0.1"/>
+        <param name="sip-port" value="5080"/>
+        <param name="rtp-ip" value="{{ qpbx_service_ipv4 }}"/>
+        <param name="ext-rtp-ip" value="{{ qpbx_service_ipv4 }}"/>
+        <param name="context" value="public"/>
+        <param name="dialplan" value="XML"/>
+        <param name="auth-calls" value="false"/>
+        <param name="apply-inbound-acl" value="loopback.auto"/>
+        <param name="rtp-timeout-sec" value="300"/>
+        <param name="rtp-hold-timeout-sec" value="1800"/>
+        <param name="disable-register" value="true"/>
+        <param name="inbound-codec-prefs" value="OPUS,G722,PCMA,PCMU"/>
+        <param name="outbound-codec-prefs" value="OPUS,G722,PCMA,PCMU"/>
+      </settings>
+    </profile>
+  </profiles>
+</configuration>

@@ -1,0 +1,49 @@
+#!/usr/sbin/nft -f
+# {{ ansible_managed }}
+# Q-PBX base ruleset. Rules and set definitions live here; set contents are managed by
+# qpbx-fwd from the database (allow/block lists). Default deny.
+flush ruleset
+
+{% set v4 = qpbx_management_ips | ansible.utils.ipv4 %}
+{% set v6 = qpbx_management_ips | ansible.utils.ipv6 %}
+table inet qpbx {
+{% for kind in ['allow', 'block'] %}{% for scope in ['ssh', 'sip', 'https'] %}
+  set {{ kind }}_{{ scope }}_v4 { type ipv4_addr; flags interval;{% if kind == 'allow' and scope == 'ssh' and v4 %} elements = { {{ v4 | join(', ') }} };{% endif %} }
+  set {{ kind }}_{{ scope }}_v6 { type ipv6_addr; flags interval;{% if kind == 'allow' and scope == 'ssh' and v6 %} elements = { {{ v6 | join(', ') }} };{% endif %} }
+{% endfor %}{% endfor %}
+
+  chain input {
+    type filter hook input priority filter; policy drop;
+    iif lo accept
+    ct state established,related accept
+    ct state invalid drop
+    meta l4proto icmp accept
+    meta l4proto ipv6-icmp accept
+
+    # SSH: management IPs only.
+    tcp dport 22 ip saddr @allow_ssh_v4 accept
+    tcp dport 22 ip6 saddr @allow_ssh_v6 accept
+
+    # SIP (5060 UDP/TCP, 5061 TLS) on the service IPs: allowlist first, then blocks, then open.
+{% for fam, svc in [('v4', qpbx_service_ipv4), ('v6', qpbx_service_ipv6)] if svc %}
+{% set ipf = 'ip' if fam == 'v4' else 'ip6' %}
+    {{ ipf }} daddr {{ svc }} meta l4proto { udp, tcp } th dport { 5060, 5061 } {{ ipf }} saddr @allow_sip_{{ fam }} accept
+    {{ ipf }} daddr {{ svc }} meta l4proto { udp, tcp } th dport { 5060, 5061 } {{ ipf }} saddr @block_sip_{{ fam }} drop
+    {{ ipf }} daddr {{ svc }} meta l4proto { udp, tcp } th dport { 5060, 5061 } accept
+    # RTP to FreeSWITCH.
+    {{ ipf }} daddr {{ svc }} udp dport {{ qpbx_rtp_port_min }}-{{ qpbx_rtp_port_max }} {{ ipf }} saddr @block_sip_{{ fam }} drop
+    {{ ipf }} daddr {{ svc }} udp dport {{ qpbx_rtp_port_min }}-{{ qpbx_rtp_port_max }} accept
+{% endfor %}
+
+    # HTTPS portal, API and provisioning (80 only redirects and answers ACME challenges).
+    tcp dport { 80, 443 } ip saddr @allow_https_v4 accept
+    tcp dport { 80, 443 } ip6 saddr @allow_https_v6 accept
+    tcp dport { 80, 443 } ip saddr @block_https_v4 drop
+    tcp dport { 80, 443 } ip6 saddr @block_https_v6 drop
+    tcp dport { 80, 443 } accept
+  }
+
+  chain forward {
+    type filter hook forward priority filter; policy drop;
+  }
+}

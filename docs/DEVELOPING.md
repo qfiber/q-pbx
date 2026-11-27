@@ -83,6 +83,11 @@ then `podman exec qpbx-pg psql -U postgres -c "create role qpbx login password '
 | `scripts/check_boundary_enforced.sh` | Proves a cross-boundary reference fails the build |
 | `cd fwd && go test ./...` | `qpbx-fwd` unit tests |
 | `fwd/integration_test.sh` | `qpbx-fwd` against real nftables in a Debian 12 container |
+| `packaging/app/build-in-container.sh` | App and `qpbx-fwd` `.deb` packages into `out/` (Debian 12 image) |
+| `packaging/freeswitch/build-in-container.sh` | FreeSWITCH `.deb` into `out/` (Debian 12, about 10 minutes) |
+| `lab/create-vm.sh` | Local Debian 12 lab VM (libvirt, bridged to `br0`; `QPBX_LAB_NET=network=default` for NAT) |
+| `cd ansible && ansible-playbook site.yml` | Install or update the server in the inventory (lab by default) |
+| `cd ansible && ansible-lint` | Lint the playbook and roles |
 | `scripts/check_module_docs.sh <base>` | Fails if an area's public API module changed without its `README.md` |
 | `scripts/test/module_docs_test.sh` | Tests for the module-doc check |
 
@@ -101,3 +106,12 @@ Each area's public API module lives inside its folder (`lib/qpbx/core/core.ex` d
 - Outbound requests to tenant-chosen addresses: HTTPS only by default, no private, loopback or
   link-local targets (checked after DNS resolution and on every redirect), size and time limits.
 - Target Debian 12. No Docker in production.
+
+## Server install (Ansible)
+
+`ansible/site.yml` builds a whole server from the packages in `out/`. Set the inventory
+(`ansible/inventories/<env>/`): `qpbx_domain`, `qpbx_management_ips` (must include the machine
+running Ansible, or the run stops before touching the firewall), `qpbx_cert_mode`, SMTP
+settings. Collections: `ansible-galaxy collection install -r ansible/requirements.yml`.
+On the server, `qpbx eval '...'` runs release commands (for example
+`QPBX.Release.create_platform_admin("you@example.com", "You")`).

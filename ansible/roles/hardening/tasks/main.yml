@@ -1,0 +1,31 @@
+- name: Base packages (chrony keeps TOTP codes and certificates valid)
+  ansible.builtin.apt:
+    name: [unattended-upgrades, apt-listchanges, apparmor, apparmor-utils, chrony, ca-certificates, curl, openssl]
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Unattended security upgrades
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+    mode: "0644"
+
+- name: SSH keys only, no root login
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/qpbx.conf
+    content: |
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      PermitRootLogin no
+    mode: "0644"
+  notify: Reload ssh
+
+- name: Services enabled
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop: [apparmor, chrony, unattended-upgrades]

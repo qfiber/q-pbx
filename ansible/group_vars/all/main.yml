@@ -1,0 +1,36 @@
+# Defaults for every Q-PBX server. Override per inventory.
+
+# Platform base domain: tenants get <slug>.<qpbx_domain>.
+qpbx_domain: pbx.example.com
+qpbx_portal_host: "portal.{{ qpbx_domain }}"
+qpbx_sip_host: "sip.{{ qpbx_domain }}"
+
+# Service IPs (dual-stack). Default: the host's primary addresses. Empty IPv6 = IPv4 only.
+qpbx_service_ipv4: "{{ ansible_default_ipv4.address }}"
+qpbx_service_ipv6: "{{ ansible_default_ipv6.address | default('') }}"
+
+# SSH and the firewall seed. Must include the address Ansible connects from.
+qpbx_management_ips: []
+
+qpbx_rtp_port_min: 16384
+qpbx_rtp_port_max: 32768
+
+# Packages built by packaging/*/build-in-container.sh, on the machine running Ansible.
+qpbx_packages_dir: "{{ playbook_dir }}/../out"
+# Newest package of each kind in qpbx_packages_dir (file names carry the version).
+qpbx_app_deb: "{{ lookup('ansible.builtin.fileglob', qpbx_packages_dir ~ '/qpbx_*_amd64.deb', wantlist=True) | sort | last }}"
+qpbx_fwd_deb: "{{ lookup('ansible.builtin.fileglob', qpbx_packages_dir ~ '/qpbx-fwd_*_amd64.deb', wantlist=True) | sort | last }}"
+qpbx_freeswitch_deb: "{{ lookup('ansible.builtin.fileglob', qpbx_packages_dir ~ '/qpbx-freeswitch_*_amd64.deb', wantlist=True) | sort | last }}"
+
+# Certificates: selfsigned (labs), wildcard (DNS-01) or per_host (HTTP-01).
+qpbx_cert_mode: wildcard
+qpbx_tls_dir: /etc/qpbx/tls
+
+# Email for setup links.
+qpbx_mail_from: "noreply@{{ qpbx_domain }}"
+qpbx_smtp_host: localhost
+qpbx_smtp_port: 587
+qpbx_smtp_username: ""
+qpbx_smtp_password: ""
+
+qpbx_data_dir: /var/lib/qpbx

@@ -1,0 +1,17 @@
+# Certificates for the portal, API, provisioning and SIP TLS, in {{ qpbx_tls_dir }}:
+# fullchain.pem and privkey.pem, readable by the qpbx-tls group (app and Kamailio).
+- name: TLS group
+  ansible.builtin.group:
+    name: qpbx-tls
+    system: true
+
+- name: TLS folder
+  ansible.builtin.file:
+    path: "{{ qpbx_tls_dir }}"
+    state: directory
+    owner: root
+    group: qpbx-tls
+    mode: "0750"
+
+- name: Certificate for the chosen mode
+  ansible.builtin.include_tasks: "{{ qpbx_cert_mode }}.yml"

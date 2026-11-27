@@ -1,0 +1,26 @@
+# {{ ansible_managed }}
+# Complain mode during lab phases; enforced in phase 4. The app may run only its own runtime
+# helpers and `df` (health check); document converters get their own profiles when fax arrives.
+abi <abi/3.0>,
+include <tunables/global>
+
+profile qpbx-app /opt/qpbx/erts-*/bin/beam.smp flags=(complain) {
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/openssl>
+  capability net_bind_service,
+  network inet,
+  network inet6,
+  network unix,
+  network netlink raw,
+  /opt/qpbx/** mrix,
+  /usr/bin/df ix,
+  /etc/qpbx/qpbx.env r,
+  {{ qpbx_tls_dir }}/* r,
+  {{ qpbx_data_dir }}/** rwk,
+  /run/qpbx/** rwk,
+  /run/qpbx-fwd/fwd.sock rw,
+  /tmp/** rwk,
+  @{PROC}/** r,
+  /sys/** r,
+}

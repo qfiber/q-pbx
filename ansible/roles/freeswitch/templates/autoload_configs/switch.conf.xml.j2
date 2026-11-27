@@ -1,0 +1,11 @@
+<!-- {{ ansible_managed }} -->
+<configuration name="switch.conf" description="Core">
+  <settings>
+    <param name="max-sessions" value="1000"/>
+    <param name="sessions-per-second" value="50"/>
+    <param name="rtp-start-port" value="{{ qpbx_rtp_port_min }}"/>
+    <param name="rtp-end-port" value="{{ qpbx_rtp_port_max }}"/>
+    <param name="loglevel" value="info"/>
+    <param name="dump-cores" value="no"/>
+  </settings>
+</configuration>

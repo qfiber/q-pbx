@@ -164,6 +164,7 @@ Version 1 runs on a single Debian 12 server, installed natively with Ansible and
 | File storage | Local NVMe folder | Recordings, voicemail, faxes, prompts |
 
 - **Service IP and DNS:** a dedicated second IP on the server and a name such as `sip.pbx.qfiber.co.il`. Phones, carriers and provisioning all use it; it becomes the floating IP when HA is added.
+- **Dual-stack IPv4 and IPv6** everywhere a client connects: the service IP has an IPv4 and an IPv6 address (with A and AAAA records), and Kamailio, RTP, the portal, the API, provisioning and the firewall all handle both. FreeSWITCH bridges between the families, so a phone on IPv6 can call a carrier that is IPv4-only. Each trunk uses the address family its carrier supports.
 - **Public IP directly on the server,** no NAT in front.
 - **Rough sizing** (to confirm with load tests): 8 vCPU, 16 GB RAM, NVMe SSD sized for recording retention. Comfortably 100+ concurrent calls with some Opus transcoding and fax.
 

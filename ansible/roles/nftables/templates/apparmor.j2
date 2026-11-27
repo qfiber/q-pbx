@@ -1,0 +1,15 @@
+# {{ ansible_managed }}
+# Complain mode during lab phases; enforced in phase 4. May run only nft.
+abi <abi/3.0>,
+include <tunables/global>
+
+profile qpbx-fwd /usr/sbin/qpbx-fwd flags=(complain) {
+  include <abstractions/base>
+  capability net_admin,
+  network unix,
+  network netlink raw,
+  /usr/sbin/qpbx-fwd mr,
+  /usr/sbin/nft ix,
+  /run/qpbx-fwd/** rw,
+  /var/lib/qpbx-fwd/** rw,
+}

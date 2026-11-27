@@ -1,0 +1,17 @@
+# Phase 1: persistent, size-capped journald logs. External checks (HetrixTools on /health and
+# TCP 443/5061) need nothing on the server; Prometheus arrives with the second server.
+- name: Journald drop-in folder
+  ansible.builtin.file:
+    path: /etc/systemd/journald.conf.d
+    state: directory
+    mode: "0755"
+
+- name: Persistent journald with a size cap
+  ansible.builtin.copy:
+    dest: /etc/systemd/journald.conf.d/qpbx.conf
+    content: |
+      [Journal]
+      Storage=persistent
+      SystemMaxUse=2G
+    mode: "0644"
+  notify: Restart journald
