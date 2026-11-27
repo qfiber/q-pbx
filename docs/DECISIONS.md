@@ -2,6 +2,22 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Security baseline
+
+- **What:** the spec gains a "Security baseline" (database, login, TLS everywhere, sessions,
+  encryption at rest, encrypted recordings, private temp data, least privilege). STATUS.md
+  has the phased plan.
+- **Changes to earlier decisions:**
+  - Sessions move from signed cookies with a 12 h expiry (P1-04) to server-side sessions
+    checked on every request: 15 min idle timeout, 12 h maximum, instant revocation.
+  - 2FA becomes mandatory for tenant admins too, not only platform admins.
+  - The Cloak key gets a key-provider behaviour (local file, AWS KMS) instead of only an
+    environment variable.
+- **Why now:** sessions, login protection, enforced row-level security and the database role
+  split change code that phase 2 builds on, so they come before phase 2 ("phase 1b").
+  Recording encryption and private media buffers come with recording (phase 4), and
+  cross-server TLS with HA (phase 9).
+
 ## 2026-11-27: Certificates (P1-10)
 
 - **acme.sh**, pinned by commit, runs as root from systemd timers (daily renewal, and every 5

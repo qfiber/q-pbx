@@ -140,6 +140,30 @@ Kamailio gets its real config.
 ## Next
 
 - Review of phase 1 and answers to the open points in the phase 1 report.
+- Phase 1b: security items marked "1b" in the security plan, before phase 2.
+
+## Security plan
+
+Requirements: `docs/SPEC.md`, "Security baseline". Audit of phase 1 on 2026-11-27 (code and the
+lab server). "1b" = before phase 2 starts.
+
+| # | Requirement | Today | Work to do | When |
+| --- | --- | --- | --- | --- |
+| S1 | Row-level security on every tenant request | Policies exist on `users`, `user_roles`, `audit_logs`, `firewall_entries`, but **no request path runs inside `with_tenant`, so they never filter anything** | Tenant-scoped requests (portal, later API and jobs) run their queries in a tenant scope; a test proves a tenant page cannot read another tenant's rows; RLS on every new tenant table | 1b |
+| S2 | DB access: least privilege | App connects as non-superuser `qpbx` on localhost; it owns the schema | Separate owner role for migrations; runtime role with only data rights; `audit_logs` insert/select only (no update/delete); `pg_hba` scram on localhost only; Kamailio read-only role on a view (phase 2) | 1b (Kamailio role: 2) |
+| S3 | Validation and sanitization | Changesets validate every input; Ecto parameterizes all queries; HEEx escapes output; the only raw HTML is the server-generated QR SVG; strict token checks on setup and ACME paths | Add a CI scan (Sobelow) for unsafe patterns; keep `raw/1` only for generated SVG | 1b |
+| S4 | 2FA for admins | Mandatory for platform admins; optional for tenant admins | Make it mandatory for tenant admins (enrolment cannot be skipped) | 1b |
+| S5 | Login brute-force protection, CAPTCHA, proof of work | None (Argon2 only slows guessing) | Rate limits per IP and per account, lockout with backoff; `Captcha` behaviour with Friendly Captcha, Cloudflare Turnstile, Captcha.eu and "none", configured per installation, on login, 2FA, setup and password pages; failed logins feed the brute-force alert (phase 3) | 1b |
+| S6 | TLS everywhere | HTTPS with HSTS on 443 (TLS 1.2+); HTTP only redirects and serves ACME; SIP TLS on 5061 available; SMTP requires TLS when a login is used; localhost-only plain links (Postgres, event socket, Kamailio to FreeSWITCH, JSON-RPC) | SIP TLS and SRTP for phones and apps (phase 2, see question on port 5060); HTTPS-only webhooks and CRM calls (phase 3); TLS or WireGuard between servers (phase 9) | 2, 3, 9 |
+| S7 | Token validation on every action, instant revocation | CSRF tokens on every form; LiveView signs its session; but sessions are signed cookies that cannot be revoked before they expire | Server-side session table (token hash, user, created, last seen, IP, user agent); every request and LiveView event checks it; revocation deletes the rows and disconnects live sockets (PubSub); password, 2FA or role changes revoke all of a user's sessions; "sign out everywhere" in the portal | 1b |
+| S8 | 15-minute idle timeout | 12 h absolute expiry only | Idle timeout 15 min (configurable lower, not higher) plus 12 h absolute; LiveView pages warn before expiry and redirect to login | 1b |
+| S9 | Encryption at rest, external key store | Cloak encrypts TOTP secrets; key in a root-only file on the server | `KeyProvider` behaviour: local file (default) and AWS KMS; rotate keys with Cloak's key tags; encrypt carrier passwords and CRM tokens as they arrive; encrypted backups (pgBackRest cipher, restic) | Provider: 1b; backups: 2 |
+| S10 | Call recordings encrypted | Recording not built yet | Envelope encryption: a data key per file (AES-256-GCM) wrapped by the master key; voicemail and faxes too; decrypt only while streaming to an authorized user; plaintext never written to persistent disk | 4 |
+| S11 | Safe temp location | Every Q-PBX service has `PrivateTmp`; uploads would still use the app's (private) `/tmp` on disk | Uploads and conversions in a per-service tmpfs (`/run/qpbx/tmp`, 0700); FreeSWITCH records into its own tmpfs, then the app encrypts and deletes the plaintext; document converters get a scratch tmpfs per job | 1b (uploads), 4 (media) |
+| S12 | systemd and AppArmor, root as little as possible | No Q-PBX service runs as root; ours score 2.2 to 4.2 in `systemd-analyze security`; AppArmor profiles in complain mode; **Debian's Kamailio (9.2) and PostgreSQL (9.6) units are unhardened**; acme.sh runs as root | Hardening drop-ins for Kamailio and PostgreSQL; acme.sh as its own user (reload through a narrow systemd unit); AppArmor in enforce mode (phase 4, as the spec says); a CI check that fails on new root services | 1b (enforce: 4) |
+
+Open questions for this plan are in the phase 1 report (port 5060 policy, AWS key service,
+built-in proof of work, full-disk encryption).
 
 ## Blockers / open questions for phase 1
 

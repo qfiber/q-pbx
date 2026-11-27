@@ -523,6 +523,39 @@ Toll fraud is the biggest financial risk for a hosted PBX, so spend limits and d
 - Secrets (carrier passwords, CRM tokens) encrypted with Cloak and a key outside the database.
 - Recordings and faxes stored under per-tenant paths and signed, short-lived download URLs.
 
+**Security baseline (added 2026-11-27)**
+
+These apply to every phase; `docs/STATUS.md` ("Security plan") tracks when each part lands.
+
+- **Database:** tenant isolation enforced by row-level security on every tenant request, not
+  only by query filters; the app connects as a non-superuser that cannot change the schema
+  (migrations run as a separate owner role); the audit log is append-only for the app; every
+  input is validated at the boundary (changesets), queries are parameterized, and output is
+  escaped (HEEx); Kamailio gets a read-only role on a narrow view.
+- **Login:** 2FA required for platform admins and tenant admins (optional for tenant users);
+  login, setup and password pages protected by rate limits, lockout with backoff, and a
+  CAPTCHA or proof-of-work challenge from a provider chosen per installation: Friendly
+  Captcha, Cloudflare Turnstile, Captcha.eu, or none.
+- **TLS everywhere** a network is crossed: HTTPS with HSTS for the portal, API and
+  provisioning; SIP over TLS and SRTP for phones and apps; TLS for SMTP with credentials,
+  outbound webhooks and CRM calls; TLS or an encrypted tunnel between servers once there is
+  more than one. Plain protocols stay only on localhost.
+- **Sessions:** checked server-side on every request and LiveView event; ended within
+  15 minutes of inactivity and after at most 12 hours; revoked instantly (all of a user's
+  sessions and live connections) when their password, 2FA or role changes or an admin
+  revokes them. API keys are checked on every request and revocable instantly.
+- **Encryption at rest:** secrets and sensitive fields encrypted with Cloak; the master key
+  comes from a key provider: a local file by default, or an external service such as AWS KMS
+  for installations that want the key off the server. Backups are encrypted.
+- **Recordings, voicemail and faxes** are encrypted at rest (a data key per file, wrapped by
+  the master key) and decrypted only while streamed to an authorized user.
+- **Temporary data** (media being recorded, uploads, document conversion) lives only in
+  private, per-service locations in memory (tmpfs), never in a shared `/tmp`, and is removed
+  as soon as it is encrypted or processed.
+- **Least privilege:** every service runs as its own non-root user under systemd hardening and
+  an AppArmor profile (enforced from phase 4); root is used only by systemd, the package
+  manager and Ansible.
+
 **Firewall allow and block lists (synced across servers)**
 
 - Managed in the portal and API at two levels: platform-wide (management IPs, carriers, monitoring such as HetrixTools) and per tenant (office IPs, allowed for that tenant's SIP traffic).
