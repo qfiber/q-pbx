@@ -135,7 +135,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 1b-9 Sobelow security scan in CI.
+- 1b-10 Lab verification of phase 1b.
 
 ## Next
 
@@ -197,6 +197,11 @@ Kamailio gets its real config.
   base system daemons run as root (systemd, journald, logind, udevd, sshd, getty,
   unattended-upgrades, qemu guest agent); every Q-PBX-related unit rates "OK". Fixed on the
   way: the nginx switch had left the ACME webroot where nginx could not read it.
+- 1b-9 Sobelow in CI (done): `mix sobelow --config` fails CI on any finding. It found a
+  missing Content-Security-Policy: added `QPBX.Web.CSP` (scripts only from the site plus the
+  configured human-check provider, no inline scripts or eval, no framing, forms to the site
+  only); the inline theme script moved to `/theme.js`. Three false positives are skipped with
+  their reasons in the code. Browser Done-when checks still pass under the CSP. 3 new tests (111).
 - Done after the phase 1 review: nginx in front (non-root, real client IP, optional
   ModSecurity), FreeSWITCH modules added (G.729, Opus/MP3 recording, loopback, CDR spool; all
   load in the lab), languages moved to one config list, firewall and plan forms now clear

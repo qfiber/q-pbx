@@ -93,6 +93,7 @@ uses two roles (`qpbx_owner` for migrations, `qpbx` for the app); development us
 | `lab/acme/pebble.sh <vm-ip>` | Local test ACME server (Pebble) with DNS, to test the certificate modes |
 | `cd ansible && ansible-lint` | Lint the playbook and roles |
 | `scripts/check_module_docs.sh <base>` | Fails if an area's public API module changed without its `README.md` |
+| `mix sobelow --config` | Security scan (CI fails on any finding) |
 | `scripts/check_translations.sh` | Fails on fuzzy or missing translations |
 | `scripts/test/module_docs_test.sh` | Tests for the module-doc check |
 

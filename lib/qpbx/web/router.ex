@@ -12,6 +12,7 @@ defmodule QPBX.Web.Router do
     plug :put_root_layout, html: {QPBX.Web.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug QPBX.Web.CSP
     plug :fetch_current_account
   end
 

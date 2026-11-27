@@ -37,6 +37,8 @@ defmodule QPBX.Core.KeyProvider do
     end
   end
 
+  # sobelow_skip ["Traversal.FileModule"]
+  # The path comes from the operator's configuration, never from a request.
   defp unwrap!(opts) do
     blob = opts[:blob_file] |> File.read!() |> String.trim()
     body = %{"CiphertextBlob" => blob, "KeyId" => opts[:key_id], "EncryptionContext" => @context}

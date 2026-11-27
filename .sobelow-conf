@@ -1,0 +1,15 @@
+# Sobelow security scan (CI fails on any finding). Skipped findings carry their reason next to
+# a "sobelow_skip" comment in the code.
+[
+  verbose: false,
+  private: false,
+  skip: true,
+  router: "lib/qpbx/web/router.ex",
+  exit: "low",
+  format: "txt",
+  out: nil,
+  # The CSP comes from the QPBX.Web.CSP plug (it depends on the configured human-check
+  # provider), which Sobelow does not recognise; test/qpbx/web/csp_test.exs checks it.
+  ignore: ["Config.CSP"],
+  ignore_files: []
+]

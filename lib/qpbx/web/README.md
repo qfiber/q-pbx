@@ -33,6 +33,9 @@ loopback peers, i.e. nginx. Use `conn.remote_ip` everywhere; never read forwardi
 IPs exempt). `QPBX.Web.Captcha` (`provider/0`, `verify/2`, `widget/1`) with `Pow`, `Turnstile`,
 `FriendlyCaptcha`, `CaptchaEU`; `Captcha.PowStore` remembers used challenges (per node).
 
+**Content-Security-Policy:** `QPBX.Web.CSP` (browser pipeline). No inline scripts: put JS in
+`assets/js` or `priv/static`. A new outside script host goes into its provider entry.
+
 **Languages:** `QPBX.Web.Locale` (`all/0`, `codes/0`, `options/0`, `dir/1`).
 
 **Gotchas:**

@@ -87,6 +87,8 @@ defmodule QPBX.Web.Health.Checks do
     end
   end
 
+  # sobelow_skip ["Traversal.FileModule"]
+  # The path comes from the operator's configuration, never from a request.
   defp cert_status(path, warn_days) do
     with {:ok, pem} <- File.read(path),
          [{:Certificate, der, _} | _] <- :public_key.pem_decode(pem),

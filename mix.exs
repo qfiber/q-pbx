@@ -79,6 +79,7 @@ defmodule QPBX.MixProject do
       {:tz, "~> 0.28"},
       {:cloak_ecto, "~> 1.3"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
     ]
   end

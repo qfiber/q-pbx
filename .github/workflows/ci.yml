@@ -47,6 +47,8 @@ jobs:
       - run: mix format --check-formatted
       - run: mix compile --force --warnings-as-errors
       - run: mix credo --strict
+      - name: Security scan (Sobelow)
+        run: mix sobelow --config
       - name: Boundary violations fail the build
         run: scripts/check_boundary_enforced.sh
       - run: mix test
