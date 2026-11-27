@@ -1,0 +1,20 @@
+# PostgreSQL 16 from the PostgreSQL project's repository (Debian 12 ships 15). Also used by
+# restore.yml before anything else (no secrets needed here).
+- name: Repository key
+  ansible.builtin.get_url:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    dest: /usr/share/keyrings/pgdg.asc
+    mode: "0644"
+
+- name: Repository
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/pgdg.list
+    content: "deb [signed-by=/usr/share/keyrings/pgdg.asc] https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main\n"
+    mode: "0644"
+  register: pgdg_repo
+
+- name: Packages
+  ansible.builtin.apt:
+    name: [postgresql-16, python3-psycopg2]
+    state: present
+    update_cache: "{{ pgdg_repo.changed }}"

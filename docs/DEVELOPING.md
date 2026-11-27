@@ -96,6 +96,10 @@ uses two roles (`qpbx_owner` for migrations, `qpbx` for the app); development us
 | `lab/done-when/phase2-admission.py <vm-ip>` | 2-6 lab check: call admission and fraud protection with real calls |
 | `ci/calls/test.sh` | Call tests: a fresh Debian 12 systemd container (podman), the playbook into it (`ansible/inventories/ci`), then the SIPp suite; needs the packages in `out/` (about 4 minutes) |
 | `ci/calls/run.py debian@<vm-ip> -i <key>` | The SIPp suite alone against any installed server (needs `sip-tester` there) |
+| `QPBX_LAB_NAME=qpbx-backup lab/create-vm.sh` | The lab's backup target (a second VM; group `qpbx_backup` in the lab inventory) |
+| `cd ansible && ansible-playbook restore.yml -e qpbx_restore_confirm=yes` | Rebuild the inventory's server from its backups (a fresh machine; `-e qpbx_restore_target_time=...` for a point in time) |
+| `lab/done-when/phase2-restore.py <vm-ip>` | 2-10 lab check: timed restore of the lab server onto a fresh VM |
+| `sudo qpbx-backup db\|files` (on a server) | One backup now (the timers run them nightly) |
 | `lab/done-when/phase2-cdrs.py <vm-ip>` | 2-8 lab check: call records of real calls, including one made while the app is stopped |
 | `lab/done-when/phase2-voicemail.py <vm-ip>` | 2-7 lab check: voicemail with real calls (message, encryption, email, lights, *97) |
 | `lab/done-when/phase2-calls.py <vm-ip>` | 2-5 lab check: real calls (extensions, features, outbound, failover, inbound, fallback) |
@@ -150,6 +154,20 @@ The portal and emails use Gettext. Each language has its own files:
 `priv/gettext_notify`, translate, then add `%{code: ..., name: ..., dir: "ltr" | "rtl"}` to
 `config :qpbx, :locales` in `config/config.exs`. After changing texts in code, run
 `mix gettext.extract --merge` and fill in every language's new entries.
+
+## Backups
+
+Set in the inventory: `qpbx_backup_enabled: true`, `qpbx_backup_host` (an SFTP server; when it
+is in group `qpbx_backup`, the `backup_target` role sets up a chrooted SFTP-only account and
+authorizes the server's key, otherwise authorize `/etc/qpbx-backup/id_ed25519.pub` there by
+hand) and `qpbx_backup_password` (restic; in Ansible Vault). Keep that password somewhere off
+the server as well: a restore needs it to get the secrets file back, and the database backups'
+cipher is in that file. Every night pgBackRest backs up the database (WAL is archived all the
+time, so a restore reaches the latest state or any point in between) and restic backs up
+`/etc/qpbx` and the data folder; `/health/details` shows how old the last backups are. To
+rebuild a server: point the inventory at a fresh Debian 12 machine and run `restore.yml` (see
+Commands). The lab keeps its backup password in `~/.local/share/qpbx-lab/backup-password`
+(create it with a random value before the first run).
 
 ## nginx
 

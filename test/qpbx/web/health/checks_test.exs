@@ -69,4 +69,24 @@ defmodule QPBX.Web.Health.ChecksTest do
     assert result.status == "down"
     :gen_tcp.close(listen)
   end
+
+  test "backups: not configured, missing, failed, stale and fresh" do
+    assert {:not_configured, _} = Checks.backups([])
+    dir = Path.join(System.tmp_dir!(), "qpbx-backup-#{System.unique_integer([:positive])}")
+    File.mkdir_p!(dir)
+    on_exit(fn -> File.rm_rf!(dir) end)
+    now = System.os_time(:second)
+    put = fn kind, map -> File.write!(Path.join(dir, kind <> ".json"), Jason.encode!(map)) end
+
+    assert {:error, detail} = Checks.backups(status_dir: dir)
+    assert detail =~ "db: no backup yet"
+    put.("db", %{ok: true, at: now - 3600})
+    put.("files", %{ok: true, at: now - 7200})
+    assert {:ok, "db: 1 h ago, files: 2 h ago"} = Checks.backups(status_dir: dir)
+    put.("files", %{ok: true, at: now - 30 * 3600})
+    assert {:warning, _} = Checks.backups(status_dir: dir)
+    put.("files", %{ok: false, at: now, detail: "repository unreachable"})
+    assert {:error, detail} = Checks.backups(status_dir: dir)
+    assert detail =~ "files: last run failed (repository unreachable)"
+  end
 end

@@ -1,0 +1,20 @@
+# pgBackRest settings: they hold the cipher from the secrets file, so on a restore this runs
+# after restic has brought that file back.
+- name: Secrets (the pgBackRest cipher)
+  ansible.builtin.include_role:
+    name: qpbx_app
+    tasks_from: secrets
+
+- name: The pgBackRest settings (they hold the cipher)
+  ansible.builtin.template:
+    src: pgbackrest.conf.j2
+    dest: /etc/pgbackrest.conf
+    owner: root
+    group: postgres
+    mode: "0640"
+
+- name: Backup and restore command
+  ansible.builtin.template:
+    src: qpbx-backup.j2
+    dest: /usr/local/sbin/qpbx-backup
+    mode: "0750"

@@ -19,3 +19,25 @@
     - kamailio
     - nginx
     - monitoring
+  post_tasks:
+    - name: Backup key (authorized on the target by the next play)
+      ansible.builtin.include_role:
+        name: backup
+        tasks_from: key
+      when: qpbx_backup_enabled and not qpbx_restore_test
+
+- name: Backup target
+  hosts: qpbx_backup
+  become: true
+  roles:
+    - backup_target
+
+- name: Q-PBX backups
+  hosts: qpbx
+  become: true
+  tasks:
+    # A restore test (a copy next to the real server) must not write into its repository.
+    - name: Backups
+      ansible.builtin.include_role:
+        name: backup
+      when: qpbx_backup_enabled and not qpbx_restore_test

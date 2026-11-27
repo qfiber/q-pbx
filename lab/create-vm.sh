@@ -14,11 +14,14 @@ IMG=debian-12-genericcloud-amd64.qcow2
 export LIBVIRT_DEFAULT_URI=qemu:///system
 
 if [[ ${1:-} == destroy ]]; then
+  # Forget only this VM's host key: known_hosts is shared by every lab VM.
+  old_ip=$( { virsh domifaddr "$NAME" --source agent 2>/dev/null; virsh domifaddr "$NAME" 2>/dev/null; } \
+    | awk '/ipv4/ && $4 !~ /^127\./ && !found {sub("/.*","",$4); print $4; found=1}') || true
+  [[ -n ${old_ip:-} && -f $LAB_DIR/known_hosts ]] && ssh-keygen -q -R "$old_ip" -f "$LAB_DIR/known_hosts" >/dev/null 2>&1
   virsh destroy "$NAME" 2>/dev/null || true
   virsh undefine "$NAME" --nvram 2>/dev/null || virsh undefine "$NAME" 2>/dev/null || true
   virsh vol-delete --pool "$POOL" "$NAME.qcow2" 2>/dev/null || true
   virsh vol-delete --pool "$POOL" "$NAME-seed.iso" 2>/dev/null || true
-  rm -f "$LAB_DIR/known_hosts"
   exit 0
 fi
 
@@ -57,7 +60,7 @@ virsh domstate "$NAME" | grep -q running || virsh start "$NAME" >/dev/null
 for _ in $(seq 1 60); do
   # Guest agent works on any network; the lease table only on libvirt NAT networks.
   ip=$( { virsh domifaddr "$NAME" --source agent 2>/dev/null; virsh domifaddr "$NAME" 2>/dev/null; } \
-    | awk '/ipv4/ && $4 !~ /^127\./ {sub("/.*","",$4); print $4; exit}')
+    | awk '/ipv4/ && $4 !~ /^127\./ && !found {sub("/.*","",$4); print $4; found=1}')  # no early exit: SIGPIPE + pipefail
   [[ -n ${ip:-} ]] && ssh -q -o IdentitiesOnly=yes -i id_ed25519 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=3 \
     -o UserKnownHostsFile="$LAB_DIR/known_hosts" "debian@$ip" 'cloud-init status --wait >/dev/null; true' && break
   sleep 3

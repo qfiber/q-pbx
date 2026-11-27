@@ -55,7 +55,9 @@ if config_env() == :prod do
     ],
     kamailio: [
       jsonrpc_url: System.get_env("QPBX_KAMAILIO_JSONRPC_URL", "http://127.0.0.1:5071/RPC")
-    ]
+    ],
+    # Status files written by the backup jobs (unset: backups not configured on this server).
+    backups: [status_dir: System.get_env("QPBX_BACKUP_STATUS_DIR")]
 
   # Call control: the event socket to the local FreeSWITCH, and the password FreeSWITCH's
   # mod_xml_curl sends when asking for a dialplan.

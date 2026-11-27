@@ -1,0 +1,2 @@
+# The backup target uses the same account name as the servers expect.
+qpbx_backup_user: qpbx-backup

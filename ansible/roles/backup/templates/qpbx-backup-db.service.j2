@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Q-PBX backup (db)
+After=network-online.target postgresql@16-main.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/qpbx-backup db
+Nice=10
+IOSchedulingClass=idle

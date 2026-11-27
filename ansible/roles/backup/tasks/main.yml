@@ -1,0 +1,77 @@
+# Backups to the off-server target: pgBackRest (WAL archived continuously, a backup every
+# night) and restic (/etc/qpbx and the data folder, every night), each reporting its last run
+# in {{ qpbx_data_dir }}/backup-status for the health check.
+- name: Backups need a target and a password
+  ansible.builtin.assert:
+    that: [qpbx_backup_host | length > 0, qpbx_backup_password | length >= 16]
+    fail_msg: Set qpbx_backup_host and qpbx_backup_password (16 characters or more, in Ansible Vault).
+
+- name: Key
+  ansible.builtin.include_tasks: key.yml
+
+- name: Client
+  ansible.builtin.include_tasks: client.yml
+
+- name: The pgBackRest settings
+  ansible.builtin.include_tasks: pgbackrest.yml
+
+- name: Status folder (written by the jobs, read by the app)
+  ansible.builtin.file:
+    path: "{{ qpbx_data_dir }}/backup-status"
+    state: directory
+    owner: qpbx
+    group: qpbx
+    mode: "0750"
+
+- name: WAL archiving to the repository
+  ansible.builtin.copy:
+    dest: /etc/postgresql/16/main/conf.d/qpbx-archive.conf
+    content: |
+      # Managed by Ansible (Q-PBX).
+      archive_mode = on
+      archive_command = 'pgbackrest --stanza=qpbx archive-push %p'
+      wal_level = replica
+    mode: "0644"
+  notify: Restart postgresql
+
+- name: Apply archiving now
+  ansible.builtin.meta: flush_handlers
+
+- name: Repository and stanza (does nothing when they exist)
+  ansible.builtin.command: runuser -u postgres -- pgbackrest --stanza=qpbx stanza-create
+  register: backup_stanza
+  changed_when: "'completed successfully' in backup_stanza.stdout and 'already exists' not in backup_stanza.stdout"
+
+- name: The restic repository
+  ansible.builtin.shell: |
+    set -a; . /etc/qpbx-backup/restic.env; set +a
+    restic cat config >/dev/null 2>&1 && echo exists || restic init
+  args:
+    executable: /bin/bash
+  register: backup_restic_init
+  changed_when: "'created restic repository' in backup_restic_init.stdout"
+
+- name: Backup services and timers
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/systemd/system/{{ item }}"
+    mode: "0644"
+  loop:
+    - qpbx-backup-db.service
+    - qpbx-backup-db.timer
+    - qpbx-backup-files.service
+    - qpbx-backup-files.timer
+
+- name: Timers on
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+    daemon_reload: true
+  loop: [qpbx-backup-db.timer, qpbx-backup-files.timer]
+
+- name: First backups (only when none has run yet)
+  ansible.builtin.command: /usr/local/sbin/qpbx-backup {{ item }}
+  args:
+    creates: "{{ qpbx_data_dir }}/backup-status/{{ item }}.json"
+  loop: [db, files]

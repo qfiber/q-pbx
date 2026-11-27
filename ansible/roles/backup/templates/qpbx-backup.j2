@@ -1,0 +1,33 @@
+#!/bin/bash
+# {{ ansible_managed }}
+# qpbx-backup db|files   one backup now; writes {{ qpbx_data_dir }}/backup-status/<kind>.json
+set -uo pipefail
+kind=${1:?db or files}
+status_dir={{ qpbx_data_dir }}/backup-status
+set -a; . /etc/qpbx-backup/restic.env; set +a
+
+run() {
+  case $kind in
+    db)
+      # Full on Sundays and when none exists yet, else differential.
+      type=diff
+      if [[ $(date +%u) == 7 ]] || ! runuser -u postgres -- pgbackrest --stanza=qpbx info --output=json | grep -q '"type":"full"'; then
+        type=full
+      fi
+      runuser -u postgres -- pgbackrest --stanza=qpbx --type=$type backup ;;
+    files)
+      restic backup --tag qpbx /etc/qpbx {{ qpbx_data_dir }} &&
+        restic forget --tag qpbx --prune \
+          --keep-daily {{ qpbx_backup_keep_daily }} --keep-weekly {{ qpbx_backup_keep_weekly }} --keep-monthly {{ qpbx_backup_keep_monthly }} ;;
+    *) echo "usage: qpbx-backup db|files" >&2; return 2 ;;
+  esac
+}
+
+out=$(run 2>&1); rc=$?
+echo "$out"
+detail=$(echo "$out" | grep -v '^\s*$' | tail -1 | tr -d '"\\' | cut -c1-200)
+ok=false; [[ $rc == 0 ]] && ok=true
+mkdir -p "$status_dir"
+printf '{"ok": %s, "at": %s, "detail": "%s"}\n' "$ok" "$(date +%s)" "$detail" > "$status_dir/$kind.json.tmp"
+chmod 0644 "$status_dir/$kind.json.tmp" && mv "$status_dir/$kind.json.tmp" "$status_dir/$kind.json"
+exit $rc

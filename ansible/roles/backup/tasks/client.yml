@@ -1,0 +1,58 @@
+# Tools and settings to reach the repository (backups and restores both need them).
+- name: Packages (pgBackRest from the PostgreSQL repository, restic from Debian)
+  ansible.builtin.apt:
+    name: [pgbackrest, restic]
+    state: present
+
+- name: Target host key (trusted on first use)
+  ansible.builtin.shell: ssh-keyscan -p {{ qpbx_backup_port }} -t ed25519,ecdsa,rsa {{ qpbx_backup_host }} > /etc/qpbx-backup/known_hosts
+  args:
+    creates: /etc/qpbx-backup/known_hosts
+
+- name: Known hosts readable by postgres
+  ansible.builtin.file:
+    path: /etc/qpbx-backup/known_hosts
+    owner: root
+    group: postgres
+    mode: "0640"
+
+- name: Root's SSH folder
+  ansible.builtin.file:
+    path: /root/.ssh
+    state: directory
+    mode: "0700"
+
+# restic reaches the target through this alias (its key and the pinned host key).
+- name: SSH alias for the backup target
+  ansible.builtin.blockinfile:
+    path: /root/.ssh/config
+    create: true
+    mode: "0600"
+    marker: "# {mark} Q-PBX backup target"
+    block: |
+      Host qpbx-backup-target
+          HostName {{ qpbx_backup_host }}
+          Port {{ qpbx_backup_port }}
+          User {{ qpbx_backup_user }}
+          IdentityFile /etc/qpbx-backup/id_ed25519
+          IdentitiesOnly yes
+          UserKnownHostsFile /etc/qpbx-backup/known_hosts
+          StrictHostKeyChecking yes
+          BatchMode yes
+
+- name: The restic password (a copy; the one in Ansible Vault is what a restore needs)
+  ansible.builtin.copy:
+    dest: /etc/qpbx-backup/restic-password
+    content: "{{ qpbx_backup_password }}"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+
+- name: The restic settings
+  ansible.builtin.template:
+    src: restic.env.j2
+    dest: /etc/qpbx-backup/restic.env
+    owner: root
+    group: root
+    mode: "0600"

@@ -11,7 +11,9 @@ running endpoint).
 **Health:** `QPBX.Web.Health` (exported; started by `QPBX.Application`): `current/0`, `run/1`,
 `put/1`, `overall/1`. Routes `/health` and `/health/details`. Config `:qpbx, QPBX.Web.Health`
 (`interval`, and per-check keyword lists `disk`, `certificate`, `freeswitch`, `kamailio`,
-`oban_backlog`); a check with no config reports `not_configured` and does not count.
+`oban_backlog`, `backups`: `status_dir` with the backup jobs' `db.json` and `files.json`, error
+when a run failed or none ran, warning when the last success is over 26 h old); a check with no
+config reports `not_configured` and does not count.
 
 **Portal routes:** `/login`, `/platform/login`, `/2fa`, `/2fa/setup`, `/2fa/skip`,
 `/setup/:token`, `/locale/:locale`, `/logout`; platform LiveViews under `/platform`

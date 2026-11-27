@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Q-PBX backup (files), nightly
+
+[Timer]
+OnCalendar={{ qpbx_backup_files_time }}
+RandomizedDelaySec=15m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

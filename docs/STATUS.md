@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 2 — Core calling and protection (in progress: 2-0 to 2-9 done, next 2-10)
+**Current phase:** 2 — Core calling and protection (in progress: 2-0 to 2-10 done, next 2-11)
 **Last updated:** 2026-11-27
 
 ## Phase 1 goal
@@ -40,6 +40,21 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 2-10 Backups and restore (done): roles `backup` (pgBackRest with continuous WAL archiving,
+  AES-256 encrypted with a cipher in the secrets file, full on Sundays and differential
+  nightly; restic of `/etc/qpbx` and the data folder nightly with retention, its password from
+  the inventory; over SFTP with a pinned host key) and `backup_target` (a chrooted SFTP-only
+  account per target, a folder per installation); `qpbx-backup db|files`, systemd timers,
+  status files and a `backups` health check; `restore.yml` (new backup key, restic first so the
+  original secrets come back, pgBackRest to the latest state or a point in time, then
+  site.yml, owners fixed, healthy). Lab: a second VM as the target; `phase2-restore.py` 8/8:
+  **restore onto a fresh VM in 2.5 minutes** (plus 0.8 to create the VM), with the row written
+  after the file backup present (WAL replay), a voicemail decrypting byte for byte and a
+  device registering with its old password; the source's backups carry on afterwards. Found
+  on the way: the lab VM script died silently when it raced its own IP lookup (SIGPIPE with
+  pipefail) and its `destroy` wiped every lab VM's host key; libssh2 needs every host key type
+  pinned; OpenSSH refuses a private key its group can read. 236 tests.
 
 - 2-9 Automated call tests (done): SIPp scenarios (`ci/calls/scenarios/`: register, answer,
   refuse, and generated calling variants for phones, phones with audio, carriers) driven by
@@ -316,7 +331,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 2-10 Backups and restore (next).
+- 2-11 Leftovers (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next

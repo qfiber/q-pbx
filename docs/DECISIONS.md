@@ -2,6 +2,22 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Backups and restore (2-10)
+
+- **SFTP to another server for both tools** (pgBackRest 2.60 from the PostgreSQL repository has
+  an SFTP repository type; restic too), with a chrooted SFTP-only account. S3 targets (spec: "or
+  an S3 bucket") are a settings change in both tools, added when an operator needs one.
+- **The order of a restore is fixed by the keys:** restic's password comes from the inventory
+  (kept off the server), restic returns the secrets file, which holds pgBackRest's cipher and
+  the master key. So the inventory password is the one thing that must survive the server.
+- **A new backup key on the rebuilt server** (authorized on the target by the playbook), rather
+  than restoring the old one: the old key is not needed to read the backups.
+- **Status files, not log parsing,** feed the health check; the backup jobs write them.
+- **The restore test never writes into the real repository** (`qpbx_restore_test`), and removes
+  its key from the target afterwards.
+- Later: an append-only target (restic rest-server, pgBackRest repository host) so a
+  compromised server cannot delete its own backups.
+
 ## 2026-11-27: Call tests: the real playbook in a container (2-9)
 
 - **CI installs Q-PBX with the same Ansible playbook as a server**, into a Debian 12 container

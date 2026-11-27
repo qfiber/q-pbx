@@ -1,0 +1,128 @@
+# Rebuilds a Q-PBX server from its backups on a fresh Debian 12 machine (the inventory's qpbx
+# host, which may have a new address):
+#   1. a new backup key, authorized on the target;
+#   2. restic brings back /etc/qpbx (the secrets file, the KMS key file) and the data folder
+#      (voicemail and other media, still encrypted), with the password from the inventory;
+#   3. pgBackRest restores the database: the latest state, or -e qpbx_restore_target_time=
+#      "2026-11-27 18:00:00+00" for a point in time;
+#   4. site.yml installs and configures everything else around the restored data.
+#
+#   ansible-playbook restore.yml -e qpbx_restore_confirm=yes
+#
+# It refuses a machine that already has a secrets file (an installed server) unless
+# -e qpbx_restore_overwrite=yes.
+- name: Restore - prepare the new server
+  hosts: qpbx
+  become: true
+  pre_tasks:
+    - name: Confirmed, and backups are configured
+      ansible.builtin.assert:
+        that:
+          - qpbx_restore_confirm | default('') == 'yes'
+          - qpbx_backup_enabled
+          - qpbx_backup_password | length > 0
+        fail_msg: Run with -e qpbx_restore_confirm=yes, with the backup settings of the server to restore.
+
+    - name: An installed server?
+      ansible.builtin.stat:
+        path: /etc/qpbx/secrets.json
+      register: restore_secrets
+
+    - name: Not over an installed server unless asked
+      ansible.builtin.assert:
+        that: not restore_secrets.stat.exists or qpbx_restore_overwrite | default('') == 'yes'
+        fail_msg: This machine already has /etc/qpbx/secrets.json; add -e qpbx_restore_overwrite=yes to replace it.
+  tasks:
+    - name: PostgreSQL packages (the postgres account owns the backup key)
+      ansible.builtin.include_role:
+        name: postgres
+        tasks_from: packages
+
+    - name: Backup key
+      ansible.builtin.include_role:
+        name: backup
+        tasks_from: key
+
+- name: Restore - authorize the new server on the target
+  hosts: qpbx_backup
+  become: true
+  roles:
+    - backup_target
+
+- name: Restore - files and database
+  hosts: qpbx
+  become: true
+  tasks:
+    - name: Repository access
+      ansible.builtin.include_role:
+        name: backup
+        tasks_from: client
+
+    - name: Files from the latest snapshot (secrets first, before anything could generate new ones)
+      ansible.builtin.shell: |
+        set -euo pipefail
+        set -a; . /etc/qpbx-backup/restic.env; set +a
+        restic restore latest --tag qpbx --target / --include /etc/qpbx --include {{ qpbx_data_dir }}
+      args:
+        executable: /bin/bash
+      changed_when: true
+
+    - name: The pgBackRest settings (with the restored cipher)
+      ansible.builtin.include_role:
+        name: backup
+        tasks_from: pgbackrest
+
+    - name: Database stopped
+      ansible.builtin.systemd:
+        name: postgresql@16-main
+        state: stopped
+
+    - name: Database from the repository
+      ansible.builtin.command: >-
+        runuser -u postgres -- pgbackrest --stanza=qpbx --delta restore
+        {{ '--type=time --target="' ~ qpbx_restore_target_time ~ '" --target-action=promote' if qpbx_restore_target_time is defined else '' }}
+      changed_when: true
+
+    - name: Database started (replays the archived WAL, then accepts writes)
+      ansible.builtin.systemd:
+        name: postgresql@16-main
+        state: started
+
+    - name: Recovery finished
+      ansible.builtin.command: runuser -u postgres -- psql -Atc "SELECT pg_is_in_recovery()"
+      register: restore_recovery
+      until: restore_recovery.stdout == "f"
+      retries: 60
+      delay: 5
+      changed_when: false
+
+- name: Restore - the rest of the server
+  ansible.builtin.import_playbook: site.yml
+
+- name: Restore - owners of the restored files
+  hosts: qpbx
+  become: true
+  tasks:
+    # restic restores numeric owners; the accounts on the new machine may have other numbers.
+    - name: Media and spool belong to the app, readable by FreeSWITCH
+      ansible.builtin.command: chown -R qpbx:qpbx-media {{ qpbx_data_dir }}/{{ item }}
+      loop: [voicemail, recordings, faxes, prompts, cdr-spool]
+      changed_when: true
+
+    - name: Backup status belongs to the app
+      ansible.builtin.command: chown -R qpbx:qpbx {{ qpbx_data_dir }}/backup-status
+      changed_when: true
+
+    - name: App restarted with its files readable
+      ansible.builtin.systemd:
+        name: qpbx
+        state: restarted
+
+    - name: Healthy (the restore is done when the server answers ok)
+      ansible.builtin.uri:
+        url: http://127.0.0.1:4000/health
+        return_content: true
+      register: restore_health
+      until: restore_health.status == 200 and '"ok"' in restore_health.content
+      retries: 60
+      delay: 5

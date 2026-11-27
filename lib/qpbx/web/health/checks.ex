@@ -29,7 +29,7 @@ defmodule QPBX.Web.Health.Checks do
         end
       end)
 
-    {worst(Enum.map(results, &elem(&1, 0))), Enum.map_join(results, ", ", &elem(&1, 1))}
+    combine(results)
   end
 
   @doc false
@@ -78,6 +78,42 @@ defmodule QPBX.Web.Health.Checks do
 
     {status, "#{count} waiting"}
   end
+
+  @doc """
+  Backups (database and files): each job writes `<kind>.json` (`{"ok": bool, "at": unix,
+  "detail": text}`) into `:status_dir`. Error when the last run failed or there was none; warning
+  when the last success is older than `:max_age_hours` (default 26: a nightly job plus slack).
+  """
+  def backups(opts) do
+    case Keyword.get(opts, :status_dir) do
+      nil -> {:not_configured, "backups not set up"}
+      dir -> dir |> backup_results(Keyword.get(opts, :max_age_hours, 26)) |> combine()
+    end
+  end
+
+  defp combine(results),
+    do: {worst(Enum.map(results, &elem(&1, 0))), Enum.map_join(results, ", ", &elem(&1, 1))}
+
+  # sobelow_skip ["Traversal.FileModule"]
+  # The folder comes from the operator's configuration; the names are fixed.
+  defp backup_results(dir, max_hours) do
+    now = System.os_time(:second)
+
+    for kind <- ~w(db files) do
+      with {:ok, body} <- File.read(Path.join(dir, kind <> ".json")),
+           {:ok, %{"ok" => _, "at" => _} = status} <- Jason.decode(body) do
+        judge(kind, status, div(now - status["at"], 3600), max_hours)
+      else
+        _ -> {:error, "#{kind}: no backup yet"}
+      end
+    end
+  end
+
+  defp judge(kind, %{"ok" => true}, hours, max) when hours >= max,
+    do: {:warning, "#{kind}: last backup #{hours} h ago"}
+
+  defp judge(kind, %{"ok" => true}, hours, _max), do: {:ok, "#{kind}: #{hours} h ago"}
+  defp judge(kind, s, _hours, _max), do: {:error, "#{kind}: last run failed (#{s["detail"]})"}
 
   @doc "Days until the TLS certificate at `:path` expires; warning under `:warn_days`."
   def certificate(opts) do

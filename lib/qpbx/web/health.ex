@@ -20,7 +20,8 @@ defmodule QPBX.Web.Health do
     :disk,
     :trunk_registrations,
     :oban_backlog,
-    :certificate
+    :certificate,
+    :backups
   ]
   @check_timeout 3_000
 

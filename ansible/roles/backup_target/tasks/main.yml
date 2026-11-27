@@ -1,0 +1,70 @@
+# The backup server: one SFTP-only account, chrooted to /srv/qpbx-backup, with a folder per
+# installation and the keys of the Q-PBX servers in group qpbx (their backup role made them).
+- name: Backup account
+  ansible.builtin.user:
+    name: "{{ qpbx_backup_user }}"
+    home: /srv/qpbx-backup
+    create_home: false
+    shell: /usr/sbin/nologin
+    system: true
+
+- name: Chroot (must belong to root)
+  ansible.builtin.file:
+    path: /srv/qpbx-backup
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Data folder
+  ansible.builtin.file:
+    path: /srv/qpbx-backup/data
+    state: directory
+    owner: "{{ qpbx_backup_user }}"
+    group: "{{ qpbx_backup_user }}"
+    mode: "0700"
+
+- name: A folder per installation
+  ansible.builtin.file:
+    path: "/srv/qpbx-backup/data/{{ hostvars[item].qpbx_backup_name }}"
+    state: directory
+    owner: "{{ qpbx_backup_user }}"
+    group: "{{ qpbx_backup_user }}"
+    mode: "0700"
+  loop: "{{ groups['qpbx'] | select('in', hostvars) | list }}"
+  when: hostvars[item].qpbx_backup_pubkey is defined
+
+- name: Keys of the Q-PBX servers (SFTP only)
+  ansible.posix.authorized_key:
+    user: "{{ qpbx_backup_user }}"
+    path: /etc/ssh/qpbx-backup.authorized_keys
+    key: "{{ hostvars[item].qpbx_backup_pubkey }}"
+    key_options: restrict
+    manage_dir: false
+  loop: "{{ groups['qpbx'] }}"
+  when: hostvars[item].qpbx_backup_pubkey is defined
+
+- name: SFTP only, in the chroot
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/qpbx-backup.conf
+    content: |
+      # Managed by Ansible (Q-PBX).
+      Match User {{ qpbx_backup_user }}
+          AuthorizedKeysFile /etc/ssh/qpbx-backup.authorized_keys
+          ChrootDirectory /srv/qpbx-backup
+          ForceCommand internal-sftp
+          AllowTcpForwarding no
+          X11Forwarding no
+          PermitTTY no
+    mode: "0644"
+  register: backup_sshd
+
+- name: The whole sshd configuration is valid
+  ansible.builtin.command: sshd -t
+  changed_when: false
+
+- name: Reload ssh
+  ansible.builtin.systemd:
+    name: ssh
+    state: reloaded
+  when: backup_sshd.changed  # noqa: no-handler

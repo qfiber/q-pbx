@@ -1,0 +1,32 @@
+# The server's SSH key for the backup target (its public half is authorized there by the
+# backup_target role, or by hand). Kept in /etc/qpbx-backup, readable by postgres (pgBackRest).
+- name: Backup folder
+  ansible.builtin.file:
+    path: /etc/qpbx-backup
+    state: directory
+    owner: root
+    group: postgres
+    mode: "0750"
+
+- name: Backup SSH key
+  ansible.builtin.command: ssh-keygen -q -t ed25519 -N "" -C "qpbx-backup@{{ qpbx_backup_name }}" -f /etc/qpbx-backup/id_ed25519
+  args:
+    creates: /etc/qpbx-backup/id_ed25519
+
+# Owned by postgres (pgBackRest) at 0600: OpenSSH (restic, as root) refuses a key its group
+# can read, but accepts one another user owns.
+- name: Key readable by postgres only
+  ansible.builtin.file:
+    path: /etc/qpbx-backup/id_ed25519
+    owner: postgres
+    group: postgres
+    mode: "0600"
+
+- name: Read the public key
+  ansible.builtin.slurp:
+    src: /etc/qpbx-backup/id_ed25519.pub
+  register: backup_pubkey
+
+- name: Public key for the target
+  ansible.builtin.set_fact:
+    qpbx_backup_pubkey: "{{ backup_pubkey.content | b64decode | trim }}"

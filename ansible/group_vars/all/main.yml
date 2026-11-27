@@ -56,6 +56,25 @@ qpbx_smtp_username: ""
 qpbx_smtp_password: ""
 
 qpbx_data_dir: /var/lib/qpbx
+# Backups (roles backup and backup_target): pgBackRest (database, encrypted, point in time)
+# and restic (/etc/qpbx with the secrets file, and the data folder) over SFTP to another
+# server. The backup password must also be kept off the server (Ansible Vault): without it
+# the secrets file, and so everything else, cannot be restored.
+qpbx_backup_enabled: false
+qpbx_backup_host: ""                       # the target (in group qpbx_backup when Ansible manages it)
+qpbx_backup_port: 22
+qpbx_backup_user: qpbx-backup
+qpbx_backup_name: "{{ qpbx_domain }}"      # this installation's folder on the target (stays the same after a restore)
+qpbx_backup_password: ""                   # restic; keep in Ansible Vault and off the server
+qpbx_backup_db_time: "*-*-* 01:30:00"       # daily; full on Sundays (and the first time), else differential
+qpbx_backup_files_time: "*-*-* 02:30:00"
+qpbx_backup_keep_full: 4                   # pgBackRest full backups kept (with their WAL)
+qpbx_backup_keep_daily: 7                  # restic snapshots kept
+qpbx_backup_keep_weekly: 4
+qpbx_backup_keep_monthly: 6
+# Set by the restore test only: the restored copy makes no backups of its own.
+qpbx_restore_test: false
+
 # True only for the call-test container (ci/calls/): no AppArmor kernel interface to load
 # profiles into (they are still written and parsed) and no clock to set.
 qpbx_in_container: false
