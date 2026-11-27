@@ -178,6 +178,10 @@ defmodule QPBX.Core.AccountsTest do
         end)
       end
 
+      # After a scoped transaction the connection's setting is '' (not unset); queries must
+      # still work. Run a few on the same connection to catch a bad uuid cast in the policy.
+      for _ <- 1..5, do: Repo.all(from u in User, where: u.email == "nobody", select: u.id)
+
       # Outside a scope (platform admin, jobs) every row is visible again.
       all = Repo.all(from u in User, select: u.id)
       assert a.id in all and b.id in all

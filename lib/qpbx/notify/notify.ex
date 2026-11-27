@@ -1,7 +1,7 @@
 defmodule QPBX.Notify do
   @moduledoc """
   Public API of the notify area. Phase 1 holds only the account setup-link email.
-  See `lib/qpbx/notify/CLAUDE.md`.
+  See `lib/qpbx/notify/README.md`.
   """
   use Boundary, deps: [], exports: []
 

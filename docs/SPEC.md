@@ -564,34 +564,6 @@ The model is organized into Phoenix contexts; every table except the platform on
 - Kamailio reads SIP credential hashes, tenant domains, trunk IPs and bans from a small replicated set of tables (or an HTTP API through `http_async_client`) and keeps them in memory with `htable`.
 - CDRs and call events arrive through the FreeSWITCH event socket, so Elixir writes them in batches.
 
-## Working with Claude Code: project memory
-
-The repository carries its own memory, so every Claude Code session starts from the real current state, and updating that memory is part of finishing any task, not an optional extra.
-
-**Files in the repo**
-
-| File | Holds | Updated when |
-| --- | --- | --- |
-| `CLAUDE.md` (root) | What Q-PBX is, architecture summary, module map, commands, coding rules, and the rules below | Architecture or conventions change |
-| `docs/SPEC.md` | This spec, exported as Markdown | A product decision changes |
-| `docs/STATUS.md` | Current phase, done, in progress, next, blockers, known bugs | End of every task |
-| `docs/DECISIONS.md` | Dated decision log (what, why, alternatives rejected) | Any design decision |
-| `lib/qpbx/<module>/CLAUDE.md` | That module's purpose, public API, events it emits and consumes, gotchas | The module's API or behaviour changes |
-| `CHANGELOG.md` | User-visible changes per release | Every release |
-
-**Rules written into `CLAUDE.md`**
-
-- Read `CLAUDE.md`, `docs/STATUS.md` and the touched module's `CLAUDE.md` before starting any task.
-- A task is not done until `STATUS.md`, any affected module `CLAUDE.md`, and `DECISIONS.md` (if a decision was made) are updated in the same commit as the code.
-- Never leave a stale statement: if code contradicts a doc, fix the doc in the same change.
-- Work one module at a time through its public API; never reach into another module's internals.
-- Every new feature lands with tests and its events documented.
-
-**Enforcement**
-
-- A Claude Code hook at the end of each session checks that `docs/STATUS.md` was updated whenever code changed, and blocks finishing until it is.
-- A module's `CLAUDE.md` is updated only when its public API, events or behaviour change. CI does not force a doc edit on every code change, because forced edits produce filler. Instead, CI flags a change to a module's public API that arrives without a change to that module's `CLAUDE.md`.
-
 ## Build phases and acceptance criteria
 
 Version 1.0 is phases 1 to 4 and ends with one real tenant migrated from FreePBX and running in production. Phases 5 to 10 are built one at a time after that. A phase is done only when its criteria pass on the lab setup (one Debian 12 server with the full stack, a Grandstream phone, an HT8xx with a fax machine, Meow on desktop and mobile, and one real carrier trunk) and its automated call tests pass in CI.
@@ -599,12 +571,12 @@ Version 1.0 is phases 1 to 4 and ends with one real tenant migrated from FreePBX
 **Automated call testing**
 
 - SIPp scenarios run in CI against a real Kamailio and FreeSWITCH: register, internal call, inbound DID, outbound call with limits, transfer, voicemail, IVR digits, fax send and receive.
-- Every call feature lands with its SIPp scenario. This is how Claude Code verifies call behaviour without real phones.
+- Every call feature lands with its SIPp scenario. This is how call behaviour is verified without real phones.
 - A load test before go-live confirms the sizing estimate.
 
 1. **Foundation**
    - One Mix project `qfiber/q-pbx` with boundary checks, CI building the FreeSWITCH and app packages, Ansible roles, single-server lab, certificates (wildcard and per-hostname modes), health endpoint.
-   - Project memory files (`CLAUDE.md`, `STATUS.md`, `DECISIONS.md`) and the session hook; firewall module and helper.
+   - Project docs (`docs/DEVELOPING.md`, `docs/STATUS.md`, `docs/DECISIONS.md`, a `README.md` per module) and the CI doc check; firewall module and helper.
    - Tenants, plans, users, roles, 2FA, audit log, English and Arabic RTL portal shell.
    - A minimal SMTP mailer for account setup links (the rest of notifications stays in phase 3), plus a CLI command that prints a setup link.
    - *Done when:* a platform admin creates a tenant with a plan, a tenant admin logs in with 2FA in either language, and an allowlist change reaches nftables through the helper.

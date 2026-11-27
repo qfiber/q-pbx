@@ -5,7 +5,7 @@ an Elixir/Phoenix control plane.
 
 - Product spec: `docs/SPEC.md`
 - Current status: `docs/STATUS.md`
-- Development commands: `CLAUDE.md`, section "Commands"
+- Developer guide: `docs/DEVELOPING.md`
 
 ## License
 

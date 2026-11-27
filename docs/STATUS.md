@@ -21,8 +21,8 @@ Each task ends with tests passing and this file updated in the same commit.
 
 | # | Task | Scope | Tests / proof |
 | --- | --- | --- | --- |
-| P1-01 | Repo and Mix project | `git init`; Phoenix app with LiveView, Ecto/Postgres, Oban; `boundary` configured; area folders `lib/qpbx/{core,events,firewall,notify,web}/` with `QPBX.<Area>` public API modules and a `CLAUDE.md` each; `mix format`, Credo strict, Dialyzer; Commands section of root `CLAUDE.md` filled in | A deliberate cross-boundary call fails `mix compile`; `mix test` green |
-| P1-02 | Session hook and doc checks | `.claude/settings.json` Stop hook: blocks finishing when code changed and `docs/STATUS.md` did not; CI script that flags a change to a module's public API module without a change to that module's `CLAUDE.md` | Script tests for both checks (changed / unchanged cases) |
+| P1-01 | Repo and Mix project | `git init`; Phoenix app with LiveView, Ecto/Postgres, Oban; `boundary` configured; area folders `lib/qpbx/{core,events,firewall,notify,web}/` with `QPBX.<Area>` public API modules and a `README.md` each; `mix format`, Credo strict, Dialyzer; Commands section of `docs/DEVELOPING.md` filled in | A deliberate cross-boundary call fails `mix compile`; `mix test` green |
+| P1-02 | Doc checks | CI script that flags a change to a module's public API module without a change to that module's `README.md` | Script tests (changed / unchanged cases) |
 | P1-03 | Core: plans and tenants | `plans` (typed limit columns + JSONB `features`), `tenants` (`sip_domain`, `timezone`, `locale`, `plan_id`, `limit_overrides`); effective-limit resolution (plan + override); unique SIP domain under the platform base domain | Unit tests |
 | P1-04 | Core: accounts, roles, audit log | `platform_admins`; `users` (one tenant each) with `user_roles` (tenant admin, tenant user); one-time setup links (minimal SMTP mailer in `QPBX.Notify` plus a CLI command); Postgres RLS safety net on tenant tables (moved here from P1-03: the first tenant-owned table is `users`), Argon2 hashing, session expiry, TOTP 2FA (required for platform admins), `audit_logs` written for every admin change | Unit tests: hashing, TOTP verify/replay, role checks, audit entry per change; RLS test proving a tenant-scoped query cannot see another tenant's rows |
 | P1-05 | Portal shell (EN/AR RTL) | LiveView layout with `dir="rtl"` for Arabic, gettext `en` and `ar`, locale switch; login and 2FA pages; platform admin: create plan, create tenant with plan, create tenant admin; tenant admin: landing page and 2FA enrolment | LiveView tests for the full Done-when flow in both locales |
@@ -41,18 +41,15 @@ Kamailio gets its real config.
 
 ## Done
 
-- Project memory files created: `CLAUDE.md`, `docs/STATUS.md`, `docs/DECISIONS.md`, `CHANGELOG.md`.
+- Project docs created: `docs/DEVELOPING.md`, `docs/STATUS.md`, `docs/DECISIONS.md`, `CHANGELOG.md`.
 - P1-01 Repo and Mix project: Phoenix 1.8 app (`QPBX`, binary ids), Oban (queue `notify`),
   areas `core`, `events`, `firewall`, `notify`, `web` with boundaries; public API modules live
   inside their folders (`lib/qpbx/core/core.ex`). `QPBX.Repo` is its own boundary. Credo
   strict and Dialyzer pass. `scripts/check_boundary_enforced.sh` proves a forbidden reference
   fails the build. AGPL-3.0 `LICENSE` added.
-- P1-02 Session hook and doc checks: `.claude/settings.json` runs
-  `scripts/hooks/session_start.sh` (records the starting commit) and
-  `scripts/hooks/require_status_update.sh` (Stop hook; blocks when non-Markdown files outside
-  `docs/` changed and `docs/STATUS.md` did not). `scripts/check_module_docs.sh <base>` fails
-  when `lib/qpbx/<area>/<area>.ex` changed without `lib/qpbx/<area>/CLAUDE.md`. Tests:
-  `scripts/test/doc_checks_test.sh` (8 cases). Hooks need `jq` and `git`.
+- P1-02 Doc checks: `scripts/check_module_docs.sh <base>` fails when
+  `lib/qpbx/<area>/<area>.ex` changed without `lib/qpbx/<area>/README.md`. Tests:
+  `scripts/test/module_docs_test.sh`.
 - P1-03 Core: plans and tenants. `plans` with typed limit columns (nil = unlimited),
   allowed destination classes and a `features` map; `tenants` with slug, `sip_domain`
   (`<slug>.<sip_base_domain>`), IANA time zone (bundled `tz` data), locale (`en`/`ar`), plan
@@ -85,7 +82,7 @@ Kamailio gets its real config.
   `core.version`, trunk registrations (`not_configured` until phase 2). `down` = a critical
   component (PostgreSQL, FreeSWITCH, Kamailio) in error. 10 new tests; smoke-tested on a dev
   server.
-- P1-07 `qpbx-fwd` helper (Go, stdlib only) in `fwd/`: see `fwd/CLAUDE.md`. Unit tests for
+- P1-07 `qpbx-fwd` helper (Go, stdlib only) in `fwd/`: see `fwd/README.md`. Unit tests for
   parsing, validation (injection attempts, wrong family, zones, unknown ops/sets/fields,
   size limit), script generation, save/restore and tampered state; integration test against
   real nftables in a Debian 12 container (replace/add/remove, refusals leave rules unchanged,
@@ -95,6 +92,11 @@ Kamailio gets its real config.
   last-management-IP protection with row locks, lockout guard, tenant entries limited to SIP
   allow and narrow prefixes; helper client over the Unix socket; platform page
   `/platform/firewall` (EN/AR); `QPBX.Release.seed_management_ips/1`. 23 new tests (62 in total).
+- Fix: row-level security policies could fail with "invalid input syntax for type uuid" on a
+  connection that had earlier run a tenant-scoped transaction (Postgres may evaluate both sides
+  of `OR`, and the leftover setting is `''`). Policies now use `NULLIF` before the cast
+  (migration `fix_rls_policy_cast`); regression check added. Found by repeated test runs.
+- Docs renamed for the open source repo: `docs/DEVELOPING.md` and a `README.md` per module.
 
 - License: AGPL-3.0 kept, `CLA.md` and `CONTRIBUTING.md`
   added, copyright notice in `README.md`. Code pushed to `github.com/qfiber/q-pbx` (public).
@@ -121,7 +123,7 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
 
 - Validation messages built at runtime (for example "unknown feature x") are not translated;
   the fixed ones are.
-- Arabic portal texts were written by Claude; a native speaker should review the wording
+- Arabic portal texts need review by a native speaker
   (for example "التحويلات الداخلية" for extensions).
 - No login rate limit or lockout yet; brute-force alerts are phase 3 (Argon2 slows guessing).
 - Tenant office IPs (tenant firewall entries) have an API but no tenant portal page yet;

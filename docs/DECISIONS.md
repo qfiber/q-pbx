@@ -2,6 +2,15 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Developer documentation layout
+
+- **What:** the developer guide is `docs/DEVELOPING.md`; each module documents its purpose,
+  public API, events and gotchas in its own `README.md`; `docs/STATUS.md` and this log are
+  updated in the same commit as the code. The spec section on tooling-specific project memory
+  was removed.
+- **Why:** the repository should read as a normal open source project; editor and tooling
+  configuration stays on each developer's machine.
+
 ## 2026-11-27: Firewall design (P1-08)
 
 - **Twelve named sets** `<allow|block>_<ssh|sip|https>_<v4|v6>`; scope `all` fills all three

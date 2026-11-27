@@ -10,10 +10,15 @@ defmodule QPBX.Repo.RLS do
   """
   import Ecto.Migration
 
-  @setting "current_setting('app.tenant_id', true)"
+  # NULLIF before the cast: Postgres may evaluate both sides of OR, and after a scoped
+  # transaction the setting is '' on that connection, which is not a valid uuid.
+  @setting "NULLIF(current_setting('app.tenant_id', true), '')"
+  @check "#{@setting} IS NULL OR tenant_id = #{@setting}::uuid"
+
+  def check, do: @check
 
   def enable(table) do
-    check = "coalesce(#{@setting}, '') = '' OR tenant_id = #{@setting}::uuid"
+    check = @check
 
     execute(
       "ALTER TABLE #{table} ENABLE ROW LEVEL SECURITY",

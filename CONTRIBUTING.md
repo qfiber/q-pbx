@@ -8,6 +8,6 @@ their changes under the same license.
 CLA in `CLA.md`. It lets qFiber also offer Q-PBX under commercial terms next to the AGPL
 (dual licensing). You keep the copyright in your work.
 
-How the project works: read `CLAUDE.md` (architecture, module rules, commands) and
+How the project works: read `docs/DEVELOPING.md` (architecture, module rules, commands) and
 `docs/STATUS.md` (what is being built now). Every change lands with tests, passes
 `mix precommit`, and updates `docs/STATUS.md`.

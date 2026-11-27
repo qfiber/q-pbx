@@ -1,4 +1,4 @@
-# Q-PBX
+# Developing Q-PBX
 
 API-first, multi-tenant cloud PBX with first-class fax. FreeSWITCH (media, fax) and
 Kamailio (SIP edge) are driven by an Elixir/Phoenix control plane with PostgreSQL.
@@ -7,18 +7,18 @@ Replaces FreePBX for qFiber's Cloud PBX. License: AGPL-3.0. Repo: `qfiber/q-pbx`
 The full product spec is `docs/SPEC.md`. It is the source of truth. If something is unclear,
 missing or looks wrong, stop and ask. Do not guess and do not change the architecture.
 
-## Rules (from the spec, "Working with Claude Code: project memory")
+## Rules
 
-- Read `CLAUDE.md`, `docs/STATUS.md` and the touched module's `CLAUDE.md` before starting any task.
-- A task is not done until `docs/STATUS.md`, any affected module `CLAUDE.md`, and
+- Before starting a task, read this file, `docs/STATUS.md` and the `README.md` of the module
+  you will touch.
+- A task is done when `docs/STATUS.md`, any affected module `README.md`, and
   `docs/DECISIONS.md` (if a decision was made) are updated in the same commit as the code.
 - Never leave a stale statement: if code contradicts a doc, fix the doc in the same change.
 - Work one module at a time through its public API; never reach into another module's internals.
 - Every new feature lands with tests and its events documented.
 
-Enforcement: a Claude Code hook at session end blocks finishing if code changed without
-`docs/STATUS.md` changing. CI flags a public API change to a module that arrives without a
-change to that module's `CLAUDE.md`.
+CI flags a public API change to a module that arrives without a change to that module's
+`README.md`.
 
 ## Architecture summary
 
@@ -61,9 +61,9 @@ its public API module or its events. No module touches another module's tables o
 | `qpbx_firewall` | `lib/qpbx/firewall/` | `QPBX.Firewall` | Allow/block lists, nftables and Kamailio sync |
 | `qpbx_web` | `lib/qpbx/web/` | `QPBX.Web` | Phoenix: LiveView portal, REST API, health endpoint |
 
-The firewall helper `qpbx-fwd` is a separate Go program in `fwd/` (see `fwd/CLAUDE.md`).
+The firewall helper `qpbx-fwd` is a separate Go program in `fwd/` (see `fwd/README.md`).
 
-Each module folder has its own `CLAUDE.md`: purpose, public API, events emitted and consumed, gotchas.
+Each module folder has its own `README.md`: purpose, public API, events emitted and consumed, gotchas.
 
 ## Commands
 
@@ -83,11 +83,9 @@ then `podman exec qpbx-pg psql -U postgres -c "create role qpbx login password '
 | `scripts/check_boundary_enforced.sh` | Proves a cross-boundary reference fails the build |
 | `cd fwd && go test ./...` | `qpbx-fwd` unit tests |
 | `fwd/integration_test.sh` | `qpbx-fwd` against real nftables in a Debian 12 container |
-| `scripts/check_module_docs.sh <base>` | Fails if an area's public API module changed without its `CLAUDE.md` |
-| `scripts/test/doc_checks_test.sh` | Tests for the session hook and the module-doc check |
+| `scripts/check_module_docs.sh <base>` | Fails if an area's public API module changed without its `README.md` |
+| `scripts/test/module_docs_test.sh` | Tests for the module-doc check |
 
-Session hook (`.claude/settings.json`): finishing a session is blocked if code changed and
-`docs/STATUS.md` did not. Needs `jq`.
 
 Each area's public API module lives inside its folder (`lib/qpbx/core/core.ex` defines
 `QPBX.Core`) and declares its boundary with `use Boundary, deps: [...], exports: [...]`.
