@@ -135,7 +135,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- Phase 2 breakdown waiting for approval and answers (lab hardware, Kamailio version, voicemail encryption, backup target).
+- Phase 2 breakdown: questions answered; waiting for approval of the breakdown.
 
 ## Next
 
@@ -214,6 +214,13 @@ Kamailio gets its real config.
 
 ## Phase 2 task breakdown (proposed 2026-11-27)
 
+Answers (2026-11-27): tests use a real Grandstream phone and Meow on the lab
+while the server logs are watched; carriers are simulated in the lab (two test carriers
+standing in for Partner and Cellcom), and a real carrier is tested later on a public server;
+Kamailio 6.0 from the Kamailio project's repository; voicemail encrypted from the start (the
+storage layer gets per-file encryption now); backups go to a second local VM, and the timed
+restore runs onto a third, fresh VM.
+
 From `docs/SPEC.md` phase 2, plus the phase 2 items in "Planned features" and the security
 plan. New areas start here: `QPBX.Telephony` (FreeSWITCH, call control, admission),
 `QPBX.Edge` (Kamailio) and `QPBX.Storage` (files).
@@ -226,16 +233,16 @@ a measured time.
 | # | Task | Scope |
 | --- | --- | --- |
 | 2-0 | Busy lamps, presence and voicemail-light spike | Kamailio's presence server answers phone subscriptions; Elixir publishes call state (dialog-info) and message counts (message-summary) into it. Proven with a Grandstream phone and Meow on the lab; design written into the spec before the rest builds on it |
-| 2-1 | Kamailio upgrade and database view | Kamailio version for real use; read-only database role with a narrow view (credentials by SIP domain, domains, trunk addresses, bans) |
+| 2-1 | Kamailio upgrade and database view | Kamailio 6.0 from the project's signed repository; read-only database role with a narrow view (credentials by SIP domain, domains, trunk addresses, bans) |
 | 2-2 | Telephony data and portal pages | Extensions (credentials shown once, caller IDs, multiple devices, DND, call waiting, follow-me, forwarding), devices, trunks with several addresses and per-trunk caller ID rules, DIDs with backup numbers, number normalization per tenant (Israeli local formats by default), outbound routes with ordered failover, emergency routes, destination classes and the high-cost prefix list; tenant pages (extensions, devices, office IPs) and platform pages (carriers, trunks, DIDs, prefixes); limits enforced on create |
 | 2-3 | Kamailio edge | Tenant from domain or trunk address; digest auth of REGISTER and INVITE; TLS 5061 (default) with per-tenant certificates by SNI and SRTP passed through, UDP/TCP 5060 kept; NAT handling (nathelper, keepalives); registration-based trunks registered by Kamailio; OPTIONS health checks and failover across a trunk's addresses; in-memory caches refreshed on change (no reload); firewall lists and tenant office IPs in Kamailio |
 | 2-4 | Edge protection | pike flood detection, per-IP rate limits on REGISTER and INVITE, automatic bans after repeated auth failures shared to nftables with a TTL (`qpbx-fwd` gains element timeouts), scanner user agents blocked, allowlist always wins, a whole office IP never banned without an alert |
 | 2-5 | Call control | `mod_xml_curl` handler parks every call; event socket client; one Elixir process per call; ETS configuration cache invalidated on change; static fallback dialplan ("temporarily unavailable" or the DID's carrier failover); routing: extension to extension (all devices), inbound DID, outbound with trunk failover and caller ID rules, emergency routes; extension features (DND, forwarding, follow-me, call waiting) |
 | 2-6 | Call admission and fraud protection | Concurrent call caps per extension and tenant (inbound, outbound, total); destination class check; minute caps per class per hour, day and month; high-cost prefixes as premium; velocity rules (international spikes, odd hours) that alert and can block; emergency calls exempt but logged; `limit.reached` event |
-| 2-7 | Voicemail | Storage area (local backend); mailboxes with PIN, greetings, recording, voicemail-to-email with audio, web playback; message-waiting lights through the 2-0 mechanism |
+| 2-7 | Voicemail | Storage area (local backend, per-file encryption: a data key per file wrapped by the master key); mailboxes with PIN, greetings, recording, voicemail-to-email with audio, web playback; message-waiting lights through the 2-0 mechanism |
 | 2-8 | CDRs | One row per call leg from event-socket events, written in batches; import of the FreeSWITCH JSON spool (no CDR lost while the app is down); search and CSV export; daily usage roll-up |
 | 2-9 | Automated call tests | SIPp scenarios in CI against real Kamailio and FreeSWITCH (containers in CI only): register, internal call, inbound DID, outbound with limits and failover, voicemail, two tenants with the same extension numbers |
-| 2-10 | Backups and restore | pgBackRest (encrypted, point-in-time) and restic (files and the secrets file, separate password) to an off-server target, on timers, with backup status in health; a restore playbook; one timed restore onto a fresh VM |
+| 2-10 | Backups and restore | pgBackRest (encrypted, point-in-time) and restic (files and the secrets file, separate password) to an off-server target (lab: a second VM), on timers, with backup status in health; a restore playbook; one timed restore onto a fresh VM |
 | 2-11 | Leftovers | Trim FreeSWITCH image dependencies; watch tenant certificate renewals; secrets file in the encrypted backup |
 | 2-12 | Done-when verification | Lab and CI: the spec's checks, measured restore time |
 
@@ -273,7 +280,7 @@ lab server). "1b" = before phase 2 starts.
 | S7 | Token validation on every action, instant revocation | CSRF tokens on every form; LiveView signs its session; but sessions are signed cookies that cannot be revoked before they expire | Server-side session table (token hash, user, created, last seen, IP, user agent); every request and LiveView event checks it; revocation deletes the rows and disconnects live sockets (PubSub); password, 2FA or role changes revoke all of a user's sessions; "sign out everywhere" in the portal | 1b |
 | S8 | 15-minute idle timeout | 12 h absolute expiry only | Idle timeout 15 min (configurable lower, not higher) plus 12 h absolute; LiveView pages warn before expiry and redirect to login | 1b |
 | S9 | Encryption at rest, external key store | Cloak encrypts TOTP secrets; key in a root-only file on the server | `KeyProvider` behaviour: local file (default) and AWS KMS (the master key stays in KMS; Q-PBX unwraps its data key at start-up); full-disk encryption (LUKS) later, as an option; rotate keys with Cloak's key tags; encrypt carrier passwords and CRM tokens as they arrive; encrypted backups (pgBackRest cipher, restic) | Provider: 1b; backups: 2 |
-| S10 | Call recordings encrypted | Recording not built yet | Envelope encryption: a data key per file (AES-256-GCM) wrapped by the master key; voicemail and faxes too; decrypt only while streaming to an authorized user; plaintext never written to persistent disk | 4 |
+| S10 | Call recordings encrypted | Recording not built yet | Envelope encryption: a data key per file (AES-256-GCM) wrapped by the master key; voicemail and faxes too; decrypt only while streaming to an authorized user; plaintext never written to persistent disk | 2 (storage layer and voicemail), 4 (recordings, faxes) |
 | S11 | Safe temp location | Every Q-PBX service has `PrivateTmp`; uploads would still use the app's (private) `/tmp` on disk | Uploads and conversions in a per-service tmpfs (`/run/qpbx/tmp`, 0700); FreeSWITCH records into its own tmpfs, then the app encrypts and deletes the plaintext; document converters get a scratch tmpfs per job | 1b (uploads), 4 (media) |
 | S12 | systemd and AppArmor, root as little as possible | No Q-PBX service runs as root; ours score 2.2 to 4.2 in `systemd-analyze security`; AppArmor profiles in complain mode; **Debian's Kamailio (9.2) and PostgreSQL (9.6) units are unhardened**; acme.sh runs as root | Hardening drop-ins for Kamailio and PostgreSQL; acme.sh as its own user (reload through a narrow systemd unit); AppArmor in enforce mode (phase 4, as the spec says); a CI check that fails on new root services | 1b (enforce: 4) |
 

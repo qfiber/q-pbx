@@ -2,6 +2,17 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Phase 2 setup
+
+- **Lab testing:** the team registers a real Grandstream phone and Meow to the lab and makes the
+  test calls; carriers are simulated in the lab (two test carriers standing in for Partner
+  and Cellcom); a real carrier is tested later on a public server.
+- **Kamailio 6.0** from the Kamailio project's signed Debian repository. Rejected: Debian's
+  5.6 (no longer maintained upstream).
+- **Voicemail is encrypted from phase 2:** the storage layer gets per-file envelope encryption
+  now, and recordings and faxes reuse it in phase 4 (moves part of security item S10 earlier).
+- **Backups in the lab go to a second VM;** the timed restore runs onto a third, fresh VM.
+
 ## 2026-11-27: Certificates without root (1b-8)
 
 - **acme.sh runs as `qpbx-acme`;** reloading nginx and Kamailio, which needs root, moved to a
