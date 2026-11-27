@@ -58,10 +58,18 @@ Kamailio gets its real config.
   (`<slug>.<sip_base_domain>`), IANA time zone (bundled `tz` data), locale (`en`/`ar`), plan
   and `limit_overrides`; `QPBX.Core.effective_limits/1`. Dev/test DB user is the non-superuser
   `qpbx`. 9 tests.
+- P1-04 Core: accounts, roles, audit log (core part). `platform_admins`; `users` (one tenant
+  each, email unique across tenants, citext) with `user_roles` (`tenant_admin`,
+  `tenant_user`); Argon2 passwords (12 to 256 chars, constant-time miss); signed setup tokens
+  valid 48 h that stop working once the password changes; TOTP via NimbleTOTP with
+  replay protection and one window of clock drift, secret encrypted with Cloak
+  (`QPBX.Core.Vault`, key `QPBX_CLOAK_KEY`); `audit_logs` written in the same transaction as
+  every change, never containing passwords or secrets; RLS (`QPBX.Repo.RLS`) on `users`,
+  `user_roles`, `audit_logs` with `QPBX.Core.with_tenant/2`. 11 tests.
 
 ## In progress
 
-- P1-04 Core: accounts, roles, audit log.
+- P1-04 remainder: setup-link email (`QPBX.Notify`) and CLI command, built with P1-05 because they need the portal routes.
 
 ## Next
 

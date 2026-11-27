@@ -3,10 +3,14 @@ defmodule QPBX.Core.TenantsTest do
   import QPBX.Fixtures
   alias QPBX.Core
 
+  @actor {:system, "test"}
+  defp create_plan(attrs), do: Core.create_plan(attrs, @actor)
+  defp create_tenant(attrs), do: Core.create_tenant(attrs, @actor)
+
   describe "plans" do
     test "creates a plan with limits and features" do
       assert {:ok, plan} =
-               Core.create_plan(%{
+               create_plan(%{
                  name: "Basic",
                  max_extensions: 20,
                  allowed_destination_classes: ["local", "mobile"],
@@ -19,7 +23,7 @@ defmodule QPBX.Core.TenantsTest do
 
     test "rejects unknown destination classes, features and negative limits" do
       {:error, cs} =
-        Core.create_plan(%{
+        create_plan(%{
           name: "Bad",
           max_extensions: -1,
           allowed_destination_classes: ["mars"],
@@ -32,7 +36,7 @@ defmodule QPBX.Core.TenantsTest do
 
     test "plan names are unique" do
       plan_fixture(name: "Same")
-      assert {:error, cs} = Core.create_plan(%{name: "Same"})
+      assert {:error, cs} = create_plan(%{name: "Same"})
       assert "has already been taken" in errors_on(cs).name
     end
   end
@@ -48,7 +52,7 @@ defmodule QPBX.Core.TenantsTest do
 
       for bad <- ["Acme", "-acme", "acme-", "a.b", "a_b", String.duplicate("a", 64)] do
         assert {:error, cs} =
-                 Core.create_tenant(%{
+                 create_tenant(%{
                    name: "x",
                    slug: bad,
                    timezone: "UTC",
@@ -62,7 +66,7 @@ defmodule QPBX.Core.TenantsTest do
       tenant_fixture(slug: "dup")
 
       assert {:error, cs} =
-               Core.create_tenant(%{
+               create_tenant(%{
                  name: "x",
                  slug: "dup",
                  timezone: "UTC",
@@ -75,7 +79,7 @@ defmodule QPBX.Core.TenantsTest do
 
     test "validates time zone and locale" do
       assert {:error, cs} =
-               Core.create_tenant(%{
+               create_tenant(%{
                  name: "x",
                  slug: "tz",
                  timezone: "Mars/Base",
@@ -88,7 +92,7 @@ defmodule QPBX.Core.TenantsTest do
 
     test "requires an existing plan" do
       assert {:error, cs} =
-               Core.create_tenant(%{
+               create_tenant(%{
                  name: "x",
                  slug: "np",
                  timezone: "UTC",
@@ -121,7 +125,7 @@ defmodule QPBX.Core.TenantsTest do
 
       for bad <- [%{"bogus" => 1}, %{"max_ivrs" => -3}, %{"max_ivrs" => "5"}] do
         assert {:error, cs} =
-                 Core.create_tenant(%{
+                 create_tenant(%{
                    name: "x",
                    slug: "o#{unique()}",
                    timezone: "UTC",

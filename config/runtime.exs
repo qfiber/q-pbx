@@ -24,6 +24,16 @@ config :qpbx, QPBX.Web.Endpoint, http: [port: String.to_integer(System.get_env("
 
 if config_env() == :prod do
   config :qpbx, :sip_base_domain, System.fetch_env!("QPBX_SIP_BASE_DOMAIN")
+  config :qpbx, :token_secret, System.fetch_env!("SECRET_KEY_BASE")
+
+  config :qpbx, QPBX.Core.Vault,
+    ciphers: [
+      default:
+        {Cloak.Ciphers.AES.GCM,
+         tag: "AES.GCM.V1",
+         key: Base.decode64!(System.fetch_env!("QPBX_CLOAK_KEY")),
+         iv_length: 12}
+    ]
 
   database_url =
     System.get_env("DATABASE_URL") ||

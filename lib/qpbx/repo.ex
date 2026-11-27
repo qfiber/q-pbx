@@ -1,6 +1,6 @@
 defmodule QPBX.Repo do
   @moduledoc "The single Ecto repo. Each area queries only its own tables through it."
-  use Boundary, deps: [], exports: []
+  use Boundary, deps: [], exports: [RLS]
 
   use Ecto.Repo,
     otp_app: :qpbx,

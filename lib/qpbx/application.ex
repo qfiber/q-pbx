@@ -3,7 +3,7 @@ defmodule QPBX.Application do
   # for more information on OTP Applications
   @moduledoc false
 
-  use Boundary, top_level?: true, deps: [QPBX.Repo, QPBX.Web]
+  use Boundary, top_level?: true, deps: [QPBX.Repo, QPBX.Core, QPBX.Web]
   use Application
 
   @impl true
@@ -11,6 +11,7 @@ defmodule QPBX.Application do
     children = [
       QPBX.Web.Telemetry,
       QPBX.Repo,
+      QPBX.Core.Vault,
       {Oban, Application.fetch_env!(:qpbx, Oban)},
       {Phoenix.PubSub, name: QPBX.PubSub},
       # Start a worker by calling: QPBX.Worker.start_link(arg)

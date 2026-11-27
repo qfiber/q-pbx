@@ -2,6 +2,21 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Accounts (P1-04)
+
+- **Row-level security semantics:** inside `QPBX.Core.with_tenant/2`, `app.tenant_id` is set
+  and only that tenant's rows are visible or writable. Outside it (platform admin screens,
+  background jobs) the setting is empty and all rows are visible. This is the spec's "safety
+  net": it catches a tenant-scoped request whose query forgot its filter. Rejected: denying all
+  rows when unset, which would force every platform query through a bypass role.
+- **Setup links are signed tokens** (`Plug.Crypto`, 48 h) carrying a fingerprint of the
+  password hash, so a link works once and dies when the password is set. No token table.
+- **Separate login pages** for platform admins and tenant users, since they are separate tables.
+- **TOTP accepts the current and the previous 30 s window,** and never a code at or before the
+  last accepted one.
+- **TOTP secrets are encrypted with Cloak**, as the spec asks for secrets.
+- **Every changing Core function takes an actor** and writes its audit entry in the same transaction.
+
 ## 2026-11-27: Plans, tenants and the database role (P1-03)
 
 - **A nil plan limit means unlimited.** Tenant `limit_overrides` may set a limit to nil too.

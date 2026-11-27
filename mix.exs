@@ -11,7 +11,11 @@ defmodule QPBX.MixProject do
       aliases: aliases(),
       deps: deps(),
       compilers: [:boundary, :phoenix_live_view] ++ Mix.compilers(),
-      dialyzer: [plt_add_apps: [:mix, :ex_unit], plt_local_path: "priv/plts"],
+      dialyzer: [
+        plt_add_apps: [:mix, :ex_unit],
+        plt_local_path: "priv/plts",
+        ignore_warnings: ".dialyzer_ignore.exs"
+      ],
       listeners: [Phoenix.CodeReloader]
     ]
   end
@@ -73,6 +77,7 @@ defmodule QPBX.MixProject do
       {:eqrcode, "~> 0.2"},
       {:gen_smtp, "~> 1.2"},
       {:tz, "~> 0.28"},
+      {:cloak_ecto, "~> 1.3"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
     ]

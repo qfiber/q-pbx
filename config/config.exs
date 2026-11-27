@@ -29,6 +29,18 @@ config :elixir, :time_zone_database, Tz.TimeZoneDatabase
 # Tenant SIP domains are <slug>.<sip_base_domain>. Overridden at runtime in prod.
 config :qpbx, :sip_base_domain, "pbx.example.test"
 
+# Dev/test only; prod sets both from the environment in runtime.exs.
+config :qpbx, :token_secret, "dev-only-token-secret-not-for-production-use-0123456789abcdef"
+
+config :qpbx, QPBX.Core.Vault,
+  ciphers: [
+    default:
+      {Cloak.Ciphers.AES.GCM,
+       tag: "AES.GCM.V1",
+       key: Base.decode64!("jrcZoMY+Y6K9i05XDiUi13d5vWK8dXuMD56+Vnfw+qA="),
+       iv_length: 12}
+  ]
+
 # Oban: one queue per area (spec: calls, fax, webhooks, notify, crm, provisioning).
 # Phase 1 only has work for notify; the others are added with their areas.
 config :qpbx, Oban,

@@ -2,11 +2,15 @@ defmodule QPBX.Core do
   @moduledoc """
   Public API of the core area: tenants, plans, limits, users, roles and the audit log.
   See `lib/qpbx/core/CLAUDE.md`.
+
+  Every function that changes data takes an `actor` (a `PlatformAdmin`, a `User`, or
+  `{:system, name}`) and writes an audit entry in the same transaction.
   """
-  use Boundary, deps: [QPBX.Repo], exports: [Plan, Tenant]
+  use Boundary, deps: [QPBX.Repo], exports: [Plan, Tenant, PlatformAdmin, User, AuditLog, Vault]
 
   import Ecto.Query
-  alias QPBX.Core.{Plan, Tenant}
+  alias Ecto.Multi
+  alias QPBX.Core.{Accounts, Audit, AuditLog, Plan, Tenant}
   alias QPBX.Repo
 
   ## Plans
@@ -14,8 +18,12 @@ defmodule QPBX.Core do
   def list_plans, do: Repo.all(from p in Plan, order_by: p.name)
   def get_plan!(id), do: Repo.get!(Plan, id)
   def change_plan(%Plan{} = plan \\ %Plan{}, attrs \\ %{}), do: Plan.changeset(plan, attrs)
-  def create_plan(attrs), do: %Plan{} |> Plan.changeset(attrs) |> Repo.insert()
-  def update_plan(%Plan{} = plan, attrs), do: plan |> Plan.changeset(attrs) |> Repo.update()
+
+  def create_plan(attrs, actor),
+    do: save(:insert, Plan.changeset(%Plan{}, attrs), "plan.create", actor)
+
+  def update_plan(%Plan{} = plan, attrs, actor),
+    do: save(:update, Plan.changeset(plan, attrs), "plan.update", actor)
 
   ## Tenants
 
@@ -25,11 +33,12 @@ defmodule QPBX.Core do
   def change_tenant(%Tenant{} = tenant \\ %Tenant{}, attrs \\ %{}),
     do: Tenant.changeset(tenant, attrs, sip_base_domain())
 
-  def create_tenant(attrs),
-    do: %Tenant{} |> Tenant.changeset(attrs, sip_base_domain()) |> Repo.insert()
+  def create_tenant(attrs, actor),
+    do:
+      save(:insert, Tenant.changeset(%Tenant{}, attrs, sip_base_domain()), "tenant.create", actor)
 
-  def update_tenant(%Tenant{} = tenant, attrs),
-    do: tenant |> Tenant.changeset(attrs, sip_base_domain()) |> Repo.update()
+  def update_tenant(%Tenant{} = tenant, attrs, actor),
+    do: save(:update, Tenant.changeset(tenant, attrs, sip_base_domain()), "tenant.update", actor)
 
   @doc """
   The limits in force for a tenant: the plan's limits with the tenant's overrides on top.
@@ -45,4 +54,67 @@ defmodule QPBX.Core do
   defp to_limit(k), do: Enum.find(Plan.limits(), &(Atom.to_string(&1) == k))
 
   def sip_base_domain, do: Application.fetch_env!(:qpbx, :sip_base_domain)
+
+  ## Accounts
+
+  defdelegate create_platform_admin(attrs, actor), to: Accounts
+  defdelegate create_user(tenant, attrs, role, actor), to: Accounts
+  defdelegate change_user(attrs \\ %{}), to: Accounts
+  defdelegate change_platform_admin(attrs \\ %{}), to: Accounts
+  defdelegate get_platform_admin(id), to: Accounts
+  defdelegate get_user(id), to: Accounts
+  defdelegate list_users(tenant), to: Accounts
+  defdelegate authenticate_platform_admin(email, password), to: Accounts
+  defdelegate authenticate_user(email, password), to: Accounts
+  defdelegate setup_token(account), to: Accounts
+  defdelegate account_from_setup_token(token), to: Accounts
+  defdelegate change_password(account, attrs \\ %{}), to: Accounts
+  defdelegate complete_setup(account, attrs), to: Accounts
+  defdelegate new_totp_secret(), to: Accounts
+  defdelegate totp_uri(account, secret), to: Accounts
+  defdelegate totp_enabled?(account), to: Accounts
+  defdelegate requires_totp?(account), to: Accounts
+  defdelegate enable_totp(account, secret, code), to: Accounts
+  defdelegate verify_totp(account, code), to: Accounts
+
+  ## Audit log
+
+  @doc "Records an audit entry for a change made outside `QPBX.Core` (for example the firewall)."
+  def audit(actor, action, target, changes),
+    do: actor |> Audit.entry(action, target, changes) |> Repo.insert()
+
+  def list_audit_logs(opts \\ []) do
+    limit = Keyword.get(opts, :limit, 100)
+    query = from a in AuditLog, order_by: [desc: a.inserted_at], limit: ^limit
+
+    case Keyword.fetch(opts, :tenant_id) do
+      {:ok, id} -> Repo.all(from a in query, where: a.tenant_id == ^id)
+      :error -> Repo.all(query)
+    end
+  end
+
+  ## Tenant scope
+
+  @doc """
+  Runs `fun` in a transaction with `app.tenant_id` set, so row-level security hides every
+  other tenant's rows even if a query forgets its tenant filter.
+  """
+  def with_tenant(tenant_id, fun) when is_binary(tenant_id) do
+    Repo.transaction(fn ->
+      Repo.query!("SELECT set_config('app.tenant_id', $1, true)", [Ecto.UUID.cast!(tenant_id)])
+
+      result = fun.()
+      # Clear it again: inside an outer transaction (tests) SET LOCAL would outlive this call.
+      # On an exception the rollback discards the setting anyway.
+      Repo.query!("SELECT set_config('app.tenant_id', '', true)")
+      result
+    end)
+  end
+
+  defp save(op, changeset, action, actor) do
+    Multi.new()
+    |> then(&apply(Multi, op, [&1, :record, changeset]))
+    |> Audit.add(actor, action, :record, changeset)
+    |> Audit.commit(:record)
+  end
 end
