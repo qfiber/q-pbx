@@ -1,10 +1,14 @@
 defmodule QPBX.Telephony.Call do
   @moduledoc """
   One call: started when FreeSWITCH parks it, asks `Router` what to do, and walks the action
-  tree over the event socket (bridge, then the busy / no answer / failed branch). Ends when
+  tree over the event socket (bridge, then the busy / no answer / failed branch). Follows a
+  transfer (FreeSWITCH re-parks the channel with a new destination after a REFER) and a 302
+  redirect (up to 3 times) by routing the new destination with the same caller. Ends when
   the channel hangs up. A crash here ends this call only.
   """
   use GenServer, restart: :temporary
+
+  @max_redirects 3
   require Logger
   alias QPBX.Telephony.{Cache, Calls, Router}
   alias QPBX.Telephony.ESL.Connection
@@ -24,13 +28,26 @@ defmodule QPBX.Telephony.Call do
       caller: event["Caller-Caller-ID-Number"]
     }
 
-    {:ok, %{call: call, action: nil, pending: nil, caller_ext: nil, lamps: %{}},
-     {:continue, :route}}
+    state = %{
+      call: call,
+      action: nil,
+      pending: nil,
+      caller_ext: nil,
+      lamps: %{},
+      # The tenant the call was routed in (for a carrier call, the number's).
+      tenant_id: call.tenant_id,
+      transfer_history: event["variable_transfer_history"],
+      awaiting_transfer: false,
+      redirects: 0
+    }
+
+    {:ok, state, {:continue, :route}}
   end
 
   @impl true
   def handle_continue(:route, %{call: call} = s) do
-    action = decide(call)
+    {action, tenant_id} = decide(call)
+    s = %{s | tenant_id: tenant_id}
     Logger.info("call #{call.uuid}: #{call.source} #{call.caller} -> #{call.destination}")
 
     caller_ext =
@@ -58,9 +75,34 @@ defmodule QPBX.Telephony.Call do
   @impl true
   def handle_info({:event, "CHANNEL_EXECUTE_COMPLETE", e}, %{pending: id, action: action} = s)
       when id != nil do
-    if e["Application-UUID"] == id do
-      outcome = outcome(e)
-      {:noreply, after_dial(outcome, action, %{s | pending: nil})}
+    cond do
+      e["Application-UUID"] != id ->
+        {:noreply, s}
+
+      # A REFER moved this channel: FreeSWITCH parks it again with the new destination.
+      transferred?(e["variable_transfer_history"], s.transfer_history) ->
+        s = s |> leave_current() |> Map.merge(%{pending: nil, awaiting_transfer: true})
+        {:noreply, %{s | transfer_history: e["variable_transfer_history"]}}
+
+      # The far end answered 302: route the new destination for the same caller.
+      (target = redirect_target(e)) && outcome(e) != :answered && s.redirects < @max_redirects ->
+        Logger.info("call #{s.call.uuid}: redirected to #{target}")
+        s = s |> leave_current() |> Map.merge(%{pending: nil, redirects: s.redirects + 1})
+        {:noreply, run(reroute(s, target), s)}
+
+      true ->
+        {:noreply, after_dial(outcome(e), action, %{s | pending: nil})}
+    end
+  end
+
+  # Parked again after a transfer (or with a new destination): route it.
+  def handle_info({:event, "CHANNEL_PARK", e}, s) do
+    target = e["Caller-Destination-Number"]
+
+    if s.awaiting_transfer or (target && target != s.call.destination) do
+      Logger.info("call #{s.call.uuid}: transferred to #{target}")
+      s = %{s | awaiting_transfer: false, call: %{s.call | destination: target}}
+      {:noreply, run(reroute(s, target), s)}
     else
       {:noreply, s}
     end
@@ -86,23 +128,53 @@ defmodule QPBX.Telephony.Call do
 
   ## Deciding
 
+  # Returns the action and the tenant it was routed in.
   defp decide(call) do
-    base = %{platform: Cache.platform(), dids: Cache.dids(), in_use: Calls.in_use()}
+    base = base_ctx()
 
     case Router.plan(call, Map.put(base, :tenant, Cache.tenant(call.tenant_id))) do
       {:tenant_needed, tid, did, caller} ->
         case Cache.tenant(tid) do
-          nil -> %{op: :reject, cause: "UNALLOCATED_NUMBER"}
-          tenant -> Router.plan_did(did, caller, Map.put(base, :tenant, tenant))
+          nil -> {%{op: :reject, cause: "UNALLOCATED_NUMBER"}, nil}
+          tenant -> {Router.plan_did(did, caller, Map.put(base, :tenant, tenant)), tid}
         end
 
       action ->
-        action
+        {action, call.tenant_id}
     end
   rescue
     e ->
       Logger.error("call #{call.uuid}: routing failed: #{Exception.message(e)}")
+      {%{op: :reject, cause: "NORMAL_TEMPORARY_FAILURE"}, call.tenant_id}
+  end
+
+  defp reroute(s, target) do
+    Router.transfer(s.call, target, Map.put(base_ctx(), :tenant, Cache.tenant(s.tenant_id)))
+  rescue
+    e ->
+      Logger.error("call #{s.call.uuid}: rerouting failed: #{Exception.message(e)}")
       %{op: :reject, cause: "NORMAL_TEMPORARY_FAILURE"}
+  end
+
+  defp base_ctx, do: %{platform: Cache.platform(), dids: Cache.dids(), in_use: Calls.in_use()}
+
+  # The extension this call was ringing or connected to is no longer part of it.
+  defp leave_current(%{action: %{ext_id: ext_id} = a} = s) when is_binary(ext_id) do
+    Registry.unregister(QPBX.Telephony.InUse, ext_id)
+    lamp(s, a.ext_number, a.domain, s.call.caller, "recipient", "terminated")
+  end
+
+  defp leave_current(s), do: s
+
+  # FreeSWITCH appends to transfer_history on every transfer of the channel.
+  defp transferred?(nil, _seen), do: false
+  defp transferred?(history, seen), do: history != seen
+
+  defp redirect_target(e) do
+    case e["variable_sip_redirect_contact_user_0"] do
+      user when is_binary(user) and user != "" -> user
+      _ -> nil
+    end
   end
 
   ## Doing

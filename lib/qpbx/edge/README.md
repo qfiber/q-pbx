@@ -72,6 +72,9 @@ has none). `CallState` (busy lamps), `ConfigChanged` "extensions" (voicemail lig
 - In-dialog requests from outside may only go to FreeSWITCH (anti-relay rule).
 - Kamailio `$var(...)` cannot hold "no value": test htable entries and headers directly.
 - `$shtinc` does not create a missing key: set it to 0 first.
+- A REGISTER replaces the login's older contacts (`save("location", "0x04")`): one login
+  is one device, and a stale contact would be forked to, holding a busy or redirect from the
+  real device until the stale branch times out.
 - `ipban` is loaded from the database at start only (`db_expires`); never `htable.reload` it
   at run time, the view lags Kamailio by up to 5 s.
 - nftables does not filter loopback, so the lab check reads the block sets

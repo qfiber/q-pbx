@@ -33,9 +33,15 @@ def all_hdr(msg, name):
     return [v.strip() for v in re.findall(rf"^{name}:\s*(.*?)\r?$", msg, re.M | re.I)]
 
 
-def sdp(ip, port):
+CODECS = {"opus": ("96", "opus/48000/2"), "pcmu": ("0", "PCMU/8000"), "pcma": ("8", "PCMA/8000"), "g722": ("9", "G722/8000")}
+
+
+def sdp(ip, port, codecs=("pcmu", "pcma"), crypto=False):
+    pts = " ".join(CODECS[c][0] for c in codecs)
+    maps = "".join(f"a=rtpmap:{CODECS[c][0]} {CODECS[c][1]}\r\n" for c in codecs)
+    key = "a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:" + "QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNk\r\n" if crypto else ""
     return (f"v=0\r\no=- 1 1 IN IP4 {ip}\r\ns=-\r\nc=IN IP4 {ip}\r\nt=0 0\r\n"
-            f"m=audio {port} RTP/AVP 0 8\r\na=rtpmap:0 PCMU/8000\r\na=rtpmap:8 PCMA/8000\r\na=sendrecv\r\n")
+            f"m=audio {port} RTP/AVP {pts}\r\n{maps}a=sendrecv\r\n{key}")
 
 
 class Endpoint(threading.Thread):
@@ -145,10 +151,11 @@ class Endpoint(threading.Thread):
             r = self.final(call_id, 2, 5)
         return r.split(" ")[1] if r else "timeout"
 
-    def call(self, to_number, hold, wait):
+    def call(self, to_number, hold, wait, codecs=("pcmu", "pcma"), crypto=False):
         domain = self.domain or "127.0.0.1"
         uri, call_id, tag = f"sip:{to_number}@{domain}", rnd(64), rnd()
-        body = sdp(self.ip, self.rtp.getsockname()[1])
+        body = sdp(self.ip, self.rtp.getsockname()[1], codecs, crypto)
+        self.last_answer = None
         branch = "z9hG4bK" + rnd(48)
         self.request("INVITE", uri, call_id, 1, tag, f"<{uri}>", body=body, branch=branch)
         r = self.final(call_id, 1, wait)
@@ -161,6 +168,7 @@ class Endpoint(threading.Thread):
         if not r:
             return {"status": "timeout"}
         code = r.split(" ")[1]
+        self.last_answer = "\r\n".join(l for l in r.split("\r\n") if l.startswith(("m=", "a=rtpmap", "a=crypto")))
         if code != "200":
             self.ack_negative(r, uri, call_id, tag, branch)
             return {"status": code}
@@ -174,7 +182,7 @@ class Endpoint(threading.Thread):
         if not hold:
             time.sleep(1)
             self.bye(dialog)
-        return {"status": "200", "dialog": dialog}
+        return {"status": "200", "dialog": dialog, "answer": self.last_answer}
 
     def subscribe(self, target, event):
         accept = {"dialog": "application/dialog-info+xml", "presence": "application/pidf+xml",
@@ -231,7 +239,8 @@ def handle(c):
         endpoints[c["name"]].mode = c["mode"]
         return {"status": "ok"}
     if cmd == "call":
-        return endpoints[c["from"]].call(c["to"], c.get("hold", False), c.get("wait", 30))
+        return endpoints[c["from"]].call(c["to"], c.get("hold", False), c.get("wait", 30),
+                                         tuple(c.get("codecs", ["pcmu", "pcma"])), c.get("crypto", False))
     if cmd == "bye":
         return {"status": dialogs[c["dialog"]][0].bye(c["dialog"])}
     if cmd == "subscribe":

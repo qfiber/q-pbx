@@ -15,6 +15,8 @@ defmodule QPBX.Telephony.Router do
   alias QPBX.Core.Numbers
 
   @max_hops 5
+  # A diagnostic feature code ahead of phase 4's full set: answers, plays a prompt, echoes.
+  @echo "*43"
   # Where FreeSWITCH reaches phones and carriers: always through Kamailio.
   @edge "sip:127.0.0.1:5060"
 
@@ -47,19 +49,53 @@ defmodule QPBX.Telephony.Router do
     dialed = call.destination
     caller = %{number: from.number, name: from.name, external: outside_caller_id(from, t)}
 
-    cond do
-      emergency = Enum.find(ctx.platform.emergency, &(&1.number == dialed)) ->
-        emergency_call(emergency, caller, ctx)
+    case Enum.find(ctx.platform.emergency, &(&1.number == dialed)) do
+      nil -> plan_target(dialed, caller, ctx)
+      emergency -> emergency_call(emergency, caller, ctx)
+    end
+  end
 
-      ext = extension(t, dialed) ->
+  @doc """
+  Where a call goes when it is transferred (a REFER) or redirected (a 302) to `target`: the
+  same rules as a phone dialling it, with the call's original caller. A transferred carrier
+  call stays within the number's tenant.
+  """
+  def transfer(%{source: :device} = call, target, ctx),
+    do: plan(%{call | destination: target}, ctx)
+
+  def transfer(%{source: :trunk} = call, target, %{tenant: t} = ctx) when not is_nil(t),
+    do: plan_target(target, caller_from(call.caller, t.rule), ctx)
+
+  def transfer(_call, _target, _ctx), do: reject("CALL_REJECTED")
+
+  # A destination inside a tenant: the echo test, an extension, or a number.
+  defp plan_target(@echo, _caller, _ctx), do: echo()
+
+  defp plan_target(target, caller, %{tenant: t} = ctx) do
+    case extension(t, target) do
+      %{} = ext ->
         ring_extension(ext, caller, ctx, 0)
 
-      true ->
-        case Numbers.to_e164(dialed, t.rule) do
+      nil ->
+        case Numbers.to_e164(target, t.rule) do
           {:ok, e164} -> to_number(e164, caller, ctx, 0)
           :error -> reject("UNALLOCATED_NUMBER")
         end
     end
+  end
+
+  # The echo test: a FreeSWITCH loopback channel that plays a short tone prompt, then echoes
+  # (QPBX.Telephony.Dialplan serves it to loopback channels only). Bridged like any answered
+  # call, so transfers to and from it work.
+  defp echo do
+    %{
+      op: :dial,
+      dial: "loopback/#{QPBX.Telephony.Dialplan.echo_destination()}/public/XML",
+      timeout: 10,
+      busy: reject("USER_BUSY"),
+      no_answer: reject("NO_ANSWER"),
+      failed: reject("NORMAL_TEMPORARY_FAILURE")
+    }
   end
 
   defp emergency_call(route, caller, ctx) do

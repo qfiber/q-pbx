@@ -2,6 +2,20 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Echo test, transfers and redirects in phase 2; SRTP from phones (2-5b)
+
+- **Moved into phase 2 (decided by the project owner):** the `*43` echo test, blind and
+  attended transfers and following 302 redirects. Without `*43` nothing tested audio, and
+  transfers are basic PBX behaviour. The rest of the feature codes stay in phase 4.
+- **The echo is a loopback service bridged like any answered call,** so attended transfers
+  (REFER with Replaces) work with it; its dialplan is served to loopback channels only.
+- **SRTP from phones:** accept SDES on RTP/AVP (`rtp_allow_crypto_in_avp`,
+  `rtp_secure_media_inbound=optional`) and run the sofia profile with `enable-soa=false`:
+  FreeSWITCH 1.10.12 answers RTP/SAVP, and sofia-sip's offer/answer engine then rejects the
+  stream (`m=audio 0`, a call without audio). With it off, Meow gets SRTP and audio.
+  Calls to phones stay plain RTP until offering SRTP is decided per device.
+- **A registration replaces the login's older contacts** (one login, one device).
+
 ## 2026-11-27: Accept optional SRTP offers (2-0b)
 
 - **`rtp_allow_crypto_in_avp=true` (global):** phones and Meow offer SRTP as `a=crypto` on

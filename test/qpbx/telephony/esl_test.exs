@@ -133,6 +133,54 @@ defmodule QPBX.Telephony.ESLTest do
       assert states |> List.last() |> elem(2) == "terminated"
     end
 
+    test "a transfer re-routes the parked channel instead of hanging up; a 302 is followed",
+         %{fs: fs, tenant: t} do
+      park(fs, "call-5", %{
+        "variable_sip_h_X-QPBX-Source" => "device",
+        "variable_sip_h_X-QPBX-Tenant" => t.id,
+        "variable_sip_h_X-QPBX-Auth-User" => "101-desk",
+        "Caller-Destination-Number" => "102"
+      })
+
+      assert %{app: "set"} = recv_sendmsg(fs, "call-5")
+      assert %{app: "bridge", event_uuid: id} = recv_sendmsg(fs, "call-5")
+
+      # 102 transferred the caller (REFER): the bridge ends with a transfer in the history,
+      # then FreeSWITCH parks the channel again with the new destination.
+      event(fs, %{
+        "Event-Name" => "CHANNEL_EXECUTE_COMPLETE",
+        "Unique-ID" => "call-5",
+        "Application-UUID" => id,
+        "variable_originate_disposition" => "SUCCESS",
+        "variable_transfer_history" => "1:uuid:bl_xfer:*43/public/XML"
+      })
+
+      event(fs, %{
+        "Event-Name" => "CHANNEL_PARK",
+        "Unique-ID" => "call-5",
+        "variable_qpbx_call" => "true",
+        "Caller-Destination-Number" => "*43"
+      })
+
+      assert %{app: "set"} = recv_sendmsg(fs, "call-5")
+
+      assert %{app: "bridge", arg: "loopback/qpbx-echo/public/XML", event_uuid: id2} =
+               recv_sendmsg(fs, "call-5")
+
+      # The echo answers 302 to 102: followed.
+      event(fs, %{
+        "Event-Name" => "CHANNEL_EXECUTE_COMPLETE",
+        "Unique-ID" => "call-5",
+        "Application-UUID" => id2,
+        "variable_originate_disposition" => "REDIRECTION_TO_NEW_DESTINATION",
+        "variable_sip_redirect_contact_user_0" => "102"
+      })
+
+      assert %{app: "set"} = recv_sendmsg(fs, "call-5")
+      assert %{app: "bridge", arg: dial} = recv_sendmsg(fs, "call-5")
+      assert dial =~ "102-desk@"
+    end
+
     test "a call nobody can route is hung up with its cause; calls not parked by us are left alone",
          %{fs: fs, tenant: t} do
       park(fs, "other", %{"variable_qpbx_call" => "false"})

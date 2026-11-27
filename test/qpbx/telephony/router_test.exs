@@ -329,6 +329,34 @@ defmodule QPBX.Telephony.RouterTest do
     end
   end
 
+  describe "echo test, transfers and redirects" do
+    test "*43 is the loopback echo service" do
+      a = from_phone("*43", ctx())
+      assert %{op: :dial, dial: "loopback/qpbx-echo/public/XML"} = a
+      assert walk(a, [:failed]).op == :reject
+    end
+
+    test "a transfer from a phone's call routes like dialling, with the same caller" do
+      call = %{source: :device, auth_user: "101-desk", destination: "102"}
+      assert Router.transfer(call, "*43", ctx()).dial =~ "loopback/qpbx-echo"
+      a = Router.transfer(call, "102", ctx())
+      assert a.dial =~ "102-desk@" and a.dial =~ "origination_caller_id_number=101"
+    end
+
+    test "a transferred carrier call stays in the number's tenant, caller shown nationally" do
+      call = %{
+        source: :trunk,
+        trunk_id: "partner",
+        destination: "+97221234567",
+        caller: "+972501234567"
+      }
+
+      a = Router.transfer(call, "101", ctx())
+      assert a.dial =~ "101-desk@" and a.dial =~ "origination_caller_id_number=0501234567"
+      assert %{op: :reject} = Router.transfer(call, "101", %{ctx() | tenant: nil})
+    end
+  end
+
   test "dial strings cannot be broken by names" do
     ctx = ctx(extensions: [ext("101", name: "Evil,}[x]{"), ext("102")])
     a = from_phone("102", ctx)

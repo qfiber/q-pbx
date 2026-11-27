@@ -182,6 +182,14 @@ try:
     check("BLF: 102 shows on a call after the answer", "confirmed" in states, str(states))
     check("BLF: 102 is idle again after the hangup", after and after[-1]["state"] in ("terminated", "idle"), str(after))
 
+    # Echo test and SRTP: *43 answers; a phone offering SRTP (a=crypto on RTP/AVP, as Meow and
+    # many phones do) gets audio with SRTP back, not a refused stream (m=audio 0).
+    r = do(cmd="call", **{"from": "p101", "to": "*43", "codecs": ["opus", "pcmu"], "crypto": False})
+    check("*43 echo answers, Opus negotiated", r["status"] == "200" and "opus" in (r.get("answer") or ""), (r.get("answer") or r["status"]).replace("\r\n", " ; "))
+    r = do(cmd="call", **{"from": "p101", "to": "*43", "codecs": ["pcmu"], "crypto": True})
+    ans = r.get("answer") or ""
+    check("an SRTP offer gets audio with SRTP back", r["status"] == "200" and "a=crypto" in ans and "m=audio 0 " not in ans, ans.replace("\r\n", " ; "))
+
     # Outbound: the national number reaches carrier A in E.164, with the tenant's number.
     seen("A"), seen("B")
     r = do(cmd="call", **{"from": "p101", "to": "02-765-4321"})

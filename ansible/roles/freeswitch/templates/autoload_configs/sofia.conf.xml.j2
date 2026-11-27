@@ -17,6 +17,10 @@
         <param name="rtp-timeout-sec" value="300"/>
         <param name="rtp-hold-timeout-sec" value="1800"/>
         <param name="disable-register" value="true"/>
+        <!-- Send FreeSWITCH's own SDP. sofia-sip's offer/answer engine rejects the audio
+             stream (m=audio 0) when a phone offers SRTP as a=crypto on RTP/AVP, because
+             FreeSWITCH answers RTP/SAVP; with it off, Meow and phones get working SRTP. -->
+        <param name="enable-soa" value="false"/>
         <param name="inbound-codec-prefs" value="OPUS,G722,PCMA,PCMU,G729"/>
         <param name="outbound-codec-prefs" value="OPUS,G722,PCMA,PCMU,G729"/>
       </settings>

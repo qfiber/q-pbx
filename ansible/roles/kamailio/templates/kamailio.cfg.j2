@@ -489,7 +489,10 @@ route[REGISTER] {
     setbflag(FLB_NATB);
     setbflag(FLB_NATSIPPING);
   }
-  if (!save("location")) {
+  # One login is one device: a new registration replaces its older contacts (a phone that
+  # re-registers from a new port would otherwise be forked to twice, and a busy or redirect
+  # from one branch held until the stale branch times out).
+  if (!save("location", "0x04")) {
     sl_reply_error();
   }
   exit;

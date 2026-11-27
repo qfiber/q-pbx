@@ -41,6 +41,17 @@ Kamailio gets its real config.
 
 ## Done
 
+- 2-5b Echo test, transfers, redirects, SRTP (done; moved into phase 2 by decision, see
+  DECISIONS): `*43` echo (loopback service with a tone prompt), blind and attended
+  transfers, following a 302; SRTP from phones accepted; a new registration replaces the
+  login's older contacts. Meow's live engine test now passes completely (94/94: echo with
+  audio, Opus over SRTP on TLS with no loss, DTMF, hold, busy lamps, redirect, blind and
+  attended transfer, conference and recording with sound). `phase2-calls.py` 29/29 (adds
+  echo and SRTP), and the 2-4, 2-3, 2-2 and phase 1 checks still pass. Found in the lab:
+  FreeSWITCH turned every SRTP offer into a call without audio (sofia-sip offer/answer,
+  `m=audio 0`); a stale registration of the same login held a busy or redirect for up to
+  20 s. Remaining feature codes stay in phase 4.
+
 - 2-0b Busy lamps with Meow (done): Meow's live engine test against the lab (tenant `meow`,
   TLS and UDP lines, optional SRTP): its busy lamp section passes completely (idle, ringing as
   the one called naming 101, on a call, idle), presence (Available) and the voicemail light are

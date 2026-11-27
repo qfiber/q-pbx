@@ -40,6 +40,15 @@ platform's and the DID index, loaded on first use and all dropped on `ConfigChan
 `child_spec/1` (started by the application; the event socket only with `config :qpbx,
 QPBX.Telephony, esl: true`, i.e. production).
 
+**Echo test, transfers, redirects:** `*43` (from a phone) bridges to a FreeSWITCH loopback
+channel (`loopback/qpbx-echo/public/XML`); `Dialplan` serves that destination only to loopback
+channels: answer, a tone prompt of about 5 s, then echo. A blind transfer (REFER) moves the
+caller's channel back into the dialplan: the call process sees FreeSWITCH's
+`transfer_history` grow on the finished bridge and the next `CHANNEL_PARK` carries the new
+destination, which `Router.transfer/3` routes with the same caller (a carrier call stays in
+its number's tenant). Attended transfers (REFER with Replaces) are done by FreeSWITCH
+itself. A 302 from the far end is followed (`sip_redirect_contact_user_0`), up to 3 times.
+
 **Busy lamps:** the call process publishes `CallState` for the calling extension (initiator:
 early, confirmed) and each extension rung (recipient: early, confirmed, terminated when not
 answered there); everything goes terminated when the call ends. The caller is named by
@@ -55,6 +64,10 @@ extension number.
   `CHANNEL_EXECUTE_COMPLETE` of a bridge comes only when the bridge is over.
 - FreeSWITCH's 503 reaches a carrier as 500 through Kamailio (a proxy must not pass 503
   upstream, RFC 3261 16.7).
+- SRTP from phones (SDES `a=crypto` on RTP/AVP, as Meow sends): FreeSWITCH globals
+  `rtp_allow_crypto_in_avp=true` and `rtp_secure_media_inbound=optional`, and the sofia
+  profile with `enable-soa=false` (sofia-sip's offer/answer otherwise turns the SRTP answer
+  into `m=audio 0`). Calls FreeSWITCH places to phones are plain RTP for now.
 - Admission (limits, destination classes, fraud) is 2-6; voicemail on no answer is 2-7.
 - Lab check with real calls: `lab/done-when/phase2-calls.py <vm-ip>` (endpoints in
   `lab/tools/sipua_daemon.py`).
