@@ -67,6 +67,7 @@
   loop:
     - {name: qpbx_owner, password: "{{ qpbx_secrets.db_owner_password }}"}
     - {name: qpbx, password: "{{ qpbx_secrets.db_password }}"}
+    - {name: qpbx_kamailio, password: "{{ qpbx_secrets.kamailio_db_password }}"}
   loop_control:
     label: "{{ item.name }}"
   no_log: true
@@ -114,6 +115,26 @@
             EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON %I TO qpbx', t);
           END IF;
         END LOOP;
+      END $$;
+  changed_when: false
+  become: true
+  become_user: postgres
+
+# Kamailio reads only the views in the kamailio schema (credential hashes, tenant domains).
+# The schema comes from a migration; on a fresh install it appears with the app's first start,
+# which grants these rights itself (QPBX_DB_KAMAILIO_ROLE).
+- name: Kamailio role rights (read the kamailio views, nothing else)
+  community.postgresql.postgresql_query:
+    login_db: qpbx
+    query: |
+      ALTER ROLE qpbx_kamailio SET search_path = kamailio;
+      GRANT CONNECT ON DATABASE qpbx TO qpbx_kamailio;
+      DO $$ BEGIN
+        IF EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'kamailio') THEN
+          GRANT USAGE ON SCHEMA kamailio TO qpbx_kamailio;
+          GRANT SELECT ON ALL TABLES IN SCHEMA kamailio TO qpbx_kamailio;
+          ALTER DEFAULT PRIVILEGES FOR ROLE qpbx_owner IN SCHEMA kamailio GRANT SELECT ON TABLES TO qpbx_kamailio;
+        END IF;
       END $$;
   changed_when: false
   become: true

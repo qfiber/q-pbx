@@ -29,11 +29,21 @@ defmodule QPBX.Core.Tenant do
     |> validate_inclusion(:locale, QPBX.Core.locales())
     |> validate_change(:timezone, &validate_timezone/2)
     |> validate_change(:limit_overrides, &validate_overrides/2)
+    |> slug_fixed_after_creation()
     |> put_sip_domain(base_domain)
     |> foreign_key_constraint(:plan_id)
     |> unique_constraint(:slug)
     |> unique_constraint(:sip_domain)
   end
+
+  # The SIP domain is part of every stored digest hash (HA1); changing it would lock every phone out.
+  defp slug_fixed_after_creation(%Ecto.Changeset{data: %{id: id}} = cs) when not is_nil(id) do
+    if Ecto.Changeset.get_change(cs, :slug),
+      do: add_error(cs, :slug, "cannot change after the tenant is created"),
+      else: cs
+  end
+
+  defp slug_fixed_after_creation(cs), do: cs
 
   defp put_sip_domain(cs, base_domain) do
     case get_change(cs, :slug) do

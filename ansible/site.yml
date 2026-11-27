@@ -13,8 +13,9 @@
     - postgres
     - storage
     - certificates
-    - kamailio
     - freeswitch
+    # The app's migrations create the views Kamailio loads at start-up.
     - qpbx_app
+    - kamailio
     - nginx
     - monitoring

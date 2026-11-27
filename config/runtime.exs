@@ -32,6 +32,9 @@ if config_env() == :prod do
 
   config :qpbx, :health_token, System.get_env("QPBX_HEALTH_TOKEN")
 
+  config :qpbx, QPBX.Edge,
+    jsonrpc_url: System.get_env("QPBX_KAMAILIO_JSONRPC_URL", "http://127.0.0.1:5071/RPC")
+
   # Seconds; can only lower the 15-minute idle timeout (QPBX.Core.Sessions caps it).
   if idle = System.get_env("QPBX_SESSION_IDLE_TIMEOUT"),
     do: config(:qpbx, :session_idle_timeout, String.to_integer(idle))

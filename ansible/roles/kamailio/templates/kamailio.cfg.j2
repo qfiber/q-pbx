@@ -1,6 +1,10 @@
 #!KAMAILIO
 # {{ ansible_managed }}
-# Phase 1 placeholder: every SIP request gets 503 until phase 2 adds auth and routing.
+# Phones register with digest authentication against credential hashes loaded from the
+# database (read-only views, kept in memory; QPBX.Edge reloads them on change). Calls are not
+# routed yet: every other request gets 503 until call control (phase 2, 2-3 and 2-5).
+
+#!include_file "/etc/kamailio/db.cfg"
 
 debug=2
 log_stderror=no
@@ -24,19 +28,62 @@ listen=tls:[{{ qpbx_service_ipv6 }}]:5061
 listen=tcp:127.0.0.1:5071
 
 loadmodule "sl.so"
+loadmodule "tm.so"
 loadmodule "pv.so"
+loadmodule "maxfwd.so"
+loadmodule "textops.so"
+loadmodule "siputils.so"
 loadmodule "tls.so"
 loadmodule "xhttp.so"
 loadmodule "jsonrpcs.so"
+loadmodule "db_postgres.so"
+loadmodule "htable.so"
+loadmodule "auth.so"
+loadmodule "usrloc.so"
+loadmodule "registrar.so"
 
 modparam("tls", "config", "/etc/kamailio/tls.cfg")
 modparam("jsonrpcs", "transport", 1)
+
+# Tenant domains and credential hashes, in memory (reloaded with htable.reload on change).
+modparam("htable", "db_url", DBURL)
+modparam("htable", "htable", "domains=>size=8;dbtable=domains;")
+modparam("htable", "htable", "credentials=>size=12;dbtable=credentials;")
+
+# Registrations in memory, one location table across tenants (address of record user@domain).
+modparam("usrloc", "db_mode", 0)
+modparam("usrloc", "use_domain", 1)
 
 request_route {
   if ($Rp == 5071) {
     drop;
   }
+  if (!mf_process_maxfwd_header("10")) {
+    sl_send_reply("483", "Too Many Hops");
+    exit;
+  }
+  if (is_method("REGISTER")) {
+    route(REGISTER);
+  }
   sl_send_reply("503", "Service Unavailable");
+  exit;
+}
+
+# The tenant is the To domain; its SIP domain is the digest realm. A phone may register only
+# the user it authenticated as (pv_auth_check checks the To user against the auth user).
+route[REGISTER] {
+  if ($sht(domains=>$td) == $null) {
+    sl_send_reply("403", "Forbidden");
+    exit;
+  }
+  if (!pv_auth_check("$td", "$sht(credentials=>$au@$td)", "1", "1")) {
+    auth_challenge("$td", "1");
+    exit;
+  }
+  consume_credentials();
+  if (!save("location")) {
+    sl_reply_error();
+  }
   exit;
 }
 

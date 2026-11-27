@@ -20,7 +20,10 @@ defmodule QPBX.Core.Scope do
   def run(%__MODULE__{kind: :platform}, fun), do: fun.()
 
   def run(%__MODULE__{kind: :tenant, tenant_id: id}, fun) when is_binary(id) do
-    {:ok, result} = QPBX.Core.with_tenant(id, fun)
-    result
+    case QPBX.Core.with_tenant(id, fun) do
+      {:ok, result} -> result
+      # The function's own {:error, _}, after the rollback.
+      {:error, {:error, _} = error} -> error
+    end
   end
 end

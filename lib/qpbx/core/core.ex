@@ -18,7 +18,8 @@ defmodule QPBX.Core do
       UserSession,
       SessionSweeper,
       Scope,
-      KeyProvider
+      KeyProvider,
+      SipCredential
     ]
 
   import Ecto.Query
@@ -46,12 +47,27 @@ defmodule QPBX.Core do
   def change_tenant(%Tenant{} = tenant \\ %Tenant{}, attrs \\ %{}),
     do: Tenant.changeset(tenant, attrs, sip_base_domain())
 
-  def create_tenant(attrs, actor),
-    do:
-      save(:insert, Tenant.changeset(%Tenant{}, attrs, sip_base_domain()), "tenant.create", actor)
+  def create_tenant(attrs, actor) do
+    save(:insert, Tenant.changeset(%Tenant{}, attrs, sip_base_domain()), "tenant.create", actor)
+    |> tenant_changed()
+  end
 
-  def update_tenant(%Tenant{} = tenant, attrs, actor),
-    do: save(:update, Tenant.changeset(tenant, attrs, sip_base_domain()), "tenant.update", actor)
+  def update_tenant(%Tenant{} = tenant, attrs, actor) do
+    save(:update, Tenant.changeset(tenant, attrs, sip_base_domain()), "tenant.update", actor)
+    |> tenant_changed()
+  end
+
+  # Kamailio learns new tenant domains through this event (QPBX.Edge). Inside an outer
+  # transaction the row is not visible yet, so the caller announces after its commit.
+  defp tenant_changed({:ok, %Tenant{id: id}} = ok) do
+    unless Repo.in_transaction?(), do: announce_tenant(id)
+    ok
+  end
+
+  defp tenant_changed(error), do: error
+
+  defp announce_tenant(id),
+    do: QPBX.Events.publish(%QPBX.Events.TenantsChanged{tenant_id: id, at: DateTime.utc_now()})
 
   @doc """
   Creates a tenant and its first tenant admin in one transaction, so a tenant never exists
@@ -68,8 +84,12 @@ defmodule QPBX.Core do
       end
     end)
     |> case do
-      {:ok, result} -> {:ok, result}
-      {:error, {step, cs}} -> {:error, step, cs}
+      {:ok, result} ->
+        announce_tenant(result.tenant.id)
+        {:ok, result}
+
+      {:error, {step, cs}} ->
+        {:error, step, cs}
     end
   end
 
@@ -171,6 +191,20 @@ defmodule QPBX.Core do
   def list_my_sessions(%Scope{account: account} = scope),
     do: Scope.run(scope, fn -> QPBX.Core.Sessions.list(account) end)
 
+  ## SIP credentials (see QPBX.Core.SipCredentials)
+
+  defdelegate list_sip_credentials(scope), to: QPBX.Core.SipCredentials, as: :list
+
+  defdelegate create_sip_credential(scope, attrs, actor),
+    to: QPBX.Core.SipCredentials,
+    as: :create
+
+  defdelegate reset_sip_password(scope, id, actor),
+    to: QPBX.Core.SipCredentials,
+    as: :reset_password
+
+  defdelegate delete_sip_credential(scope, id, actor), to: QPBX.Core.SipCredentials, as: :delete
+
   ## Tenant scope
 
   @doc """
@@ -181,11 +215,18 @@ defmodule QPBX.Core do
     Repo.transaction(fn ->
       Repo.query!("SELECT set_config('app.tenant_id', $1, true)", [Ecto.UUID.cast!(tenant_id)])
 
-      result = fun.()
-      # Clear it again: inside an outer transaction (tests) SET LOCAL would outlive this call.
-      # On an exception the rollback discards the setting anyway.
-      Repo.query!("SELECT set_config('app.tenant_id', '', true)")
-      result
+      case fun.() do
+        # A failed write (e.g. a unique constraint) aborts the transaction: roll back, which
+        # also discards the setting, and hand the error back.
+        {:error, _} = error ->
+          Repo.rollback(error)
+
+        result ->
+          # Clear it again: inside an outer transaction (tests) SET LOCAL would outlive this
+          # call. On an exception the rollback discards the setting anyway.
+          Repo.query!("SELECT set_config('app.tenant_id', '', true)")
+          result
+      end
     end)
   end
 

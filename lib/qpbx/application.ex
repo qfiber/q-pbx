@@ -3,7 +3,7 @@ defmodule QPBX.Application do
   # for more information on OTP Applications
   @moduledoc false
 
-  use Boundary, top_level?: true, deps: [QPBX.Repo, QPBX.Core, QPBX.Firewall, QPBX.Web]
+  use Boundary, top_level?: true, deps: [QPBX.Repo, QPBX.Core, QPBX.Firewall, QPBX.Edge, QPBX.Web]
   use Application
 
   @impl true
@@ -19,6 +19,7 @@ defmodule QPBX.Application do
       # Start to serve requests, typically the last entry
       QPBX.Core.SessionSweeper,
       QPBX.Firewall.Sync,
+      QPBX.Edge.Reloader,
       QPBX.Web.Health,
       QPBX.Web.SessionReaper,
       QPBX.Web.Captcha.PowStore,

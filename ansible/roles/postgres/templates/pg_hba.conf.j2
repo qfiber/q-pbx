@@ -2,5 +2,5 @@
 # The postgres superuser only through the local socket as the postgres OS user; the Q-PBX
 # roles only over TCP on localhost with scram; nothing else.
 local   all        postgres                   peer
-host    qpbx       qpbx,qpbx_owner  127.0.0.1/32  scram-sha-256
-host    qpbx       qpbx,qpbx_owner  ::1/128       scram-sha-256
+host    qpbx       qpbx,qpbx_owner,qpbx_kamailio  127.0.0.1/32  scram-sha-256
+host    qpbx       qpbx,qpbx_owner,qpbx_kamailio  ::1/128       scram-sha-256
