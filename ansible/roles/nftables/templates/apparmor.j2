@@ -10,6 +10,9 @@ profile qpbx-fwd /usr/sbin/qpbx-fwd flags=(complain) {
   network netlink raw,
   /usr/sbin/qpbx-fwd mr,
   /usr/sbin/nft ix,
+  /etc/iproute2/** r,
+  @{PROC}/sys/net/core/somaxconn r,
+  /sys/kernel/mm/transparent_hugepage/hpage_pmd_size r,
   /run/qpbx-fwd/** rw,
   /var/lib/qpbx-fwd/** rw,
 }

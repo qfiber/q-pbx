@@ -89,7 +89,8 @@ defmodule QPBX.Release do
   # made here reach nftables through the live node's 60 s reconcile.
   defp with_db(fun) do
     load()
-    {:ok, _} = Application.ensure_all_started([:cloak_ecto, :phoenix_pubsub])
+    # plug_crypto: its key cache (an ETS table) is needed to sign setup links.
+    {:ok, _} = Application.ensure_all_started([:cloak_ecto, :phoenix_pubsub, :plug_crypto])
 
     case Supervisor.start_link([], strategy: :one_for_one, name: QPBX.Release.Sup) do
       {:ok, _} -> :ok

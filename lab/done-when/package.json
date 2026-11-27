@@ -1,0 +1,7 @@
+{
+  "name": "qpbx-done-when",
+  "private": true,
+  "type": "module",
+  "description": "Phase Done-when checks against the lab server through a real (headless) browser",
+  "dependencies": { "puppeteer-core": "^24.0.0" }
+}

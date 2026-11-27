@@ -17,8 +17,12 @@ defmodule QPBX.FakeHelper do
   @impl true
   def replace(set, addresses) do
     case :ets.lookup(@table, :fail) do
-      [{:fail, reason}] -> {:error, reason}
-      [] -> :ets.insert(@table, {set, addresses}) && :ok
+      [{:fail, reason}] ->
+        {:error, reason}
+
+      [] ->
+        :ets.insert(@table, {set, addresses})
+        :ok
     end
   end
 end

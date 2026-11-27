@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 1 — Foundation (task breakdown approved 2026-11-27)
+**Current phase:** 1 — Foundation: built; Done-when checks pass in the lab; waiting for review
 **Last updated:** 2026-11-27
 
 ## Phase 1 goal
@@ -123,18 +123,23 @@ Kamailio gets its real config.
   module README check on PRs; Go fmt/vet/tests and the real-nftables integration test;
   ansible-lint) and `.github/workflows/packages.yml` (app and `qpbx-fwd` `.deb` on every push
   to main, FreeSWITCH `.deb` when its packaging changes, on tags or by hand; uploaded as
-  artifacts).
+  artifacts). First runs: Packages, Go and Ansible jobs passed; the Elixir job failed only on
+  Dialyzer in the test environment (a test fake), fixed.
+- P1-12 Lab bring-up and Done-when: see results below. Fixed on the way: the release CLI
+  could not sign setup links (`plug_crypto` not started), SMTP without a login was rejected
+  (now allowed, with TLS still required whenever a login is used), and two AppArmor profiles
+  were widened for what complain mode logged (`nft` reading `/etc/iproute2`, `df` in the app).
 
 - License: AGPL-3.0 kept, `CLA.md` and `CONTRIBUTING.md`
   added, copyright notice in `README.md`. Code pushed to `github.com/qfiber/q-pbx` (public).
 
 ## In progress
 
-- P1-11 CI: first runs on GitHub.
+- Nothing. Phase 1 waits for review; phase 2 does not start without approval.
 
 ## Next
 
-- P1-12 Lab Done-when checks.
+- Review of phase 1 and answers to the open points in the phase 1 report.
 
 ## Blockers / open questions for phase 1
 
@@ -151,6 +156,7 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
 - The lab LAN has no IPv6, so dual-stack listening (Kamailio, nftables rules) is templated but
   not yet exercised end to end.
 
+- After adding a firewall entry, the portal form keeps the typed values instead of clearing.
 - Validation messages built at runtime (for example "unknown feature x") are not translated;
   the fixed ones are.
 - Arabic portal texts need review by a native speaker
@@ -164,4 +170,25 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
 
 ## Done-when results (phase 1)
 
-Not run yet.
+Run on 2026-11-27 against the local Debian 12 lab VM (libvirt, bridged to the host LAN), with
+packages built from the repo, installed by `ansible/site.yml`, through a real headless Chrome
+(`lab/done-when/phase1.mjs`). Certificate from a local Pebble test CA (wildcard mode).
+
+| Check | Result |
+| --- | --- |
+| Platform admin (created with the CLI) sets a password and enrols 2FA in the portal | PASS |
+| Platform admin creates a plan, then a tenant with that plan and its first tenant admin | PASS |
+| Tenant admin opens the setup link, sets a password, enrols 2FA | PASS |
+| Tenant admin logs in with password + TOTP in Arabic (`lang=ar`, `dir=rtl`, Arabic text) | PASS |
+| Tenant admin logs in with password + TOTP in English | PASS |
+| Allowlist entry added in the portal appears in nftables set `allow_ssh_v4`, applied by `qpbx-fwd` | PASS |
+| Removing it in the portal removes it from nftables | PASS |
+
+Also verified in the lab: playbook second run `changed=0`; `/health` `ok` with every component
+checked; SIP OPTIONS answered `503` by Kamailio; recovery after reboot; certificates issued in
+per_host and wildcard modes and hot-reloaded on renewal; setup emails accepted by an SMTP
+server; no AppArmor complaints during the Done-when run.
+
+Not covered by this run: IPv6 (the lab LAN has none), delivery of email to a real mailbox,
+Let's Encrypt itself (Pebble stands in), and the spec's full lab hardware (phones, ATA,
+carrier), which phase 1 does not need.

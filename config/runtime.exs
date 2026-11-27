@@ -48,14 +48,31 @@ if config_env() == :prod do
 
   config :qpbx, :mail_from, {"Q-PBX", System.fetch_env!("QPBX_MAIL_FROM")}
 
-  config :qpbx, QPBX.Notify.Mailer,
-    adapter: Swoosh.Adapters.SMTP,
-    relay: System.fetch_env!("QPBX_SMTP_HOST"),
-    port: String.to_integer(System.get_env("QPBX_SMTP_PORT", "587")),
-    username: System.get_env("QPBX_SMTP_USERNAME"),
-    password: System.get_env("QPBX_SMTP_PASSWORD"),
-    tls: :always,
-    auth: if(System.get_env("QPBX_SMTP_USERNAME"), do: :always, else: :never)
+  # Username and password only when set: the adapter rejects a nil username, and a local
+  # relay often needs no login.
+  smtp_auth =
+    case System.get_env("QPBX_SMTP_USERNAME") do
+      # A login-free relay (often local) may lack TLS.
+      user when user in [nil, ""] ->
+        [auth: :never, tls: :if_available]
+
+      # With a login, TLS is required so credentials never cross the network in clear.
+      user ->
+        [
+          auth: :always,
+          tls: :always,
+          username: user,
+          password: System.fetch_env!("QPBX_SMTP_PASSWORD")
+        ]
+    end
+
+  config :qpbx,
+         QPBX.Notify.Mailer,
+         [
+           adapter: Swoosh.Adapters.SMTP,
+           relay: System.fetch_env!("QPBX_SMTP_HOST"),
+           port: String.to_integer(System.get_env("QPBX_SMTP_PORT", "587"))
+         ] ++ smtp_auth
 
   config :qpbx, QPBX.Core.Vault,
     ciphers: [
