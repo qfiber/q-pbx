@@ -41,6 +41,17 @@ Kamailio gets its real config.
 
 ## Done
 
+- CLI and portal parity (2026-11-27): every operator command of the release CLI now has a
+  portal page, apart from install-time and internal ones (`migrate`, `kms_wrap_key`,
+  `seed_management_ips`, `list_sip_domains`). New: platform tenant page (edit name, plan, time
+  zone, language; per-tenant limit overrides against the plan's values; its users; another
+  tenant admin), platform admins page (add, new setup link, sign out everywhere), audit log
+  (platform-wide with a tenant filter; each tenant's own for its admins), and new setup link
+  and sign out everywhere on the tenant Users page. The old standalone SIP credential API
+  (`create_sip_credential` and friends) is used by nothing but its tests since devices took
+  over; left as is. Lab: a "Demo Company" tenant with three extensions, a voicemail and three
+  logins (kept on the workstation in `~/.local/share/qpbx-lab/demo-logins.txt`). 251 tests.
+
 - 2-12 Done-when verification (done): `lab/done-when/phase2.py` runs every phase 2 lab check
   and reports the spec's five conditions; a new `phase2-tenants.py` shows two tenants with the
   same numbers calling in, out and internally with no crossover, and changes applying on the

@@ -139,6 +139,9 @@ defmodule QPBX.Core do
   defdelegate authenticate_platform_admin(email, password), to: Accounts
   defdelegate authenticate_user(email, password), to: Accounts
   defdelegate setup_token(account), to: Accounts
+  defdelegate issue_setup_link(account, actor), to: Accounts
+  defdelegate list_platform_admins(), to: Accounts
+  defdelegate account_emails(ids, tenant_id \\ nil), to: Accounts
   defdelegate account_from_setup_token(token), to: Accounts
   defdelegate change_password(account, attrs \\ %{}), to: Accounts
   defdelegate complete_setup(account, attrs), to: Accounts
@@ -161,6 +164,12 @@ defmodule QPBX.Core do
 
   defdelegate set_user_role(scope, user_id, role, actor), to: QPBX.Core.Users, as: :set_role
   defdelegate delete_user(scope, user_id, actor), to: QPBX.Core.Users, as: :delete
+
+  @doc "A tenant admin issues a new setup link for one of the tenant's users: `{:ok, user, token}`."
+  defdelegate user_setup_link(scope, user_id, actor), to: QPBX.Core.Users, as: :setup_link
+
+  @doc "A tenant admin ends every session of one of the tenant's users: `{:ok, count}`."
+  defdelegate sign_out_user(scope, user_id, actor), to: QPBX.Core.Users, as: :sign_out
 
   @doc "The signed-in tenant user's own extension (with devices), or nil."
   defdelegate my_extension(scope), to: QPBX.Core.Users
@@ -189,6 +198,18 @@ defmodule QPBX.Core do
   @doc "Records an audit entry for a change made outside `QPBX.Core` (for example the firewall)."
   def audit(actor, action, target, changes),
     do: actor |> Audit.entry(action, target, changes) |> Repo.insert()
+
+  @doc "The tenant's own audit log, newest first (tenant admins; row-level security in force)."
+  def list_my_audit_logs(%QPBX.Core.Scope{kind: :tenant, tenant_id: tid} = scope, limit \\ 200) do
+    QPBX.Core.Scope.run(scope, fn ->
+      Repo.all(
+        from a in AuditLog,
+          where: a.tenant_id == ^tid,
+          order_by: [desc: a.inserted_at],
+          limit: ^limit
+      )
+    end)
+  end
 
   def list_audit_logs(opts \\ []) do
     limit = Keyword.get(opts, :limit, 100)

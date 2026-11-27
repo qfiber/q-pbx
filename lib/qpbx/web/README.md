@@ -19,12 +19,15 @@ config reports `not_configured` and does not count.
 
 **Portal routes:** `/login`, `/platform/login`, `/2fa`, `/2fa/setup`, `/2fa/skip`,
 `/setup/:token`, `/locale/:locale`, `/logout`; platform LiveViews under `/platform`
-(tenants, new tenant, plans and `/platform/plans/:id` to edit one, firewall, trunks, numbers, numbering, protection, fraud); tenant LiveViews under
+(tenants, new tenant, `/platform/tenants/:id` (edit, limit overrides, users with new setup
+link and sign out everywhere, another tenant admin), `/platform/admins`, `/platform/audit`,
+plans and `/platform/plans/:id` to edit one, firewall, trunks, numbers, numbering, protection, fraud); tenant LiveViews under
 `/app`. The tenant configuration pages (`/app/extensions`, `/app/extensions/:id`,
 `/app/numbers`, `/app/routes`, `/app/office-ips`, `/app/number-format`,
 `/app/extensions/:id/voicemail` (mailbox and greetings), `/app/voicemail` (messages, played
 in the browser; playing marks heard), `/app/calls` (call history with filters in the URL,
-daily totals), `/app/users` (invite, extension, role, remove)) are in the
+daily totals), `/app/users` (invite, extension, role, new setup link, sign out everywhere,
+remove), `/app/audit` (the tenant's own audit log)) are in the
 `:tenant_admin` live session: tenant users are sent back to `/app`. `QPBX.Web.NumberInput`
 turns numbers typed the local way into E.164 with the scope's number rule before Core sees
 them. A device's SIP password is shown once, after creation or reset.

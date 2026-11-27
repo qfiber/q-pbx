@@ -133,7 +133,11 @@ defmodule QPBX.Web.Platform.TenantsLive do
       </.form>
 
       <.table :if={@live_action == :index} id="tenants" rows={@tenants}>
-        <:col :let={t} label={gettext("Name")}>{t.name}</:col>
+        <:col :let={t} label={gettext("Name")}>
+          <.link navigate={~p"/platform/tenants/#{t.id}"} class="link" id={"tenant-#{t.id}"}>
+            {t.name}
+          </.link>
+        </:col>
         <:col :let={t} label={gettext("SIP domain")}><span dir="ltr">{t.sip_domain}</span></:col>
         <:col :let={t} label={gettext("Plan")}>{t.plan.name}</:col>
         <:col :let={t} label={gettext("Language")}>{t.locale}</:col>

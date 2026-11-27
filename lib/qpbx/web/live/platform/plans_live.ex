@@ -140,23 +140,24 @@ defmodule QPBX.Web.Platform.PlansLive do
     |> Map.put("features", Map.new(Plan.features(), &{&1, params["feature_" <> &1] == "true"}))
   end
 
-  defp limit_label(:max_extensions), do: gettext("Max extensions")
-  defp limit_label(:max_concurrent_calls_inbound), do: gettext("Max concurrent inbound calls")
-  defp limit_label(:max_concurrent_calls_outbound), do: gettext("Max concurrent outbound calls")
-  defp limit_label(:max_concurrent_calls_total), do: gettext("Max concurrent calls")
-  defp limit_label(:max_queues), do: gettext("Max queues")
-  defp limit_label(:max_ivrs), do: gettext("Max IVRs")
-  defp limit_label(:max_conferences), do: gettext("Max conferences")
-  defp limit_label(:recording_storage_gb), do: gettext("Recording storage (GB)")
-  defp limit_label(:fax_storage_gb), do: gettext("Fax storage (GB)")
-  defp limit_label(:outbound_minutes_per_day), do: gettext("Outbound minutes per day")
-  defp limit_label(:outbound_minutes_per_month), do: gettext("Outbound minutes per month")
-  defp limit_label(:api_rate_limit_per_minute), do: gettext("API requests per minute")
+  @doc false
+  def limit_label(:max_extensions), do: gettext("Max extensions")
+  def limit_label(:max_concurrent_calls_inbound), do: gettext("Max concurrent inbound calls")
+  def limit_label(:max_concurrent_calls_outbound), do: gettext("Max concurrent outbound calls")
+  def limit_label(:max_concurrent_calls_total), do: gettext("Max concurrent calls")
+  def limit_label(:max_queues), do: gettext("Max queues")
+  def limit_label(:max_ivrs), do: gettext("Max IVRs")
+  def limit_label(:max_conferences), do: gettext("Max conferences")
+  def limit_label(:recording_storage_gb), do: gettext("Recording storage (GB)")
+  def limit_label(:fax_storage_gb), do: gettext("Fax storage (GB)")
+  def limit_label(:outbound_minutes_per_day), do: gettext("Outbound minutes per day")
+  def limit_label(:outbound_minutes_per_month), do: gettext("Outbound minutes per month")
+  def limit_label(:api_rate_limit_per_minute), do: gettext("API requests per minute")
 
-  defp limit_label(:max_concurrent_calls_per_extension),
+  def limit_label(:max_concurrent_calls_per_extension),
     do: gettext("Max concurrent calls per extension")
 
-  defp limit_label(limit) do
+  def limit_label(limit) do
     ["minutes", class, "per", period] = limit |> Atom.to_string() |> String.split("_")
 
     gettext("%{class} minutes per %{period}",

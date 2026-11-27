@@ -123,8 +123,8 @@ defmodule QPBX.Release do
   end
 
   defp print_link(account) do
-    {:ok, _} = QPBX.Core.audit(@actor, "account.setup_link_issued", account, %{})
-    IO.puts(QPBX.Web.setup_url(QPBX.Core.setup_token(account)))
+    {:ok, token} = QPBX.Core.issue_setup_link(account, @actor)
+    IO.puts(QPBX.Web.setup_url(token))
   end
 
   @spec fail(String.t()) :: no_return()

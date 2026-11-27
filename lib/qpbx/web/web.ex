@@ -43,6 +43,13 @@ defmodule QPBX.Web do
     "#{scheme}://#{host}#{if default_port?, do: "", else: ":#{port}"}/setup/#{token}"
   end
 
+  @doc "Emails `account` its setup link (token from `QPBX.Core.issue_setup_link/2`); returns the URL."
+  def send_setup_link(account, token) do
+    url = setup_url(token)
+    {:ok, _job} = QPBX.Notify.deliver_setup_link(account, url)
+    url
+  end
+
   def static_paths, do: ~w(assets fonts images favicon.ico robots.txt theme.js)
 
   def router do

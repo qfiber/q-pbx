@@ -41,6 +41,29 @@ defmodule QPBX.Core.Accounts do
   end
 
   def change_user(attrs \\ %{}), do: User.changeset(%User{}, attrs)
+
+  @doc "Emails of these platform admins and users, by id (audit log display); `tenant_id` limits to its users."
+  def account_emails(ids, tenant_id \\ nil) do
+    ids = ids |> Enum.reject(&is_nil/1) |> Enum.uniq()
+    users = from(u in User, where: u.id in ^ids, select: {u.id, u.email})
+    users = if tenant_id, do: where(users, [u], u.tenant_id == ^tenant_id), else: users
+
+    admins =
+      if tenant_id,
+        do: [],
+        else: Repo.all(from a in PlatformAdmin, where: a.id in ^ids, select: {a.id, a.email})
+
+    Map.new(Repo.all(users) ++ admins)
+  end
+
+  def list_platform_admins, do: Repo.all(from a in PlatformAdmin, order_by: a.email)
+
+  @doc "A fresh setup link token for an account (audited); the caller sends or shows it."
+  def issue_setup_link(account, actor) do
+    {:ok, _} = actor |> Audit.entry("account.setup_link_issued", account, %{}) |> Repo.insert()
+    {:ok, setup_token(account)}
+  end
+
   def change_platform_admin(attrs \\ %{}), do: PlatformAdmin.changeset(%PlatformAdmin{}, attrs)
 
   def get_platform_admin(id), do: Repo.get(PlatformAdmin, id)

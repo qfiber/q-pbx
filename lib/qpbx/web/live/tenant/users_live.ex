@@ -78,6 +78,34 @@ defmodule QPBX.Web.Tenant.UsersLive do
          )
        )}
 
+  def handle_event("setup_link", %{"id" => id}, socket) do
+    case Core.user_setup_link(socket.assigns.current_scope, id, socket.assigns.current_account) do
+      {:ok, user, token} ->
+        QPBX.Web.send_setup_link(user, token)
+
+        {:noreply,
+         put_flash(
+           socket,
+           :info,
+           gettext("A setup link was emailed to %{email}.", email: user.email)
+         )}
+
+      _ ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("sign_out", %{"id" => id}, socket) do
+    case Core.sign_out_user(socket.assigns.current_scope, id, socket.assigns.current_account) do
+      {:ok, n} ->
+        {:noreply,
+         put_flash(socket, :info, gettext("Signed out of %{count} sessions.", count: n))}
+
+      _ ->
+        {:noreply, socket}
+    end
+  end
+
   def handle_event("delete", %{"id" => id}, socket),
     do:
       {:noreply,
@@ -137,6 +165,32 @@ defmodule QPBX.Web.Tenant.UsersLive do
             </select>
           </form>
         </:col>
+        <:action :let={u}>
+          <.link
+            phx-click="setup_link"
+            phx-value-id={u.id}
+            id={"setup-link-#{u.id}"}
+            data-confirm={
+              gettext(
+                "Send %{email} a new setup link? It lets them choose a new password and authenticator.",
+                email: u.email
+              )
+            }
+          >
+            {gettext("New setup link")}
+          </.link>
+        </:action>
+        <:action :let={u}>
+          <.link
+            :if={u.id != @current_account.id}
+            phx-click="sign_out"
+            phx-value-id={u.id}
+            id={"sign-out-#{u.id}"}
+            data-confirm={gettext("Sign %{email} out everywhere?", email: u.email)}
+          >
+            {gettext("Sign out everywhere")}
+          </.link>
+        </:action>
         <:action :let={u}>
           <.link
             :if={u.id != @current_account.id}

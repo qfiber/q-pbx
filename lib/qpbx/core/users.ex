@@ -84,6 +84,18 @@ defmodule QPBX.Core.Users do
     end
   end
 
+  def setup_link(%Scope{kind: :tenant} = scope, user_id, actor) do
+    with %User{} = user <- get(scope, user_id) || {:error, :not_found},
+         {:ok, token} <- Accounts.issue_setup_link(user, actor) do
+      {:ok, Accounts.get_user!(user.id), token}
+    end
+  end
+
+  def sign_out(%Scope{kind: :tenant} = scope, user_id, actor) do
+    with %User{} = user <- get(scope, user_id) || {:error, :not_found},
+         do: Sessions.revoke_all(user, actor)
+  end
+
   @doc "The signed-in user's own extension (with its devices), or nil."
   def my_extension(%Scope{kind: :tenant, account: %User{} = me} = scope) do
     case Repo.get(User, me.id) do

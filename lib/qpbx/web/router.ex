@@ -61,6 +61,9 @@ defmodule QPBX.Web.Router do
     live_session :platform_admin, on_mount: {QPBX.Web.Auth, :platform_admin} do
       live "/", TenantsLive, :index
       live "/tenants/new", TenantsLive, :new
+      live "/tenants/:id", TenantLive, :show
+      live "/admins", AdminsLive, :index
+      live "/audit", AuditLive, :index
       live "/plans", PlansLive, :index
       live "/plans/:id", PlansLive, :edit
       live "/firewall", FirewallLive, :index
@@ -93,6 +96,7 @@ defmodule QPBX.Web.Router do
       live "/voicemail", VoicemailLive, :index
       live "/calls", CallsLive, :index
       live "/users", UsersLive, :index
+      live "/audit", AuditLive, :index
       live "/numbers", NumbersLive, :index
       live "/routes", RoutesLive, :index
       live "/office-ips", OfficeIpsLive, :index
