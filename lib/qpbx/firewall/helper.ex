@@ -4,9 +4,15 @@ defmodule QPBX.Firewall.Helper do
   helper: module`: `QPBX.Firewall.Helper.Socket` in production, a fake in tests, and
   `QPBX.Firewall.Helper.Noop` where no helper runs (development).
   """
-  @callback replace(set :: String.t(), addresses :: [String.t()]) :: :ok | {:error, term()}
+  @doc "`timeouts`: seconds until the kernel drops an address (block sets only)."
+  @callback replace(
+              set :: String.t(),
+              addresses :: [String.t()],
+              timeouts :: %{String.t() => pos_integer()}
+            ) ::
+              :ok | {:error, term()}
 
-  def replace(set, addresses), do: adapter().replace(set, addresses)
+  def replace(set, addresses, timeouts \\ %{}), do: adapter().replace(set, addresses, timeouts)
 
   defp adapter,
     do: Application.get_env(:qpbx, QPBX.Firewall, [])[:helper] || QPBX.Firewall.Helper.Noop
@@ -18,7 +24,7 @@ defmodule QPBX.Firewall.Helper.Noop do
   require Logger
 
   @impl true
-  def replace(set, addresses) do
+  def replace(set, addresses, _timeouts) do
     Logger.debug("firewall (noop): #{set} <- #{length(addresses)} entries")
     :ok
   end
@@ -31,7 +37,11 @@ defmodule QPBX.Firewall.Helper.Socket do
   @timeout 10_000
 
   @impl true
-  def replace(set, addresses), do: request(%{op: "replace", set: set, addresses: addresses})
+  def replace(set, addresses, timeouts) when timeouts == %{},
+    do: request(%{op: "replace", set: set, addresses: addresses})
+
+  def replace(set, addresses, timeouts),
+    do: request(%{op: "replace", set: set, addresses: addresses, timeouts: timeouts})
 
   defp request(body) do
     path = Application.get_env(:qpbx, QPBX.Firewall, [])[:socket] || "/run/qpbx-fwd/fwd.sock"

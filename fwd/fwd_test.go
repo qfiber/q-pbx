@@ -17,13 +17,13 @@ func TestParseRequestValid(t *testing.T) {
 		line string
 		want Command
 	}{
-		{`{"op":"add","set":"mgmt_v4","address":"203.0.113.7"}`, Command{"add", "mgmt_v4", []string{"203.0.113.7"}}},
-		{`{"op":"add","set":"mgmt_v4","address":"10.1.2.3/8"}`, Command{"add", "mgmt_v4", []string{"10.0.0.0/8"}}},
-		{`{"op":"add","set":"mgmt_v4","address":"10.1.2.3/32"}`, Command{"add", "mgmt_v4", []string{"10.1.2.3"}}},
-		{`{"op":"remove","set":"mgmt_v6","address":"2001:DB8::1"}`, Command{"remove", "mgmt_v6", []string{"2001:db8::1"}}},
-		{`{"op":"replace","set":"mgmt_v4","addresses":[]}`, Command{"replace", "mgmt_v4", []string{}}},
+		{`{"op":"add","set":"mgmt_v4","address":"203.0.113.7"}`, Command{"add", "mgmt_v4", []string{"203.0.113.7"}, nil}},
+		{`{"op":"add","set":"mgmt_v4","address":"10.1.2.3/8"}`, Command{"add", "mgmt_v4", []string{"10.0.0.0/8"}, nil}},
+		{`{"op":"add","set":"mgmt_v4","address":"10.1.2.3/32"}`, Command{"add", "mgmt_v4", []string{"10.1.2.3"}, nil}},
+		{`{"op":"remove","set":"mgmt_v6","address":"2001:DB8::1"}`, Command{"remove", "mgmt_v6", []string{"2001:db8::1"}, nil}},
+		{`{"op":"replace","set":"mgmt_v4","addresses":[]}`, Command{"replace", "mgmt_v4", []string{}, nil}},
 		{`{"op":"replace","set":"mgmt_v4","addresses":["10.0.0.5","10.0.0.0/8","10.0.0.0/8","192.0.2.1"]}`,
-			Command{"replace", "mgmt_v4", []string{"10.0.0.0/8", "192.0.2.1"}}},
+			Command{"replace", "mgmt_v4", []string{"10.0.0.0/8", "192.0.2.1"}, nil}},
 	}
 	for _, c := range cases {
 		got, err := ParseRequest([]byte(c.line), testSets)
@@ -74,17 +74,17 @@ func TestParseRequestRejects(t *testing.T) {
 
 func TestScript(t *testing.T) {
 	tb := "inet qpbx"
-	if got := Script(tb, Command{"add", "mgmt_v4", []string{"1.2.3.4"}}); got != "add element inet qpbx mgmt_v4 { 1.2.3.4 }\n" {
+	if got := Script(tb, Command{"add", "mgmt_v4", []string{"1.2.3.4"}, nil}); got != "add element inet qpbx mgmt_v4 { 1.2.3.4 }\n" {
 		t.Errorf("add: %q", got)
 	}
-	if got := Script(tb, Command{"remove", "mgmt_v4", []string{"1.2.3.4"}}); got != "delete element inet qpbx mgmt_v4 { 1.2.3.4 }\n" {
+	if got := Script(tb, Command{"remove", "mgmt_v4", []string{"1.2.3.4"}, nil}); got != "delete element inet qpbx mgmt_v4 { 1.2.3.4 }\n" {
 		t.Errorf("remove: %q", got)
 	}
 	want := "flush set inet qpbx mgmt_v4\nadd element inet qpbx mgmt_v4 { 10.0.0.0/8, 1.2.3.4 }\n"
-	if got := Script(tb, Command{"replace", "mgmt_v4", []string{"10.0.0.0/8", "1.2.3.4"}}); got != want {
+	if got := Script(tb, Command{"replace", "mgmt_v4", []string{"10.0.0.0/8", "1.2.3.4"}, nil}); got != want {
 		t.Errorf("replace: %q", got)
 	}
-	if got := Script(tb, Command{"replace", "mgmt_v4", nil}); got != "flush set inet qpbx mgmt_v4\n" {
+	if got := Script(tb, Command{"replace", "mgmt_v4", nil, nil}); got != "flush set inet qpbx mgmt_v4\n" {
 		t.Errorf("empty replace: %q", got)
 	}
 }
@@ -101,11 +101,12 @@ func TestParseSets(t *testing.T) {
 	}
 }
 
-// fakeRunner keeps sets in memory and records scripts.
+// fakeRunner keeps sets in memory (with element timeouts) and records scripts.
 type fakeRunner struct {
-	scripts []string
-	sets    map[string][]string
-	fail    error
+	scripts  []string
+	sets     map[string][]string
+	timeouts map[string]int
+	fail     error
 }
 
 func (f *fakeRunner) Apply(script string) error {
@@ -121,7 +122,16 @@ func (f *fakeRunner) Apply(script string) error {
 		case strings.HasPrefix(line, "add element"):
 			body := line[strings.Index(line, "{")+1 : strings.LastIndex(line, "}")]
 			for _, e := range strings.Split(body, ",") {
-				f.sets[fields[4]] = append(f.sets[fields[4]], strings.TrimSpace(e))
+				parts := strings.Fields(e)
+				f.sets[fields[4]] = append(f.sets[fields[4]], parts[0])
+				if len(parts) == 3 && parts[1] == "timeout" {
+					if f.timeouts == nil {
+						f.timeouts = map[string]int{}
+					}
+					var n int
+					_ = json.Unmarshal([]byte(strings.TrimSuffix(parts[2], "s")), &n)
+					f.timeouts[parts[0]] = n
+				}
 			}
 		}
 	}
@@ -131,13 +141,17 @@ func (f *fakeRunner) Apply(script string) error {
 func (f *fakeRunner) ListSet(_, set string) ([]byte, error) {
 	var elems []any
 	for _, e := range f.sets[set] {
+		var v any = e
 		if i := strings.Index(e, "/"); i > 0 {
 			var l int
 			_ = json.Unmarshal([]byte(e[i+1:]), &l)
-			elems = append(elems, map[string]any{"prefix": map[string]any{"addr": e[:i], "len": l}})
-		} else {
-			elems = append(elems, e)
+			v = map[string]any{"prefix": map[string]any{"addr": e[:i], "len": l}}
 		}
+		if t, ok := f.timeouts[e]; ok {
+			// nft reports the time left; pretend 10 s passed.
+			v = map[string]any{"elem": map[string]any{"val": v, "timeout": t, "expires": t - 10}}
+		}
+		elems = append(elems, v)
 	}
 	return json.Marshal(map[string]any{"nftables": []any{
 		map[string]any{"metainfo": map[string]any{}},
@@ -166,7 +180,7 @@ func TestServerSavesAndRestores(t *testing.T) {
 	if err := json.Unmarshal(data, &st); err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(st["mgmt_v4"], []string{"198.51.100.0/24", "203.0.113.7"}) || !reflect.DeepEqual(st["mgmt_v6"], []string{"2001:db8::/32"}) {
+	if !reflect.DeepEqual(st.Sets["mgmt_v4"], []string{"198.51.100.0/24", "203.0.113.7"}) || !reflect.DeepEqual(st.Sets["mgmt_v6"], []string{"2001:db8::/32"}) {
 		t.Fatalf("state: %+v", st)
 	}
 
@@ -202,15 +216,75 @@ func TestNftErrorIsReported(t *testing.T) {
 
 func TestParseSetJSON(t *testing.T) {
 	real := `{"nftables": [{"metainfo": {"version": "1.0.6"}}, {"set": {"family": "inet", "name": "mgmt_v4", "table": "qpbx", "type": "ipv4_addr", "flags": ["interval"], "elem": ["203.0.113.7", {"prefix": {"addr": "198.51.100.0", "len": 24}}]}}]}`
-	got, err := ParseSetJSON([]byte(real))
-	if err != nil || !reflect.DeepEqual(got, []string{"203.0.113.7", "198.51.100.0/24"}) {
-		t.Fatalf("got %v %v", got, err)
+	got, left, err := ParseSetJSON([]byte(real))
+	if err != nil || left != nil || !reflect.DeepEqual(got, []string{"203.0.113.7", "198.51.100.0/24"}) {
+		t.Fatalf("got %v %v %v", got, left, err)
 	}
 	empty := `{"nftables": [{"metainfo": {}}, {"set": {"name": "mgmt_v4"}}]}`
-	if got, err := ParseSetJSON([]byte(empty)); err != nil || len(got) != 0 {
+	if got, _, err := ParseSetJSON([]byte(empty)); err != nil || len(got) != 0 {
 		t.Fatalf("empty: %v %v", got, err)
 	}
-	if _, err := ParseSetJSON([]byte(`{"nftables":[{"set":{"elem":[{"range":["1.1.1.1","1.1.1.9"]}]}}]}`)); err == nil {
+	// nft 1.0.6 output for a set with "flags interval, timeout".
+	timed := `{"nftables": [{"set": {"name": "block_sip_v4", "flags": ["interval", "timeout"], "elem": ["192.0.2.1", {"elem": {"val": "203.0.113.9", "timeout": 3600, "expires": 3541}}, {"elem": {"val": {"prefix": {"addr": "198.51.100.0", "len": 24}}, "timeout": 60, "expires": 5}}]}}]}`
+	got, left, err = ParseSetJSON([]byte(timed))
+	if err != nil || !reflect.DeepEqual(got, []string{"192.0.2.1", "203.0.113.9", "198.51.100.0/24"}) ||
+		!reflect.DeepEqual(left, map[string]int{"203.0.113.9": 3541, "198.51.100.0/24": 5}) {
+		t.Fatalf("timed: %v %v %v", got, left, err)
+	}
+	if _, _, err := ParseSetJSON([]byte(`{"nftables":[{"set":{"elem":[{"range":["1.1.1.1","1.1.1.9"]}]}}]}`)); err == nil {
 		t.Fatal("range should be unsupported")
+	}
+}
+
+func TestTimeouts(t *testing.T) {
+	c, err := ParseRequest([]byte(`{"op":"replace","set":"mgmt_v4","addresses":["203.0.113.9","192.0.2.1","10.0.0.0/8"],"timeouts":{"203.0.113.9":3600,"10.1.2.3":60}}`), testSets)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// 10.1.2.3 is covered by 10.0.0.0/8 (which has no timeout): its timeout is dropped.
+	if !reflect.DeepEqual(c.Timeouts, map[string]int{"203.0.113.9": 3600}) {
+		t.Fatalf("timeouts: %v", c.Timeouts)
+	}
+	want := "flush set inet qpbx mgmt_v4\nadd element inet qpbx mgmt_v4 { 10.0.0.0/8, 192.0.2.1, 203.0.113.9 timeout 3600s }\n"
+	if got := Script("inet qpbx", c); got != want {
+		t.Fatalf("script: %q", got)
+	}
+	for _, bad := range []string{
+		`{"op":"replace","set":"mgmt_v4","addresses":["1.2.3.4"],"timeouts":{"5.6.7.8":60}}`,      // not in addresses
+		`{"op":"replace","set":"mgmt_v4","addresses":["1.2.3.4"],"timeouts":{"1.2.3.4":0}}`,       // out of range
+		`{"op":"replace","set":"mgmt_v4","addresses":["1.2.3.4"],"timeouts":{"1.2.3.4":2592001}}`, // more than 30 days
+		`{"op":"replace","set":"mgmt_v4","addresses":["1.2.3.4"],"timeouts":{"1.2.3.4 }":60}}`,    // injection
+		`{"op":"replace","set":"mgmt_v4","addresses":["1.2.3.4"],"timeouts":{"1.2.3.4":"60s"}}`,   // not a number
+		`{"op":"add","set":"mgmt_v4","address":"1.2.3.4","timeouts":{"1.2.3.4":60}}`,              // replace only
+	} {
+		if c, err := ParseRequest([]byte(bad), testSets); err == nil {
+			t.Errorf("accepted %s as %+v", bad, c)
+		}
+	}
+}
+
+func TestTimeoutsSurviveRestart(t *testing.T) {
+	state := filepath.Join(t.TempDir(), "sets.json")
+	f := &fakeRunner{sets: map[string][]string{}}
+	srv := &Server{Runner: f, Table: "inet qpbx", Sets: testSets, StatePath: state}
+	if r := srv.Handle([]byte(`{"op":"replace","set":"mgmt_v4","addresses":["203.0.113.9","192.0.2.1"],"timeouts":{"203.0.113.9":3600}}`)); !r.OK {
+		t.Fatalf("replace: %+v", r)
+	}
+	// Restored with the time that was left when the state was saved.
+	f2 := &fakeRunner{sets: map[string][]string{}}
+	if err := Restore(f2, "inet qpbx", testSets, state); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(f2.scripts[0], "203.0.113.9 timeout 3590s") || strings.Contains(f2.scripts[0], "192.0.2.1 timeout") {
+		t.Fatalf("restore: %q", f2.scripts[0])
+	}
+}
+
+func TestRestoreReadsFirstStateFormat(t *testing.T) {
+	state := filepath.Join(t.TempDir(), "sets.json")
+	os.WriteFile(state, []byte(`{"mgmt_v4":["203.0.113.7"]}`), 0o600)
+	f := &fakeRunner{sets: map[string][]string{}}
+	if err := Restore(f, "inet qpbx", testSets, state); err != nil || !reflect.DeepEqual(f.sets["mgmt_v4"], []string{"203.0.113.7"}) {
+		t.Fatalf("old state: %v %v", err, f.sets)
 	}
 }

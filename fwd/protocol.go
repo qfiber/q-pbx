@@ -13,6 +13,9 @@ import (
 // MaxElements bounds a replace request so a client cannot exhaust memory or nft.
 const MaxElements = 65536
 
+// MaxTimeout bounds an element timeout (30 days, in seconds).
+const MaxTimeout = 30 * 24 * 3600
+
 // Family of a managed set.
 type Family string
 
@@ -27,6 +30,8 @@ type Request struct {
 	Set       string    `json:"set"`
 	Address   string    `json:"address,omitempty"`
 	Addresses *[]string `json:"addresses,omitempty"`
+	// Timeouts (replace only): seconds until the kernel removes an element, by address.
+	Timeouts map[string]int `json:"timeouts,omitempty"`
 }
 
 // Response is the single reply line.
@@ -40,6 +45,7 @@ type Command struct {
 	Op       string
 	Set      string
 	Elements []string
+	Timeouts map[string]int // canonical element -> seconds; nil when none
 }
 
 var identRe = regexp.MustCompile(`^[a-z][a-z0-9_]{0,31}$`)
@@ -62,7 +68,7 @@ func ParseRequest(line []byte, sets map[string]Family) (Command, error) {
 
 	switch req.Op {
 	case "add", "remove":
-		if req.Addresses != nil {
+		if req.Addresses != nil || req.Timeouts != nil {
 			return Command{}, errors.New(req.Op + " takes one address")
 		}
 		el, err := Element(req.Address, fam)
@@ -81,7 +87,11 @@ func ParseRequest(line []byte, sets map[string]Family) (Command, error) {
 		if err != nil {
 			return Command{}, err
 		}
-		return Command{Op: "replace", Set: req.Set, Elements: els}, nil
+		ts, err := Timeouts(req.Timeouts, els, fam)
+		if err != nil {
+			return Command{}, err
+		}
+		return Command{Op: "replace", Set: req.Set, Elements: els, Timeouts: ts}, nil
 	default:
 		return Command{}, fmt.Errorf("unknown op %q", req.Op)
 	}
@@ -170,6 +180,52 @@ func Elements(in []string, fam Family) ([]string, error) {
 		}
 	}
 	return out, nil
+}
+
+// Timeouts validates element timeouts against the canonical elements of a replace. A timeout
+// for an element dropped as covered by a wider prefix is dropped too; one for an address not
+// in the request is refused.
+func Timeouts(in map[string]int, els []string, fam Family) (map[string]int, error) {
+	if len(in) == 0 {
+		return nil, nil
+	}
+	if len(in) > MaxElements {
+		return nil, fmt.Errorf("too many timeouts (max %d)", MaxElements)
+	}
+	kept := map[string]bool{}
+	for _, e := range els {
+		kept[e] = true
+	}
+	out := map[string]int{}
+	for addr, secs := range in {
+		el, err := Element(addr, fam)
+		if err != nil {
+			return nil, err
+		}
+		if secs < 1 || secs > MaxTimeout {
+			return nil, fmt.Errorf("timeout for %s out of range (1..%d s)", el, MaxTimeout)
+		}
+		if kept[el] {
+			out[el] = secs
+		} else if !covered(el, els) {
+			return nil, fmt.Errorf("timeout for %s, which is not in addresses", el)
+		}
+	}
+	if len(out) == 0 {
+		return nil, nil
+	}
+	return out, nil
+}
+
+func covered(el string, els []string) bool {
+	p, _ := parse(el)
+	for _, e := range els {
+		w, _ := parse(e)
+		if w.Bits() <= p.Bits() && w.Contains(p.Addr()) {
+			return true
+		}
+	}
+	return false
 }
 
 // ParseSets reads the -sets flag: "name:ipv4,name2:ipv6".

@@ -14,6 +14,12 @@
 #!include_file "/etc/kamailio/db.cfg"
 
 #!define CORE_URI "sip:127.0.0.1:5080"
+#!define REGISTER_PER_MINUTE {{ qpbx_edge_register_per_minute }}
+#!define INVITE_PER_MINUTE {{ qpbx_edge_invite_per_minute }}
+#!define AUTHFAIL_PORT {{ qpbx_edge_auth_failures_port }}
+#!define AUTHFAIL_IP {{ qpbx_edge_auth_failures_ip }}
+#!substdef "!BAN_SECONDS!{{ qpbx_edge_ban_seconds }}!g"
+#!substdef "!SCANNER_AGENTS!{{ qpbx_edge_scanner_agents }}!g"
 #!define FLT_NATS 5
 #!define FLB_NATB 6
 #!define FLB_NATSIPPING 7
@@ -67,6 +73,7 @@ loadmodule "nathelper.so"
 loadmodule "dispatcher.so"
 loadmodule "permissions.so"
 loadmodule "uac.so"
+loadmodule "pike.so"
 
 modparam("tls", "config", "/etc/kamailio/tls.cfg")
 modparam("jsonrpcs", "transport", 1)
@@ -79,6 +86,18 @@ modparam("htable", "db_url", DBURL)
 modparam("htable", "htable", "domains=>size=8;dbtable=domains;")
 modparam("htable", "htable", "credentials=>size=12;dbtable=credentials;")
 modparam("htable", "htable", "trunks=>size=8;dbtable=trunks;")
+
+# Edge protection, in memory. Keys: "<ip>" (whole address) or "<ip>|<port>" (one phone).
+#  ipban: banned addresses (whole-address bans also go to nftables through the app)
+#  authfail, rate: counters over fixed windows (updateexpire=0)
+#  edgealert: office IPs that would have been banned; the app raises an alert
+modparam("htable", "htable", "ipban=>size=12;autoexpire=BAN_SECONDS;")
+modparam("htable", "htable", "authfail=>size=12;autoexpire=900;updateexpire=0;")
+modparam("htable", "htable", "rate=>size=12;autoexpire=60;updateexpire=0;")
+modparam("htable", "htable", "edgealert=>size=8;autoexpire=3600;updateexpire=0;")
+modparam("pike", "sampling_time_unit", 2)
+modparam("pike", "reqs_density_per_unit", {{ qpbx_edge_flood_requests }})
+modparam("pike", "remove_latency", 4)
 
 # Registrations in memory, one location table across tenants (address of record user@domain).
 modparam("usrloc", "db_mode", 0)
@@ -149,6 +168,7 @@ request_route {
 
   # Q-PBX headers are trusted only from FreeSWITCH.
   if (!route(FROM_CORE_ADDR)) {
+    route(PROTECT);
     remove_hf_re("^X-QPBX-");
   }
 
@@ -191,6 +211,143 @@ route[REQINIT] {
   }
 }
 
+# Every request from outside. Platform allowlist: never limited. Banned: dropped silently.
+route[PROTECT] {
+  $var(office) = 0;
+  if (allow_source_address("1")) {
+    return;
+  }
+  if (allow_source_address("2")) {
+    $var(office) = 1;
+  }
+  if ($sht(ipban=>$si) != $null || $sht(ipban=>$si|$sp) != $null) {
+    drop;
+    exit;
+  }
+  if ($ua =~ "SCANNER_AGENTS") {
+    xlog("L_WARN", "edge: scanner user agent [$ua] from $si\n");
+    $var(reason) = "scanner";
+    route(BAN_IP);
+    drop;
+    exit;
+  }
+  if ($var(office) == 0 && !pike_check_req()) {
+    xlog("L_WARN", "edge: flood from $si\n");
+    $var(reason) = "flood";
+    route(BAN_IP);
+    drop;
+    exit;
+  }
+  if (!has_totag()) {
+    if (is_method("REGISTER")) {
+      route(RATE_REGISTER);
+    } else if (is_method("INVITE")) {
+      route(RATE_INVITE);
+    }
+  }
+}
+
+route[RATE_REGISTER] {
+  # $shtinc does not create a missing counter.
+  if ($sht(rate=>r|$si|$sp) == $null) {
+    $sht(rate=>r|$si|$sp) = 0;
+  }
+  $var(n) = $shtinc(rate=>r|$si|$sp);
+  $var(limit) = REGISTER_PER_MINUTE;
+  if ($var(n) > $var(limit)) {
+    route(RATE_EXCEEDED);
+  }
+}
+
+route[RATE_INVITE] {
+  # $shtinc does not create a missing counter.
+  if ($sht(rate=>i|$si|$sp) == $null) {
+    $sht(rate=>i|$si|$sp) = 0;
+  }
+  $var(n) = $shtinc(rate=>i|$si|$sp);
+  $var(limit) = INVITE_PER_MINUTE;
+  if ($var(n) > $var(limit)) {
+    route(RATE_EXCEEDED);
+  }
+}
+
+# Over the limit: refuse; three times over: ban that address and port.
+route[RATE_EXCEEDED] {
+  if ($var(n) > 3 * $var(limit)) {
+    $sht(ipban=>$si|$sp) = "rate";
+    xlog("L_WARN", "edge: rate limit, banned $si:$sp\n");
+  }
+  append_to_reply("Retry-After: 60\r\n");
+  sl_send_reply("503", "Rate Limited");
+  exit;
+}
+
+# A failed authentication (wrong password, unknown user, someone else's user).
+route[AUTHFAIL] {
+  # $shtinc does not create a missing counter.
+  if ($sht(authfail=>$si|$sp) == $null) {
+    $sht(authfail=>$si|$sp) = 0;
+  }
+  $var(n) = $shtinc(authfail=>$si|$sp);
+  # $shtinc does not create a missing counter.
+  if ($sht(authfail=>$si) == $null) {
+    $sht(authfail=>$si) = 0;
+  }
+  $var(m) = $shtinc(authfail=>$si);
+  $var(port_limit) = AUTHFAIL_PORT;
+  if ($var(office) == 1) {
+    $var(port_limit) = 3 * AUTHFAIL_PORT;
+  }
+  if ($var(n) >= $var(port_limit)) {
+    $sht(ipban=>$si|$sp) = "auth failures";
+    xlog("L_WARN", "edge: auth failures, banned $si:$sp\n");
+  }
+  if ($var(m) >= AUTHFAIL_IP) {
+    $var(reason) = "auth failures";
+    route(BAN_IP);
+  }
+}
+
+# Bans the whole source address; an office IP is never banned as a whole: it is flagged for an
+# alert instead.
+route[BAN_IP] {
+  if ($var(office) == 1) {
+    if ($sht(edgealert=>$si) == $null) {
+      $sht(edgealert=>$si) = $var(reason);
+      xlog("L_WARN", "edge: office IP $si would be banned ($var(reason)); alerting\n");
+    }
+    return;
+  }
+  $sht(ipban=>$si) = $var(reason);
+  xlog("L_WARN", "edge: banned $si ($var(reason))\n");
+}
+
+# Digest authentication against the credential hashes, realm = tenant domain ($var(realm)).
+# No credentials yet: a challenge. Wrong ones: counted, then a challenge.
+route[AUTH] {
+  if ($au == $null) {
+    auth_challenge("$var(realm)", "1");
+    exit;
+  }
+  if ($sht(credentials=>$au@$var(realm)) == $null) {
+    route(AUTHFAIL);
+    auth_challenge("$var(realm)", "1");
+    exit;
+  }
+  pv_auth_check("$var(realm)", "$sht(credentials=>$au@$var(realm))", "1", "1");
+  $var(rc) = $rc;
+  if ($var(rc) < 0) {
+    # -2 wrong password, -8 the From/To user is not the authenticated user; a stale nonce
+    # (-4, -6) is normal and not counted.
+    if ($var(rc) == -2 || $var(rc) == -8) {
+      route(AUTHFAIL);
+    }
+    auth_challenge("$var(realm)", "1");
+    exit;
+  }
+  consume_credentials();
+}
+
 route[FROM_CORE_ADDR] {
   if ($si == "127.0.0.1" && $sp == 5080) {
     return 1;
@@ -217,15 +374,8 @@ route[REGISTER] {
     sl_send_reply("403", "Forbidden");
     exit;
   }
-  if ($au == $null || $sht(credentials=>$au@$td) == $null) {
-    auth_challenge("$td", "1");
-    exit;
-  }
-  if (!pv_auth_check("$td", "$sht(credentials=>$au@$td)", "1", "1")) {
-    auth_challenge("$td", "1");
-    exit;
-  }
-  consume_credentials();
+  $var(realm) = $td;
+  route(AUTH);
   if (isflagset(FLT_NATS)) {
     setbflag(FLB_NATB);
     setbflag(FLB_NATSIPPING);
@@ -255,15 +405,8 @@ route[INVITE] {
     exit;
   }
   # Digest with the tenant domain as realm; the From user must be the authenticated user.
-  if ($au == $null || $sht(credentials=>$au@$fd) == $null) {
-    auth_challenge("$fd", "1");
-    exit;
-  }
-  if (!pv_auth_check("$fd", "$sht(credentials=>$au@$fd)", "1", "1")) {
-    auth_challenge("$fd", "1");
-    exit;
-  }
-  consume_credentials();
+  $var(realm) = $fd;
+  route(AUTH);
   append_hf("X-QPBX-Source: device\r\n");
   append_hf("X-QPBX-Tenant: $sht(domains=>$fd)\r\n");
   append_hf("X-QPBX-Auth-User: $au\r\n");

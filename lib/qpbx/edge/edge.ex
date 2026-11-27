@@ -5,7 +5,9 @@ defmodule QPBX.Edge do
   views in the `kamailio` schema; this area tells it to reload when something changes, and
   pushes registration trunks (with their passwords) over JSON-RPC. See `lib/qpbx/edge/README.md`.
   """
-  use Boundary, deps: [QPBX.Core, QPBX.Events], exports: [Reloader, Registrations]
+  use Boundary,
+    deps: [QPBX.Core, QPBX.Events, QPBX.Firewall],
+    exports: [Reloader, Registrations, Bans]
 
   @htables ["credentials", "domains", "trunks"]
 

@@ -153,6 +153,13 @@ try {
   await sleep(1500);
   check("after removing the device its password is refused", register(user, sipDomain, devicePassword) === "SIP/2.0 401 Unauthorized");
 
+  // Clean up the trunk (its host names do not resolve; Kamailio would log them on every reload).
+  ssh(`sudo /usr/local/sbin/qpbx rpc 'alias QPBX.Core; a = {:system, "lab"}; p = %Core.Scope{kind: :platform}
+for t <- Core.list_trunks(p), t.name == "Carrier ${run}" do
+  for d <- Core.list_dids(p), d.trunk_id == t.id, do: Core.delete_did(p, d, a)
+  for ten <- Core.list_tenants(), u <- Core.list_users(p, ten), QPBX.Core.User.role(u) == "tenant_admin", s = Core.scope_for(u), r <- Core.list_routes(s), t.id in r.trunk_ids, do: Core.delete_route(s, r, a)
+  Core.delete_trunk(p, t, a)
+end'`);
   check("no Content-Security-Policy violations", cspViolations.length === 0, cspViolations.slice(0, 2).join(" | "));
 } catch (e) {
   check("browser part ran to the end", false, e.message);

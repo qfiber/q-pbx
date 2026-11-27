@@ -53,7 +53,10 @@ defmodule QPBX.Firewall.Sync do
 
     result =
       try do
-        desired = Store.active_entries() |> Sets.desired()
+        active = Store.active_entries()
+        desired = Sets.desired(active)
+        timeouts = Sets.timeouts(active)
+        Store.purge_expired_bans()
         skip = if Enum.all?(@ssh_allow, &(desired[&1] == [])), do: @ssh_allow, else: []
 
         if skip != [],
@@ -65,7 +68,7 @@ defmodule QPBX.Firewall.Sync do
         errors =
           for {set, addresses} <- Enum.sort(desired), set not in skip, reduce: [] do
             acc ->
-              case Helper.replace(set, addresses) do
+              case Helper.replace(set, addresses, Map.get(timeouts, set, %{})) do
                 :ok -> acc
                 {:error, reason} -> [{set, reason} | acc]
               end

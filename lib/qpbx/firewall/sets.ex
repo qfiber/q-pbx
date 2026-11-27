@@ -34,6 +34,24 @@ defmodule QPBX.Firewall.Sets do
     |> then(&Map.merge(empty, &1))
   end
 
+  @doc """
+  Seconds left on expiring block entries, by set and address, for the kernel to drop them on
+  its own (even when the app is down). An address that also has a permanent entry gets none.
+  """
+  def timeouts(entries, now \\ DateTime.utc_now()) do
+    entries
+    |> Enum.filter(&(&1.kind == "block"))
+    |> Enum.flat_map(fn e ->
+      for s <- scopes_of(e.scope), do: {"block_#{s}_#{e.family}", e.cidr, e.expires_at}
+    end)
+    |> Enum.group_by(fn {set, cidr, _} -> {set, cidr} end, &elem(&1, 2))
+    |> Enum.reject(fn {_, expiries} -> nil in expiries end)
+    |> Enum.reduce(%{}, fn {{set, cidr}, expiries}, acc ->
+      secs = expiries |> Enum.max(DateTime) |> DateTime.diff(now) |> max(1)
+      Map.update(acc, set, %{cidr => secs}, &Map.put(&1, cidr, secs))
+    end)
+  end
+
   defp scopes_of("all"), do: @scopes
   defp scopes_of(scope), do: [scope]
 end

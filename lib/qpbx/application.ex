@@ -19,8 +19,9 @@ defmodule QPBX.Application do
       # Start to serve requests, typically the last entry
       QPBX.Core.SessionSweeper,
       QPBX.Firewall.Sync,
-      # Off in tests: its actions are tested directly, and it would react to every test's events.
-      Application.get_env(:qpbx, :edge_reloader, true) && QPBX.Edge.Reloader,
+      # Off in tests: their actions are tested directly, and they would react to every test.
+      Application.get_env(:qpbx, :edge_workers, true) && QPBX.Edge.Reloader,
+      Application.get_env(:qpbx, :edge_workers, true) && QPBX.Edge.Bans,
       QPBX.Web.Health,
       QPBX.Web.SessionReaper,
       QPBX.Web.Captcha.PowStore,

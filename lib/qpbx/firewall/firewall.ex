@@ -32,6 +32,40 @@ defmodule QPBX.Firewall do
     end)
   end
 
+  @doc """
+  Blocks SIP from one address for `seconds` (automatic bans from the edge). Never blocks an
+  address on the platform SIP allowlist or a tenant office IP: returns `{:ok, :allowlisted}` or
+  `{:ok, :office_ip}` instead. Extends an existing ban. Broadcasts `FirewallChanged`.
+  """
+  def ban(ip, reason, seconds, actor) when is_binary(ip) and seconds > 0 do
+    with {:ok, tuple} <- :inet.parse_strict_address(String.to_charlist(ip)),
+         {:ok, canonical, _fam, _len} <- CIDR.parse(ip) do
+      cond do
+        allowlisted?(tuple, "sip") ->
+          {:ok, :allowlisted}
+
+        office_ip?(tuple) ->
+          {:ok, :office_ip}
+
+        true ->
+          canonical
+          |> Store.ban(reason, until(seconds), actor)
+          |> notify("ban")
+      end
+    else
+      _ -> {:error, :invalid_address}
+    end
+  end
+
+  defp until(seconds),
+    do: DateTime.utc_now() |> DateTime.add(seconds) |> DateTime.truncate(:second)
+
+  @doc "Whether `ip` is inside a tenant's office IP entry."
+  def office_ip?(ip) when is_tuple(ip) do
+    Store.active_entries()
+    |> Enum.any?(&(&1.level == "tenant" and &1.kind == "allow" and CIDR.contains?(&1.cidr, ip)))
+  end
+
   @doc "Reconciles this node now; returns `%{at, errors, skipped}`."
   defdelegate sync_now(), to: Sync, as: :run_now
   defdelegate sync_status(), to: Sync, as: :status

@@ -10,6 +10,10 @@ SIP allow entries through a view (below).
 - `delete_entry(entry, actor)`: audited; `{:error, :last_management_entry}` when it would
   remove the last non-expiring management entry
 - `allowlisted?(ip_tuple, scope)`: on the platform allowlist for that scope (or "all")
+- `ban(ip, reason, seconds, actor)`: automatic SIP block (`reason` "auto: ..."), extended by
+  later bans, never shortened; `{:ok, :allowlisted}` / `{:ok, :office_ip}` when the address is
+  allowed (never banned); `{:error, :invalid_address}`. Broadcasts `FirewallChanged`.
+- `office_ip?(ip_tuple)`: inside a tenant office IP entry
 - `sync_now/0`, `sync_status/0` (`%{at, errors, skipped}`), `helper_sets_flag/0`
 
 **Entries:** level `platform` (any kind and scope) or `tenant` (allow + scope `sip` only,
@@ -23,8 +27,10 @@ prefix at most /24 for IPv4 or /48 for IPv6). Scope `ssh | sip | https | all`. O
 `block_*` dropped (the allowlist wins).
 
 **Sync (`QPBX.Firewall.Sync`, one per node):** on every `FirewallChanged` event (cluster-wide
-PubSub) and every 60 s, replaces all 12 sets with the database's active entries. Expired
-entries drop out at the next run. If no management entry exists, the SSH allow sets are left
+PubSub) and every 60 s, replaces all 12 sets with the database's active entries. Expiring
+block entries go with the seconds left (`Sets.timeouts/2`), so the kernel drops them even
+while the app is down; other expired entries drop out at the next run. Automatic bans that
+expired over a week ago are deleted (the audit log keeps them). If no management entry exists, the SSH allow sets are left
 untouched (lockout guard). Database errors are logged and retried next tick.
 
 **Events emitted:** `QPBX.Events.FirewallChanged` (v1). **Consumed:** the same event.

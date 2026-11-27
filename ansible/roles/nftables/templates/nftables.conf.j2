@@ -8,8 +8,8 @@ flush ruleset
 {% set v6 = qpbx_management_ips | ansible.utils.ipv6 %}
 table inet qpbx {
 {% for kind in ['allow', 'block'] %}{% for scope in ['ssh', 'sip', 'https'] %}
-  set {{ kind }}_{{ scope }}_v4 { type ipv4_addr; flags interval;{% if kind == 'allow' and scope == 'ssh' and v4 %} elements = { {{ v4 | join(', ') }} };{% endif %} }
-  set {{ kind }}_{{ scope }}_v6 { type ipv6_addr; flags interval;{% if kind == 'allow' and scope == 'ssh' and v6 %} elements = { {{ v6 | join(', ') }} };{% endif %} }
+  set {{ kind }}_{{ scope }}_v4 { type ipv4_addr; flags interval{{ ', timeout' if kind == 'block' else '' }};{% if kind == 'allow' and scope == 'ssh' and v4 %} elements = { {{ v4 | join(', ') }} };{% endif %} }
+  set {{ kind }}_{{ scope }}_v6 { type ipv6_addr; flags interval{{ ', timeout' if kind == 'block' else '' }};{% if kind == 'allow' and scope == 'ssh' and v6 %} elements = { {{ v6 | join(', ') }} };{% endif %} }
 {% endfor %}{% endfor %}
 
   chain input {

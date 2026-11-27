@@ -7,6 +7,7 @@ defmodule QPBX.Events do
     deps: [],
     exports: [
       ConfigChanged,
+      EdgeAlert,
       FirewallChanged,
       SessionsRevoked,
       SipCredentialsChanged,

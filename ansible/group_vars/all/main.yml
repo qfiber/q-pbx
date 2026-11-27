@@ -66,3 +66,15 @@ qpbx_acme_dns_env: {}   # for Cloudflare: {CF_Token: "...", CF_Zone_ID: "..."}
 # for DNS-01 records instead of checking public resolvers (they cannot see a lab DNS server).
 qpbx_acme_insecure: false
 qpbx_acme_dns_sleep: 0
+
+# SIP edge protection (Kamailio). Addresses on the platform SIP allowlist skip all of it; tenant
+# office IPs skip flood detection, get 3x the per-phone auth-failure limit and are never banned
+# as a whole (an alert is raised instead). Bans of a whole address also go to nftables.
+qpbx_edge_flood_requests: 40         # per address per 2 s before pike flags a flood
+qpbx_edge_register_per_minute: 30    # per address and port
+qpbx_edge_invite_per_minute: 30      # per address and port
+qpbx_edge_auth_failures_port: 10     # per address and port in 15 min: ban that address and port
+qpbx_edge_auth_failures_ip: 30       # per address in 15 min: ban the whole address
+qpbx_edge_ban_seconds: 3600
+# User agents of SIP scanners: dropped, and the address banned.
+qpbx_edge_scanner_agents: "friendly-scanner|sipvicious|sipcli|sip-scan|sundayddr|iWar|VaxSIPUserAgent|pplsip|SIPScan|smap"

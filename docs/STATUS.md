@@ -41,6 +41,21 @@ Kamailio gets its real config.
 
 ## Done
 
+- 2-4 Edge protection (done): in Kamailio, the platform SIP allowlist is never limited;
+  scanner user agents and floods (pike) ban the address; REGISTER and INVITE limited per
+  address and port (30 a minute by default, 503, a ban at three times); failed logins ban the
+  address and port (10 in 15 min) and then the whole address (30); tenant office IPs skip
+  flood detection, get three times the per-phone limit and are never banned as a whole (an
+  `EdgeAlert` and an audit entry instead). Whole-address bans go to nftables through
+  `QPBX.Firewall.ban/4` with a timeout: `qpbx-fwd` now supports element timeouts (block sets
+  `flags interval, timeout`), so bans expire in the kernel even while the app is down, and
+  survive a helper restart with the time they had left. Kamailio bans of addresses that turn
+  out to be allowed are lifted within 5 s. Thresholds are Ansible variables. Lab:
+  `lab/done-when/phase2-protect.py` 22/22, and the 2-3, 2-2 and phase 1 checks still pass.
+  Found and fixed in the lab: `$shtinc` does not create counters (nothing was counted);
+  a ban could hit an office IP added seconds earlier. 166 tests; `qpbx-fwd` unit and
+  integration tests cover timeouts.
+
 - 2-3 Kamailio edge (done): phones authenticate REGISTER and INVITE (realm = tenant domain,
   From/To user = authenticated device); carriers recognised by source address (IP trunks, via
   dispatcher) or by the R-URI user Kamailio registered as (registration trunks); every new
@@ -197,7 +212,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 2-4 Edge protection (next). 2-0b (Meow end to end) waits for call control (2-5).
+- 2-5 Call control (next). 2-0b (Meow end to end) waits for it.
   (Meow end to end) waits for call control (2-5).
 
 ## Next

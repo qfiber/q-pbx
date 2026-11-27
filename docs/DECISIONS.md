@@ -2,6 +2,19 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Edge protection (2-4)
+
+- **Kamailio detects and bans in memory at once; the app carries whole-address bans to
+  nftables** (polling every 5 s), so the kernel drops a banned address before Kamailio sees
+  it. Rejected: Kamailio calling the app (an outbound HTTP module, and a failure path when
+  the app is down).
+- **Bans of one address and port stay in Kamailio,** because many phones share an office
+  address and nftables sets hold addresses only.
+- **Office IPs are never banned as a whole;** an alert is raised (the spec's "never without an
+  alert"). Notifications pick up `EdgeAlert` in their phase.
+- **Ban expiry in the kernel (nftables element timeouts),** not only in the app's 60 s sync,
+  so bans end on time even while the app is down.
+
 ## 2026-11-27: The Kamailio edge (2-3)
 
 - **Registration trunk passwords reach Kamailio over JSON-RPC (`uac.reg_add`), not a view.**
