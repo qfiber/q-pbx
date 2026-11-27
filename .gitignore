@@ -41,3 +41,6 @@ npm-debug.log
 
 # Ansible and ansible-lint caches (downloaded collections)
 .ansible/
+
+# Python bytecode (lab tools)
+__pycache__/
