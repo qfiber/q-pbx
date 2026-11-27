@@ -5,6 +5,7 @@ defmodule QPBX.Web.PortalTest do
   import Phoenix.LiveViewTest
   import QPBX.Fixtures
   alias QPBX.Core
+  alias QPBX.Telephony.Cache
 
   defp enable_totp(account) do
     secret = Core.new_totp_secret()
@@ -88,6 +89,46 @@ defmodule QPBX.Web.PortalTest do
       assert redirected_to(conn) == ~p"/app"
       assert get(recycle(conn), ~p"/platform") |> redirected_to() == ~p"/platform/login"
     end
+  end
+
+  test "a plan is edited in place: limits, classes and features; tenants' calls use the new limits at once",
+       %{conn: conn} do
+    {conn, _admin} = log_in_platform(conn)
+    plan = plan_fixture(%{name: "Edit me", max_extensions: 5, features: %{"fax" => true}})
+    tenant = tenant_fixture(plan_id: plan.id)
+    assert Cache.tenant(tenant.id).limits[:max_extensions] == 5
+
+    {:ok, view, _} = live(conn, ~p"/platform/plans")
+    view |> element("#edit-plan-#{plan.id}") |> render_click()
+    assert_patch(view, ~p"/platform/plans/#{plan.id}")
+    html = render(view)
+    assert html =~ "Edit plan Edit me"
+    assert html =~ ~r/name="plan\[feature_fax\]"[^>]*checked/
+
+    html = view |> form("#plan-form", plan: %{max_extensions: "-1"}) |> render_submit()
+    assert html =~ "must be greater than or equal to 0"
+
+    view
+    |> form("#plan-form",
+      plan: %{
+        name: "Edited",
+        max_extensions: "9",
+        allowed_destination_classes: ["local"],
+        feature_fax: "false",
+        feature_crm: "true"
+      }
+    )
+    |> render_submit()
+
+    assert_patch(view, ~p"/platform/plans")
+    plan = Core.get_plan!(plan.id)
+    assert %{name: "Edited", max_extensions: 9, allowed_destination_classes: ["local"]} = plan
+    assert plan.features["crm"] == true and plan.features["fax"] == false
+    # Call control drops its copy when the event arrives: the next call sees the new limit.
+    assert Enum.any?(1..50, fn _ ->
+             Cache.tenant(tenant.id).limits[:max_extensions] == 9 or
+               (Process.sleep(10) && false)
+           end)
   end
 
   describe "Done when: platform admin creates a tenant, tenant admin logs in with 2FA" do

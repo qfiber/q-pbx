@@ -2,6 +2,15 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Our own libshout in the FreeSWITCH package (2-11)
+
+- **Cairo and X11 came from Debian's libshout3** (through libtheora, a video codec), which
+  `mod_shout` needs for MP3 voicemail. Rather than drop MP3 or accept a graphics stack inside
+  the media server, the package builds libshout 2.4.6 without Theora into its own prefix, as
+  it already does for sofia-sip and spandsp, pinned to the checksum Xiph publishes.
+- FreeSWITCH is also configured without PNG and FreeType (video overlay features Q-PBX does not
+  use), and the build no longer installs FFmpeg headers.
+
 ## 2026-11-27: Backups and restore (2-10)
 
 - **SFTP to another server for both tools** (pgBackRest 2.60 from the PostgreSQL repository has

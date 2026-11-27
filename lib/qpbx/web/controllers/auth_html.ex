@@ -87,7 +87,7 @@ defmodule QPBX.Web.AuthHTML do
         <.button variant="primary" class="w-full">{gettext("Turn on 2FA")}</.button>
       </.form>
       <.form :if={@can_skip?} for={%{}} action={~p"/2fa/skip"} id="totp-skip-form">
-        <.button class="btn btn-ghost w-full">{gettext("Not now")}</.button>
+        <.button variant="ghost" class="w-full">{gettext("Not now")}</.button>
       </.form>
     </Layouts.app>
     """

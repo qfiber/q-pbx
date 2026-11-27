@@ -46,8 +46,11 @@ defmodule QPBX.Core do
   def create_plan(attrs, actor),
     do: save(:insert, Plan.changeset(%Plan{}, attrs), "plan.create", actor)
 
-  def update_plan(%Plan{} = plan, attrs, actor),
-    do: save(:update, Plan.changeset(plan, attrs), "plan.update", actor)
+  @doc "Updates a plan; call control picks up the new limits of its tenants at once."
+  def update_plan(%Plan{} = plan, attrs, actor) do
+    save(:update, Plan.changeset(plan, attrs), "plan.update", actor)
+    |> QPBX.Core.Changes.announce(nil, "plans")
+  end
 
   ## Tenants
 

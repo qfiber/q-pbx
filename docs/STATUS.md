@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 2 — Core calling and protection (in progress: 2-0 to 2-10 done, next 2-11)
+**Current phase:** 2 — Core calling and protection (in progress: 2-0 to 2-11 done, next 2-12)
 **Last updated:** 2026-11-27
 
 ## Phase 1 goal
@@ -40,6 +40,18 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 2-11 Leftovers (done): plans can be edited (`/platform/plans/:id`: limits, classes and
+  features shown as saved; a save announces `ConfigChanged` "plans", so tenants' calls use the
+  new limits at once); the certificate health check also checks every tenant certificate and
+  names one near expiry (a failing renewal); FreeSWITCH without cairo, X11, pixman, fontconfig,
+  FreeType, PNG and Theora (75 package dependencies down to 56): they came through Debian's
+  libshout3 and libtheora, so the package now builds libshout without Theora (pinned to Xiph's
+  published checksum) and configures without PNG and FreeType; the secrets file in the
+  encrypted backup was done in 2-10. Also fixed: `<.button>` with an extra class lost its own
+  classes (the login page's buttons were unstyled). Lab with the new FreeSWITCH: voicemail
+  19/19 (MP3 through our libshout), calls 29/29, CDRs 16/16, admission 21/21, SIPp 11/11, Meow
+  94/94. 239 tests.
 
 - 2-10 Backups and restore (done): roles `backup` (pgBackRest with continuous WAL archiving,
   AES-256 encrypted with a cipher in the secrets file, full on Sundays and differential
@@ -331,7 +343,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 2-11 Leftovers (next).
+- 2-12 Done-when verification (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next
@@ -523,13 +535,8 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
   during the first Meow run, alongside FreeSWITCH's 488 refusals; not seen again after the
   SRTP fix. Watch for it.
 
-- The login page's "Log in" button renders as plain text, not a filled button (seen on
-  2026-11-27; predates the logo). To check with the next portal work.
-
 - One unexplained test failure in a full `mix test` run on 2026-11-27 (2-4 follow-up); it did
   not come back in 13 further runs and its name was not captured. Watch CI for a repeat.
-
-- FreeSWITCH depends on image libraries (cairo, X11) it does not need; harmless, planned to trim.
 
 - Deleting a tenant (no portal action yet; only by hand) leaves its encrypted media files on
   disk: the database cascade removes the rows only.

@@ -8,7 +8,8 @@
 `EmergencyRoute`, `NumberRule`, `NumberClass`; `Vault`, `Scope`, `KeyProvider`; and `Numbers`).
 Every changing function takes an `actor` (`%PlatformAdmin{}`, `%User{}` or `{:system, name}`)
 and writes an audit entry in the same transaction.
-- Plans: `list_plans/0`, `get_plan!/1`, `change_plan/2`, `create_plan/2`, `update_plan/3`.
+- Plans: `list_plans/0`, `get_plan!/1`, `change_plan/2`, `create_plan/2`, `update_plan/3`
+  (announces `ConfigChanged` "plans", so call control uses the new limits at once).
 - Tenants: `list_tenants/0`, `get_tenant!/1`, `change_tenant/2`, `create_tenant/2`, `update_tenant/3`,
   `create_tenant_with_admin/3` (tenant and first tenant admin in one transaction).
 - Accounts: `create_platform_admin/2`, `create_user/4` (role `tenant_admin` | `tenant_user`),

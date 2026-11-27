@@ -115,12 +115,45 @@ defmodule QPBX.Web.Health.Checks do
   defp judge(kind, %{"ok" => true}, hours, _max), do: {:ok, "#{kind}: #{hours} h ago"}
   defp judge(kind, s, _hours, _max), do: {:error, "#{kind}: last run failed (#{s["detail"]})"}
 
-  @doc "Days until the TLS certificate at `:path` expires; warning under `:warn_days`."
+  @doc """
+  Days until the TLS certificate at `:path` expires; warning under `:warn_days`. With
+  `:tenants_dir`, also every tenant's certificate (`<dir>/<domain>/fullchain.pem`): one close to
+  expiry means its renewal is failing, so it is named.
+  """
   def certificate(opts) do
+    warn = Keyword.get(opts, :warn_days, 14)
+
     case Keyword.get(opts, :path) do
-      nil -> {:not_configured, "no certificate path"}
-      path -> cert_status(path, Keyword.get(opts, :warn_days, 14))
+      nil ->
+        {:not_configured, "no certificate path"}
+
+      path ->
+        combine([cert_status(path, warn) | tenant_certs(Keyword.get(opts, :tenants_dir), warn)])
     end
+  end
+
+  # sobelow_skip ["Traversal.FileModule"]
+  # The folder comes from the operator's configuration; the names are the tenants' domains.
+  defp tenant_certs(nil, _warn), do: []
+
+  defp tenant_certs(dir, warn) do
+    domains =
+      case File.ls(dir) do
+        {:ok, names} -> Enum.filter(names, &File.regular?(Path.join([dir, &1, "fullchain.pem"])))
+        _ -> []
+      end
+
+    {ok, bad} =
+      domains
+      |> Enum.map(&{&1, cert_status(Path.join([dir, &1, "fullchain.pem"]), warn)})
+      |> Enum.split_with(fn {_d, {status, _}} -> status == :ok end)
+
+    summary =
+      if domains == [],
+        do: [],
+        else: [{:ok, "#{length(ok)} of #{length(domains)} tenant certificates fine"}]
+
+    summary ++ Enum.map(bad, fn {d, {status, detail}} -> {status, "#{d}: #{detail}"} end)
   end
 
   # sobelow_skip ["Traversal.FileModule"]

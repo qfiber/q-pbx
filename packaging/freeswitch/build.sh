@@ -7,6 +7,10 @@ FS_VERSION=${FS_VERSION:-v1.10.12}
 SOFIA_VERSION=${SOFIA_VERSION:-v1.13.17}
 BCG729_MOD_REF=${BCG729_MOD_REF:-4203247dee4719545005ec7ab9ea536fc83df1d8}  # xadhoom/mod_bcg729
 SPANDSP_REF=${SPANDSP_REF:-0d2e6ac65e0e8f53d652665a743015a88bf048d4}  # newer spandsp breaks mod_spandsp in 1.10.12
+# libshout for mod_shout (MP3), built without Theora: Debian's libshout3 pulls in libtheora,
+# which brings cairo and X11 into FreeSWITCH. Checksum as published by Xiph.
+SHOUT_VERSION=${SHOUT_VERSION:-2.4.6}
+SHOUT_SHA256=${SHOUT_SHA256:-39cbd4f0efdfddc9755d88217e47f8f2d7108fa767f9d58a2ba26a16d8f7c910}
 PREFIX=/opt/qpbx-freeswitch
 JOBS=$(nproc)
 export DEBIAN_FRONTEND=noninteractive
@@ -15,10 +19,10 @@ step() { echo "== $*"; "$@" > /tmp/step.log 2>&1 || { grep -n -E "error:|Error [
 
 step apt-get -qq update
 step apt-get -qq install -y --no-install-recommends build-essential autoconf automake libtool libtool-bin pkg-config \
-  git ca-certificates cmake yasm uuid-dev zlib1g-dev libjpeg-dev libsqlite3-dev libcurl4-openssl-dev \
+  git ca-certificates curl cmake yasm uuid-dev zlib1g-dev libjpeg-dev libsqlite3-dev libcurl4-openssl-dev \
   libpcre3-dev libspeex-dev libspeexdsp-dev libldns-dev libedit-dev libtiff-dev libopus-dev libsndfile1-dev \
-  libssl-dev liblua5.2-dev libavformat-dev libswscale-dev \
-  libopusenc-dev libopusfile-dev libshout3-dev libmp3lame-dev libmpg123-dev libbcg729-dev
+  libssl-dev liblua5.2-dev \
+  libopusenc-dev libopusfile-dev libogg-dev libvorbis-dev libmp3lame-dev libmpg123-dev libbcg729-dev
 
 src=/build && mkdir -p $src && cd $src
 git clone -q --depth 1 --branch "$SOFIA_VERSION" https://github.com/freeswitch/sofia-sip.git
@@ -34,19 +38,28 @@ for lib in sofia-sip spandsp; do
   step make install
 done
 cd $src
+step curl -fsSL -o libshout.tar.gz "https://downloads.xiph.org/releases/libshout/libshout-$SHOUT_VERSION.tar.gz"
+echo "$SHOUT_SHA256  libshout.tar.gz" | sha256sum -c --quiet
+tar xzf libshout.tar.gz && cd libshout-$SHOUT_VERSION
+step ./configure --prefix=$PREFIX --disable-theora --disable-examples --disable-tools
+step make -j$JOBS
+step make install
+cd $src
 export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig LD_LIBRARY_PATH=$PREFIX/lib
 
 cd freeswitch
 cp /src/modules.conf modules.conf
 step ./bootstrap.sh -j
-step ./configure --prefix=$PREFIX --disable-libvpx --disable-libyuv --without-pgsql --enable-core-pgsql-support=no \
+# No video: without libvpx, libyuv, PNG and FreeType (their image libraries pulled in cairo and X11).
+step ./configure --prefix=$PREFIX --disable-libvpx --disable-libyuv --without-png --without-freetype \
+  --without-pgsql --enable-core-pgsql-support=no \
   --with-rundir=/run/freeswitch --with-logfiledir=/var/log/freeswitch --with-dbdir=/var/lib/freeswitch/db \
   --with-storagedir=/var/lib/freeswitch/storage --with-recordingsdir=/var/lib/qpbx/recordings \
   LDFLAGS="-Wl,-rpath,$PREFIX/lib"
 step make -j$JOBS
 stage=/stage && rm -rf $stage
 step make install DESTDIR=$stage
-cp -a $PREFIX/lib/libsofia-sip-ua* $PREFIX/lib/libspandsp* $stage$PREFIX/lib/
+cp -a $PREFIX/lib/libsofia-sip-ua* $PREFIX/lib/libspandsp* $PREFIX/lib/libshout* $stage$PREFIX/lib/
 
 # G.729 (optional codec in the spec; patents expired): mod_bcg729 against Debian's libbcg729.
 git clone -q https://github.com/xadhoom/mod_bcg729.git $src/mod_bcg729 && git -C $src/mod_bcg729 checkout -q "$BCG729_MOD_REF"

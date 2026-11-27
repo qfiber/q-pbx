@@ -10,14 +10,16 @@ running endpoint).
 
 **Health:** `QPBX.Web.Health` (exported; started by `QPBX.Application`): `current/0`, `run/1`,
 `put/1`, `overall/1`. Routes `/health` and `/health/details`. Config `:qpbx, QPBX.Web.Health`
-(`interval`, and per-check keyword lists `disk`, `certificate`, `freeswitch`, `kamailio`,
+(`interval`, and per-check keyword lists `disk`, `certificate` (`path`, and `tenants_dir`: every
+tenant certificate is checked too, and one near expiry, i.e. a failing renewal, is named),
+`freeswitch`, `kamailio`,
 `oban_backlog`, `backups`: `status_dir` with the backup jobs' `db.json` and `files.json`, error
 when a run failed or none ran, warning when the last success is over 26 h old); a check with no
 config reports `not_configured` and does not count.
 
 **Portal routes:** `/login`, `/platform/login`, `/2fa`, `/2fa/setup`, `/2fa/skip`,
 `/setup/:token`, `/locale/:locale`, `/logout`; platform LiveViews under `/platform`
-(tenants, new tenant, plans, firewall, trunks, numbers, numbering, protection, fraud); tenant LiveViews under
+(tenants, new tenant, plans and `/platform/plans/:id` to edit one, firewall, trunks, numbers, numbering, protection, fraud); tenant LiveViews under
 `/app`. The tenant configuration pages (`/app/extensions`, `/app/extensions/:id`,
 `/app/numbers`, `/app/routes`, `/app/office-ips`, `/app/number-format`,
 `/app/extensions/:id/voicemail` (mailbox and greetings), `/app/voicemail` (messages, played

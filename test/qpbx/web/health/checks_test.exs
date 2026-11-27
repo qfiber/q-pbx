@@ -36,6 +36,30 @@ defmodule QPBX.Web.Health.ChecksTest do
     assert {:not_configured, _} = Checks.certificate([])
   end
 
+  test "tenant certificates: a failing renewal is named" do
+    dir = Path.join(System.tmp_dir!(), "qpbx-tenants-#{System.unique_integer([:positive])}")
+    on_exit(fn -> File.rm_rf!(dir) end)
+
+    put = fn domain, days ->
+      File.mkdir_p!(Path.join(dir, domain))
+      File.write!(Path.join([dir, domain, "fullchain.pem"]), X509Helper.self_signed(days))
+    end
+
+    main = Path.join(dir, "main.pem")
+    File.mkdir_p!(dir)
+    File.write!(main, X509Helper.self_signed(60))
+    put.("a.pbx.test", 60)
+    put.("b.pbx.test", 60)
+    assert {:ok, detail} = Checks.certificate(path: main, tenants_dir: dir)
+    assert detail =~ "2 of 2 tenant certificates fine"
+
+    put.("c.pbx.test", 3)
+    assert {:warning, detail} = Checks.certificate(path: main, tenants_dir: dir)
+    assert detail =~ "2 of 3 tenant certificates fine" and detail =~ "c.pbx.test: expires in"
+    # No tenant folder yet (wildcard mode): only the main certificate counts.
+    assert {:ok, _} = Checks.certificate(path: main, tenants_dir: Path.join(dir, "none"))
+  end
+
   test "freeswitch and kamailio report errors when nothing listens, not_configured when unset" do
     assert {:not_configured, _} = Checks.freeswitch([])
     assert {:not_configured, _} = Checks.kamailio([])

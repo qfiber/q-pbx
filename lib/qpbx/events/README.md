@@ -19,7 +19,7 @@
 | `QPBX.Events.VoicemailChanged` | `mwi` | 1 | `tenant_id`, `extension_id`, `new`, `saved`, `at` | `QPBX.Telephony` (a mailbox's counts changed) |
 | `QPBX.Events.FraudAlert` | `fraud` | 1 | `tenant_id`, `rule`, `detail`, `blocked`, `at` | `QPBX.Telephony` (a velocity rule fired) |
 | `QPBX.Events.EdgeAlert` | `edge_alerts` | 1 | `ip`, `reason`, `at` | `QPBX.Edge` (an office IP would have been banned) |
-| `QPBX.Events.ConfigChanged` | `config` | 1 | `tenant_id` (nil: platform), `kind`, `at` | `QPBX.Core` (telephony configuration) |
+| `QPBX.Events.ConfigChanged` | `config` | 1 | `tenant_id` (nil: platform), `kind`, `at` | `QPBX.Core` (telephony configuration and plans) |
 
 **Gotchas:** bump `version` and keep old fields when an event's shape changes; webhooks
 (phase 3) will expose these structs.

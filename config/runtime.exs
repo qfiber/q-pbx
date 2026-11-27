@@ -47,7 +47,10 @@ if config_env() == :prod do
   config :qpbx, QPBX.Web.Health,
     interval: 10_000,
     disk: [paths: String.split(System.get_env("QPBX_HEALTH_DISK_PATHS", "/ /var/lib/qpbx"))],
-    certificate: [path: System.get_env("QPBX_TLS_CERT_FILE")],
+    certificate: [
+      path: System.get_env("QPBX_TLS_CERT_FILE"),
+      tenants_dir: System.get_env("QPBX_TLS_TENANTS_DIR")
+    ],
     freeswitch: [
       event_socket:
         {System.get_env("QPBX_FS_ESL_HOST", "127.0.0.1"),

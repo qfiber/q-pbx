@@ -1,37 +1,57 @@
 defmodule QPBX.Web.Platform.PlansLive do
-  @moduledoc "Platform admin: list plans and create one."
+  @moduledoc """
+  Platform admin: list plans, create one, or edit one (`/platform/plans/:id`). An edit applies
+  to every tenant on the plan at once (their own overrides still win).
+  """
   use QPBX.Web, :live_view
   alias QPBX.Core
   alias QPBX.Core.Plan
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok,
-     assign(socket,
-       page_title: gettext("Plans"),
-       plans: Core.list_plans(),
-       form: to_form(Core.change_plan())
-     )}
+  def mount(_params, _session, socket),
+    do: {:ok, assign(socket, page_title: gettext("Plans"), plans: Core.list_plans())}
+
+  @impl true
+  def handle_params(%{"id" => id}, _uri, socket) do
+    case Ecto.UUID.cast(id) do
+      {:ok, id} -> {:noreply, editing(socket, Core.get_plan!(id))}
+      :error -> {:noreply, push_navigate(socket, to: ~p"/platform/plans")}
+    end
   end
+
+  def handle_params(_params, _uri, socket), do: {:noreply, editing(socket, %Plan{})}
+
+  defp editing(socket, plan),
+    do: assign(socket, plan: plan, form: to_form(Core.change_plan(plan)))
 
   @impl true
   def handle_event("validate", %{"plan" => params}, socket) do
-    cs = Core.change_plan(%Core.Plan{}, plan_params(params)) |> Map.put(:action, :validate)
+    cs = Core.change_plan(socket.assigns.plan, plan_params(params)) |> Map.put(:action, :validate)
     {:noreply, assign(socket, form: to_form(cs))}
   end
 
   def handle_event("save", %{"plan" => params}, socket) do
+    %{plan: plan, current_account: actor} = socket.assigns
     params = plan_params(params)
 
-    case Core.create_plan(params, socket.assigns.current_account) do
-      {:ok, plan} ->
+    result =
+      if plan.id, do: Core.update_plan(plan, params, actor), else: Core.create_plan(params, actor)
+
+    case result do
+      {:ok, saved} ->
+        msg =
+          if plan.id,
+            do: gettext("Plan %{name} saved.", name: saved.name),
+            else: gettext("Plan %{name} created.", name: saved.name)
+
         {:noreply,
          socket
-         |> put_flash(:info, gettext("Plan %{name} created.", name: plan.name))
-         |> assign(plans: Core.list_plans(), form: to_form(Core.change_plan()))}
+         |> put_flash(:info, msg)
+         |> assign(plans: Core.list_plans())
+         |> push_patch(to: ~p"/platform/plans")}
 
       {:error, cs} ->
-        {:noreply, assign(socket, form: to_form(Map.put(cs, :action, :insert)))}
+        {:noreply, assign(socket, form: to_form(Map.put(cs, :action, :validate)))}
     end
   end
 
@@ -54,9 +74,21 @@ defmodule QPBX.Web.Platform.PlansLive do
         <:col :let={p} label={limit_label(:max_concurrent_calls_total)}>
           {p.max_concurrent_calls_total || gettext("Unlimited")}
         </:col>
+        <:action :let={p}>
+          <.link patch={~p"/platform/plans/#{p.id}"} id={"edit-plan-#{p.id}"}>
+            {gettext("Edit")}
+          </.link>
+        </:action>
       </.table>
 
-      <h2 class="text-lg font-semibold mt-8">{gettext("New plan")}</h2>
+      <h2 class="text-lg font-semibold mt-8" id="plan-form-title">
+        {if @plan.id, do: gettext("Edit plan %{name}", name: @plan.name), else: gettext("New plan")}
+      </h2>
+      <p :if={@plan.id} class="text-sm opacity-70">
+        {gettext(
+          "Changes apply at once to every tenant on this plan; a tenant's own overrides still win."
+        )}
+      </p>
       <p class="text-sm opacity-70">{gettext("Leave a limit empty for unlimited.")}</p>
       <.form for={@form} id="plan-form" phx-change="validate" phx-submit="save">
         <.input field={@form[:name]} label={gettext("Name")} required />
@@ -83,13 +115,23 @@ defmodule QPBX.Web.Platform.PlansLive do
             name={"plan[feature_#{f}]"}
             type="checkbox"
             label={feature_label(f)}
-            value={false}
+            value={feature_on?(@form, f)}
           />
         </fieldset>
-        <.button variant="primary">{gettext("Create plan")}</.button>
+        <.button variant="primary">
+          {if @plan.id, do: gettext("Save plan"), else: gettext("Create plan")}
+        </.button>
+        <.link :if={@plan.id} patch={~p"/platform/plans"} class="btn btn-ghost">
+          {gettext("Cancel")}
+        </.link>
       </.form>
     </Layouts.app>
     """
+  end
+
+  defp feature_on?(form, f) do
+    features = Ecto.Changeset.get_field(form.source, :features) || %{}
+    Enum.any?(features, fn {k, v} -> to_string(k) == f and v == true end)
   end
 
   defp plan_params(params) do
