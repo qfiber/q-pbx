@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 1 — Foundation: built; Done-when checks pass in the lab; waiting for review
+**Current phase:** 1b — Security hardening (approved 2026-11-27; phase 1 done)
 **Last updated:** 2026-11-27
 
 ## Phase 1 goal
@@ -135,7 +135,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- Nothing. Phase 1b (security) and phase 2 wait for approval.
+- 1b-1 Server-side sessions.
 
 ## Next
 
@@ -145,6 +145,24 @@ Kamailio gets its real config.
   ModSecurity), FreeSWITCH modules added (G.729, Opus/MP3 recording, loopback, CDR spool; all
   load in the lab), languages moved to one config list, firewall and plan forms now clear
   after a save (live validation added).
+
+## Phase 1b task breakdown
+
+Approved 2026-11-27. Covers every "1b" item in the security plan below. Blocks are per IP
+only; accounts are never locked (they get a challenge and an alert instead).
+
+| # | Task | Security plan |
+| --- | --- | --- |
+| 1b-1 | Server-side sessions: `user_sessions` table (token hash, account, IP, user agent, created, last seen); checked on every request and LiveView event; 15 min idle and 12 h maximum; a sweeper ends idle sessions and disconnects their live pages; revocation on password or 2FA change; "sign out everywhere" and a session list on an account page; idle warning in the browser; CLI `revoke_sessions` | S7, S8 |
+| 1b-2 | 2FA mandatory for tenant admins (existing ones enrol at next login) | S4 |
+| 1b-3 | Login protection: per-IP failure counter in the database (5 failures: blocked 1 h; 5 more: 24 h; HTTP 429) on login, 2FA and setup pages; IPs on the platform HTTPS/all allowlist are exempt; per-account failures raise an alert entry; `Captcha` behaviour with built-in proof of work (default), Friendly Captcha, Cloudflare Turnstile, Captcha.eu, none | S5 |
+| 1b-4 | Row-level security in force: `QPBX.Core.Scope`; tenant-facing Core functions run in the tenant's scope; RLS on `tenants` and `user_sessions`; test that a tenant scope cannot read another tenant's rows even with a missing filter | S1 |
+| 1b-5 | Database roles: `qpbx_owner` owns the schema and runs migrations; the app's `qpbx` role has data rights only; `audit_logs` insert/select only; `pg_hba` limited to scram on localhost | S2 |
+| 1b-6 | `KeyProvider` for the Cloak master key: local file (default) or AWS KMS (key stored wrapped, unwrapped at start-up); CLI to wrap the current key with KMS without re-encrypting data | S9 |
+| 1b-7 | Temporary data in memory: app `TMPDIR`/uploads in `/run/qpbx/tmp` (0700); nginx request and proxy buffers in `/run/nginx` instead of disk | S11 |
+| 1b-8 | Least privilege: hardening drop-ins for Kamailio and PostgreSQL; acme.sh as its own user with a root-owned path unit doing the reloads; a lab check that only allowed processes run as root | S12 |
+| 1b-9 | Sobelow security scan in CI | S3 |
+| 1b-10 | Lab verification: Done-when checks plus revocation, idle timeout, rate limits, DB roles, root processes | — |
 
 ## Security plan
 
@@ -177,7 +195,8 @@ proof of work as the default challenge; full-disk encryption later.
 | Login rate limits and lockout (S5) | 1b | Security plan |
 | Trim FreeSWITCH image dependencies (cairo, X11 came in with the recording codecs' build packages) | 2 | With the FreeSWITCH config work |
 
-**Spend caps (proposed, awaiting approval):** phase 2 uses minute caps per
+**Spend caps (approved on 2026-11-27; to confirm at phase 2 start whether
+that means money-based caps from the start or the recommendation below):** phase 2 uses minute caps per
 destination class (local, mobile, international, premium) per hour, day and month, which
 need no prices; plus a platform-managed list of high-cost prefixes (satellite, premium-rate,
 known fraud ranges) that count as "premium", blocked unless a plan allows them; plus the
