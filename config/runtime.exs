@@ -107,7 +107,10 @@ if config_env() == :prod do
       keyfile: System.fetch_env!("QPBX_TLS_KEY_FILE"),
       cipher_suite: :strong
     ],
-    http: [ip: {0, 0, 0, 0, 0, 0, 0, 0}, port: String.to_integer(System.get_env("HTTP_PORT", "80"))],
+    http: [
+      ip: {0, 0, 0, 0, 0, 0, 0, 0},
+      port: String.to_integer(System.get_env("HTTP_PORT", "80"))
+    ],
     server: true,
     secret_key_base: secret_key_base
 

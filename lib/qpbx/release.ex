@@ -93,15 +93,17 @@ defmodule QPBX.Release do
 
     {:ok, _, _} =
       Ecto.Migrator.with_repo(QPBX.Repo, fn _repo ->
-        for child <- [QPBX.Core.Vault, {Phoenix.PubSub, name: QPBX.PubSub}] do
-          case Supervisor.start_child(QPBX.Release.Sup, child) do
-            {:ok, _} -> :ok
-            {:error, {:already_started, _}} -> :ok
-          end
-        end
+        Enum.each([QPBX.Core.Vault, {Phoenix.PubSub, name: QPBX.PubSub}], &start_child/1)
 
         fun.()
       end)
+  end
+
+  defp start_child(child) do
+    case Supervisor.start_child(QPBX.Release.Sup, child) do
+      {:ok, _} -> :ok
+      {:error, {:already_started, _}} -> :ok
+    end
   end
 
   defp load, do: Application.load(@app)
