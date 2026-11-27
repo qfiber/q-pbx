@@ -2,6 +2,16 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Invoicing later; busy-lamp trial with Meow
+
+- **Billing and invoicing becomes phase 11** (after 1.0): rates, charges per client from CDRs
+  (DIDs held, external minutes), automatic detailed invoices by email. Its spec is written and
+  approved before it starts. Version 1 stays without billing, as the spec says.
+- **No Grandstream phone is available now:** the phase 2 busy-lamp and voicemail-light trial
+  uses Meow (desktop build from qFiber's Meow repository, on a throwaway profile) plus a
+  scripted SIP client as the other party. The Grandstream check is repeated once a phone is
+  available; until then that part of phase 2's Done-when stays open.
+
 ## 2026-11-27: Phase 2 setup
 
 - **Lab testing:** the team registers a real Grandstream phone and Meow to the lab and makes the

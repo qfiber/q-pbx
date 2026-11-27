@@ -16,7 +16,7 @@ Q-PBX is a new, API-first, multi-tenant cloud PBX with full fax support, built o
 
 **Non-goals for version 1**
 
-- Built-in billing, rating or invoicing (plans and limits only).
+- Built-in billing, rating or invoicing (plans and limits only; scheduled as phase 11, after 1.0).
 - Reseller hierarchy (scheduled as phase 10, after 1.0).
 - WebRTC browser softphone.
 - A separate Q-PBX mobile app. Meow, qFiber's existing softphone, is the desktop and mobile app.
@@ -614,7 +614,7 @@ The model is organized into Phoenix contexts; every table except the platform on
 
 ## Build phases and acceptance criteria
 
-Version 1.0 is phases 1 to 4 and ends with one real tenant migrated from FreePBX and running in production. Phases 5 to 10 are built one at a time after that. A phase is done only when its criteria pass on the lab setup (one Debian 12 server with the full stack, a Grandstream phone, an HT8xx with a fax machine, Meow on desktop and mobile, and one real carrier trunk) and its automated call tests pass in CI.
+Version 1.0 is phases 1 to 4 and ends with one real tenant migrated from FreePBX and running in production. Phases 5 to 11 are built one at a time after that. A phase is done only when its criteria pass on the lab setup (one Debian 12 server with the full stack, a Grandstream phone, an HT8xx with a fax machine, Meow on desktop and mobile, and one real carrier trunk) and its automated call tests pass in CI.
 
 **Automated call testing**
 
@@ -664,6 +664,9 @@ Version 1.0 is phases 1 to 4 and ends with one real tenant migrated from FreePBX
 10. **Reseller tier**
    - A reseller level between the platform and tenants: the platform admin creates resellers, a reseller manages its own tenants and their users, and the platform admin keeps access to everything. Design to be written and approved before this phase starts.
    - *Done when:* to be defined with the design.
+11. **Billing and invoicing** (after 1.0; spec to be written and approved first)
+   - Rates per destination (the rate table also allows money-based fraud caps), charges per client from the CDRs: the DIDs each client holds, their external (billable) minutes, recurring fees; invoices with call details, generated and emailed automatically each period.
+   - *Done when:* to be defined with the spec.
 
 The order after 1.0 can change with what paying tenants ask for first. Direct APNs/FCM push and custom tenant domains are built when an operator needs them.
 
@@ -683,7 +686,6 @@ The order after 1.0 can change with what paying tenants ask for first. Direct AP
 
 - Arabic voice prompts (recorded or TTS).
 - WebRTC browser softphone.
-- Built-in billing.
 - More phone brands (Yealink, Fanvil).
 - SMS and WhatsApp messaging.
 - Custom tenant domains.
