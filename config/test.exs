@@ -55,3 +55,6 @@ config :qpbx, QPBX.Firewall,
 
 # Tests of the login flow skip the human check; the captcha tests enable it themselves.
 config :qpbx, QPBX.Web.Captcha, provider: :none
+
+# The Kamailio reloader reacts to events; tests call its actions directly.
+config :qpbx, :edge_reloader, false

@@ -41,6 +41,27 @@ Kamailio gets its real config.
 
 ## Done
 
+- 2-3 Kamailio edge (done): phones authenticate REGISTER and INVITE (realm = tenant domain,
+  From/To user = authenticated device); carriers recognised by source address (IP trunks, via
+  dispatcher) or by the R-URI user Kamailio registered as (registration trunks); every new
+  call goes to FreeSWITCH with `X-QPBX-Source`, `X-QPBX-Tenant`, `X-QPBX-Auth-User` or
+  `X-QPBX-Trunk`, and outside `X-QPBX-*` headers are removed; calls from FreeSWITCH reach
+  registered phones or a trunk (`X-QPBX-Trunk-Edge`) with failover across its addresses and
+  OPTIONS pings marking dead ones; registration trunks registered by Kamailio with the
+  password pushed over JSON-RPC (in no database view) and reconciled every minute; NAT
+  (nathelper, contact aliases, OPTIONS keepalives); in-dialog relaying to outside addresses
+  refused; TLS 5061 with one SNI profile per tenant certificate (generated `tls.cfg`, reloaded
+  after each certificate change); allow lists (platform SIP allows, tenant office IPs) loaded
+  into Kamailio and reloaded on change; all reloads without a Kamailio restart, and a restart
+  restores everything. Lab: `lab/done-when/phase2-edge.py` 23/23 (simulated carriers on the
+  host). Found and fixed in the lab: Kamailio `$var` turns "no value" into 0 (an unknown
+  domain was challenged instead of refused, and in-dialog requests from phones would have been
+  refused); a registration trunk sharing a host with an IP trunk made inbound matching
+  ambiguous (registration trunks left the dispatcher). Known limits: weight is stored but the
+  dispatcher uses priority order only; a trunk host name that does not resolve is skipped until
+  the next trunk change; per_host tenant certificates issued before this change do not signal
+  their renewals (re-issue them once). 156 tests.
+
 - 2-2 Telephony data and portal pages (done): extensions with call features (DND, call
   waiting, forwarding, follow-me, outside caller ID; plan's `max_extensions` checked under a
   lock); devices, each with its own SIP login `<extension>-<label>` and a password shown once;
@@ -176,7 +197,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 2-3 Kamailio edge (next). 2-0b (Meow end to end) waits for call control (2-5).
+- 2-4 Edge protection (next). 2-0b (Meow end to end) waits for call control (2-5).
   (Meow end to end) waits for call control (2-5).
 
 ## Next

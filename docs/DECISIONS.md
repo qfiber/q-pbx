@@ -2,6 +2,25 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: The Kamailio edge (2-3)
+
+- **Registration trunk passwords reach Kamailio over JSON-RPC (`uac.reg_add`), not a view.**
+  They are encrypted in the database and the key is not in it; the app pushes and reconciles
+  every minute, which also covers a Kamailio restart. Rejected: storing HA1 for carriers (the
+  carrier's realm is not always known in advance).
+- **Registration trunks are identified by the R-URI user** (Kamailio registers as the trunk's
+  UUID, which is unguessable); **IP trunks by source address** in the dispatcher, which holds
+  IP trunks only. A shared host made the first-match source lookup ambiguous.
+- **Outbound failover across a trunk's addresses happens in Kamailio** (priority order, 4 s
+  per address, OPTIONS pings); failover between carriers stays with call control (2-5).
+- **No in-dialog relaying:** requests from outside may only go to FreeSWITCH, because every
+  call is bridged there.
+- **FreeSWITCH reaches phones through Kamailio** with `sip_route_uri`; trunks by naming the
+  trunk's edge id in a header Kamailio removes.
+- **SNI from a generated `tls.cfg`** (one profile per tenant certificate directory), rewritten
+  after each certificate change; acme.sh signals tenant issues and renewals by touching
+  `tenants/.updated`.
+
 ## 2026-11-27: Telephony data model (2-2)
 
 - **One SIP login per device** (`<extension>-<label>`), not per extension: a lost phone is cut

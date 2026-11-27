@@ -236,6 +236,7 @@ defmodule QPBX.Core do
 
   defdelegate list_trunks(scope), to: Trunks, as: :list
   defdelegate trunk_choices(scope), to: Trunks, as: :choices
+  defdelegate registration_trunks(), to: Trunks
   defdelegate get_trunk!(scope, id), to: Trunks, as: :get!
 
   defdelegate change_trunk(trunk \\ %QPBX.Core.Trunk{addresses: []}, attrs \\ %{}),

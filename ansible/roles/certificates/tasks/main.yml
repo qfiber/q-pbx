@@ -49,8 +49,7 @@
         Description=Watch Q-PBX certificates
         [Path]
         PathChanged={{ qpbx_tls_dir }}/fullchain.pem
-        # shortcut: sees tenant folders being added, not renewals inside them; watch each
-        # tenant file when Kamailio serves tenant certificates by SNI (phase 2).
+        # Tenant certificates: acme.sh touches tenants/.updated after each issue and renewal.
         PathChanged={{ qpbx_tls_dir }}/tenants
         Unit=qpbx-tls-apply.service
         [Install]

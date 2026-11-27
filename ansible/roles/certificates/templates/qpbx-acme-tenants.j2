@@ -15,7 +15,8 @@ while read -r domain; do
   /usr/local/sbin/qpbx-acme --issue -w {{ certificates_webroot }} -d "$domain" --keylength ec-256 || rc=$?
   if [ "$rc" -eq 0 ] || [ "$rc" -eq 2 ]; then
     /usr/local/sbin/qpbx-acme --install-cert -d "$domain" --ecc --fullchain-file "$dir/fullchain.pem" \
-      --key-file "$dir/privkey.pem" --reloadcmd true || echo "installing $domain failed; will retry" >&2
+      --key-file "$dir/privkey.pem" \
+      --reloadcmd "touch {{ qpbx_tls_dir }}/tenants/.updated"  || echo "installing $domain failed; will retry" >&2
     # acme.sh writes keys 0600; Kamailio reads them through the qpbx-tls group.
     chmod 0640 "$dir"/*.pem 2>/dev/null || true
   else

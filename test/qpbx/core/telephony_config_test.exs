@@ -404,6 +404,95 @@ defmodule QPBX.Core.TelephonyConfigTest do
     end
   end
 
+  describe "Kamailio views" do
+    test "dispatcher has IP trunks only, by priority; the trunks table names registrars", %{
+      platform: p,
+      scope: scope
+    } do
+      {:ok, ip} =
+        Core.create_trunk(
+          p,
+          %{
+            name: "IP",
+            auth_mode: "ip",
+            addresses: [
+              %{host: "192.0.2.80", priority: 1},
+              %{host: "2001:db8::5", port: 5080, transport: "tcp", priority: 2}
+            ]
+          },
+          @actor
+        )
+
+      {:ok, reg} =
+        Core.create_trunk(
+          scope,
+          %{
+            name: "Reg",
+            auth_mode: "registration",
+            username: "u",
+            password: "secret-pw",
+            addresses: [%{host: "sip.reg.example"}]
+          },
+          @actor
+        )
+
+      assert is_integer(ip.edge_id) and reg.edge_id > ip.edge_id
+
+      %{rows: rows} =
+        Repo.query!(
+          "SELECT setid, destination, priority, attrs FROM kamailio.dispatcher ORDER BY priority DESC"
+        )
+
+      assert [
+               [sid, "sip:192.0.2.80:5060", 99, attrs],
+               [sid, "sip:[2001:db8::5]:5080;transport=tcp", 98, _]
+             ] = rows
+
+      assert sid == ip.edge_id
+      assert attrs == "weight=1;trunk=#{ip.id};edge=#{ip.edge_id}"
+
+      %{rows: trunks} = Repo.query!("SELECT key_name, key_value FROM kamailio.trunks")
+      assert ["#{ip.edge_id}", "#{ip.id};;ip;"] in trunks
+
+      assert [
+               "#{reg.edge_id}",
+               "#{reg.id};#{scope.tenant_id};registration;sip:sip.reg.example:5060"
+             ] in trunks
+
+      assert ["reg:#{reg.id}", "#{reg.edge_id}"] in trunks
+      refute Enum.any?(Repo.query!("SELECT * FROM kamailio.uacreg").rows)
+    end
+
+    test "allow list: platform and tenant SIP allows, not blocks or expired ones", %{scope: scope} do
+      actor = @actor
+
+      {:ok, _} =
+        QPBX.Firewall.create_entry(
+          %{
+            level: "tenant",
+            tenant_id: scope.tenant_id,
+            kind: "allow",
+            scope: "sip",
+            cidr: "198.51.100.0/29",
+            reason: "office"
+          },
+          actor
+        )
+
+      {:ok, _} =
+        QPBX.Firewall.create_entry(
+          %{level: "platform", kind: "block", scope: "sip", cidr: "203.0.113.9", reason: "bad"},
+          actor
+        )
+
+      %{rows: rows} = Repo.query!("SELECT grp, ip_addr, mask, tag FROM kamailio.address")
+      assert [2, "198.51.100.0", 29, scope.tenant_id] in rows
+      refute Enum.any?(rows, fn [_, ip | _] -> ip == "203.0.113.9" end)
+      # Let the firewall sync these entries started finish before the test's database goes.
+      _ = QPBX.Firewall.sync_status()
+    end
+  end
+
   test "a platform scope is required for platform data", %{scope: scope} do
     assert_raise FunctionClauseError, fn -> Core.create_did(scope, %{}, @actor) end
     assert_raise FunctionClauseError, fn -> Core.create_emergency_route(scope, %{}, @actor) end

@@ -1,8 +1,8 @@
 # Firewall (`QPBX.Firewall`)
 
 **Purpose:** platform and tenant allow/block lists, stored in Postgres (the source of truth)
-and applied to named nftables sets through the `qpbx-fwd` helper (`fwd/`). Kamailio
-in-memory sync arrives in phase 2.
+and applied to named nftables sets through the `qpbx-fwd` helper (`fwd/`). Kamailio reads the
+SIP allow entries through a view (below).
 
 **Public API** (`QPBX.Firewall`; exported `Entry`, `Sync`):
 - `list_entries/1` (`level:`, `tenant_id:`), `get_entry!/1`, `change_entry/1`
@@ -32,6 +32,10 @@ untouched (lockout guard). Database errors are logged and retried next tick.
 
 **Config:** `config :qpbx, QPBX.Firewall, helper: Helper.Socket | Helper.Noop | fake,
 socket: path, reconcile_interval: ms, reconcile_on_start: bool`.
+
+**Kamailio:** SIP allow entries (scope `sip` or `all`, not expired) are also a view,
+`kamailio.address`, for Kamailio's permissions module (group 1 platform, group 2 tenant
+office IPs); `QPBX.Edge` reloads it on `FirewallChanged` and every minute.
 
 **Gotchas:** the app never runs `nft`. Seed management IPs on install with
 `QPBX.Release.seed_management_ips/1`. Tests that create entries must wait for

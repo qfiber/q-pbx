@@ -30,6 +30,19 @@ defmodule QPBX.Core.Trunks do
     )
   end
 
+  @doc """
+  Every enabled registration trunk, all tenants, with its decrypted password and addresses:
+  the edge registers them at the carriers. Not for tenant-facing code.
+  """
+  def registration_trunks do
+    Repo.all(
+      from t in Trunk,
+        where: t.enabled and t.auth_mode == "registration",
+        order_by: t.edge_id,
+        preload: :addresses
+    )
+  end
+
   def get!(%Scope{} = scope, id),
     do: Scope.run(scope, fn -> Repo.one!(where(own(scope), id: ^id) |> preload(:addresses)) end)
 

@@ -19,7 +19,8 @@ defmodule QPBX.Application do
       # Start to serve requests, typically the last entry
       QPBX.Core.SessionSweeper,
       QPBX.Firewall.Sync,
-      QPBX.Edge.Reloader,
+      # Off in tests: its actions are tested directly, and it would react to every test's events.
+      Application.get_env(:qpbx, :edge_reloader, true) && QPBX.Edge.Reloader,
       QPBX.Web.Health,
       QPBX.Web.SessionReaper,
       QPBX.Web.Captcha.PowStore,
@@ -29,7 +30,7 @@ defmodule QPBX.Application do
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: QPBX.Supervisor]
-    Supervisor.start_link(children, opts)
+    Supervisor.start_link(Enum.filter(children, & &1), opts)
   end
 
   # Tell Phoenix to update the endpoint configuration

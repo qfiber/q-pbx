@@ -56,11 +56,20 @@
     validate: kamailio -c -f %s
   notify: Restart kamailio
 
-- name: TLS config
+- name: TLS config generator (one SNI profile per tenant certificate)
   ansible.builtin.template:
-    src: tls.cfg.j2
-    dest: /etc/kamailio/tls.cfg
-    mode: "0644"
+    src: qpbx-kamailio-tls.j2
+    dest: /usr/local/sbin/qpbx-kamailio-tls
+    mode: "0750"
+
+- name: TLS config
+  ansible.builtin.shell: |
+    set -eu
+    before=$(sha256sum /etc/kamailio/tls.cfg 2>/dev/null || true)
+    /usr/local/sbin/qpbx-kamailio-tls
+    [ "$before" = "$(sha256sum /etc/kamailio/tls.cfg)" ] || echo changed
+  register: kamailio_tls_cfg
+  changed_when: "'changed' in kamailio_tls_cfg.stdout"
   notify: Restart kamailio
 
 - name: Unit drop-in folder

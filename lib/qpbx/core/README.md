@@ -34,8 +34,10 @@ and writes an audit entry in the same transaction.
   password once), `delete_device/3`, `reset_device_password/3`.
 - Trunks (platform scope: shared carriers; tenant scope: its own): `list_trunks/1`,
   `trunk_choices/1` (own and platform trunks for a tenant's routes), `get_trunk!/2`,
-  `change_trunk/2`, `create_trunk/3`, `update_trunk/4`, `delete_trunk/3` (refused while a
-  route or emergency route uses it). Addresses are nested (`addresses: [...]`); an address of
+  `change_trunk/2`, `create_trunk/3`, `update_trunk/4`, `delete_trunk/3`,
+  `registration_trunks/0` (all tenants, decrypted password: for `QPBX.Edge` only); each trunk
+  has a database-generated `edge_id` (Kamailio's dispatcher set). Delete is refused while a
+  route or emergency route uses it. Addresses are nested (`addresses: [...]`); an address of
   an IP-authenticated trunk may belong to one IP trunk only, across tenants. Passwords are
   encrypted.
 - DIDs: platform `create_did/3`, `update_did/4` (moving tenants clears the destination; backup

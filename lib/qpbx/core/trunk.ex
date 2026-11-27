@@ -19,6 +19,8 @@ defmodule QPBX.Core.Trunk do
   @foreign_key_type :binary_id
   schema "trunks" do
     field :tenant_id, :binary_id
+    # Set by the database; Kamailio's dispatcher set number for this trunk.
+    field :edge_id, :integer, writable: :never, read_after_writes: true
     field :name, :string
     field :auth_mode, :string
     field :username, :string
