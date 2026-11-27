@@ -108,17 +108,27 @@ Kamailio gets its real config.
   (phase 1 placeholder); management IP seeded into the database reaches nftables through
   `qpbx-fwd`; everything recovers after a reboot; AppArmor profiles for FreeSWITCH,
   Kamailio, the app and `qpbx-fwd` loaded in complain mode.
+- P1-10 Certificates: `certificates` role with acme.sh (pinned commit, daily renewal timer).
+  Modes: `wildcard` (DNS-01 with any acme.sh DNS plugin, Cloudflare `dns_cf` by default;
+  credentials in `qpbx_acme_dns_env`), `per_host` (HTTP-01 served by the app from its ACME
+  webroot; platform names in one certificate, plus one per tenant SIP domain issued by a
+  5-minute timer), `selfsigned` (labs). A reload hook makes the app (`:ssl.clear_pem_cache`) and
+  Kamailio (`tls.reload`) use new certificates without restarting. Tested in the lab against
+  a local Pebble ACME server with real validation: per_host (4 platform names plus one tenant
+  domain), wildcard through DNS-01, a forced renewal picked up live on 443 and 5061, second run
+  `changed=0`. App: `/.well-known/acme-challenge/:token` (strict token check, 3 tests),
+  `QPBX.Release.list_sip_domains/0`.
 
 - License: AGPL-3.0 kept, `CLA.md` and `CONTRIBUTING.md`
   added, copyright notice in `README.md`. Code pushed to `github.com/qfiber/q-pbx` (public).
 
 ## In progress
 
-- P1-10 Certificates (wildcard DNS-01 and per-hostname HTTP-01 modes).
+- P1-11 CI.
 
 ## Next
 
-- P1-11 CI.
+- P1-12 Lab Done-when checks.
 
 ## Blockers / open questions for phase 1
 
@@ -140,6 +150,8 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
 - Arabic portal texts need review by a native speaker
   (for example "التحويلات الداخلية" for extensions).
 - No login rate limit or lockout yet; brute-force alerts are phase 3 (Argon2 slows guessing).
+- Per-tenant certificates are issued but Kamailio does not select them by SNI yet (phase 2,
+  with its real TLS config); the platform certificate is served for every name meanwhile.
 - Tenant office IPs (tenant firewall entries) have an API but no tenant portal page yet;
   platform admins add them today.
 - Sessions are signed cookies; they expire but cannot be revoked server-side before expiry.

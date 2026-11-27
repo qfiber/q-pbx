@@ -1,0 +1,9 @@
+#!/bin/sh
+# {{ ansible_managed }}
+# acme.sh with this installation's home, server and options. Usage: qpbx-acme --issue ...
+{% for k, v in qpbx_acme_dns_env.items() %}
+export {{ k }}={{ v | quote }}
+{% endfor %}
+exec {{ certificates_acme_home }}/acme.sh --home {{ certificates_acme_home }} \
+  --config-home {{ certificates_acme_config }} --server {{ qpbx_acme_server | quote }} \
+  {% if qpbx_acme_insecure %}--insecure {% endif %}"$@"

@@ -1,0 +1,38 @@
+# One certificate for the base domain and *.base domain, through DNS-01.
+- name: ACME client
+  ansible.builtin.include_tasks: acme.yml
+
+- name: DNS credentials are set
+  ansible.builtin.assert:
+    that: qpbx_acme_dns_env | length > 0
+    fail_msg: Wildcard mode needs qpbx_acme_dns_env (DNS API credentials for {{ qpbx_acme_dns_provider }}).
+
+- name: Is the wildcard certificate already issued (stat, because `creates` treats the * as a glob)
+  ansible.builtin.stat:
+    path: "{{ certificates_acme_config }}/*.{{ qpbx_domain }}_ecc/fullchain.cer"
+  register: certificates_wildcard
+
+- name: Issue the wildcard certificate
+  ansible.builtin.command:
+    # The wildcard is the main name, so its files never collide with per_host mode's.
+    argv: >-
+      {{ ['/usr/local/sbin/qpbx-acme', '--issue', '--dns',  qpbx_acme_dns_provider, '-d', '*.' ~ qpbx_domain, '-d', qpbx_domain, '--keylength', 'ec-256']
+         + (['--dnssleep', qpbx_acme_dns_sleep | string] if qpbx_acme_dns_sleep | int > 0 else []) }}
+  when: not certificates_wildcard.stat.exists
+  changed_when: true
+  no_log: true
+
+- name: Install it where the app and Kamailio read it
+  ansible.builtin.command:
+    argv: [/usr/local/sbin/qpbx-acme, --install-cert, -d, "*.{{ qpbx_domain }}", --ecc,
+           --fullchain-file, "{{ qpbx_tls_dir }}/fullchain.pem", --key-file, "{{ qpbx_tls_dir }}/privkey.pem",
+           --reloadcmd, /usr/local/sbin/qpbx-tls-reload]
+    creates: "{{ qpbx_tls_dir }}/.acme-installed-wildcard"
+
+- name: Mark the ACME certificate as installed (replaces the bootstrap one)
+  ansible.builtin.file:
+    path: "{{ qpbx_tls_dir }}/.acme-installed-wildcard"
+    state: touch
+    modification_time: preserve
+    access_time: preserve
+    mode: "0644"

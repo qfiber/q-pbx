@@ -59,6 +59,11 @@ defmodule QPBX.Release do
     end
   end
 
+  @doc "Prints every tenant SIP domain, one per line (for per-hostname certificates)."
+  def list_sip_domains do
+    with_db(fn -> Enum.each(QPBX.Core.list_tenants(), &IO.puts(&1.sip_domain)) end)
+  end
+
   @doc "Prints a fresh setup link for an existing platform admin or tenant user (email)."
   def setup_link(email) do
     with_db(fn ->

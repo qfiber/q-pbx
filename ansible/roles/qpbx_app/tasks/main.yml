@@ -68,6 +68,12 @@
   retries: 30
   delay: 2
 
+- name: Per-hostname certificates need the running app for HTTP-01
+  ansible.builtin.include_role:
+    name: certificates
+    tasks_from: per_host_issue
+  when: qpbx_cert_mode == 'per_host'
+
 - name: Seed management IPs into the database (only if none exist yet)
   ansible.builtin.command:
     argv: [/usr/local/sbin/qpbx, eval, "QPBX.Release.seed_management_ips({{ qpbx_management_ips | to_json }})"]

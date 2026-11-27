@@ -1,0 +1,52 @@
+# One certificate for the platform names through HTTP-01 (answered by the app on port 80),
+# and one per tenant SIP domain, issued by a timer within minutes of the tenant being created.
+- name: ACME client
+  ansible.builtin.include_tasks: acme.yml
+
+- name: Webroot the app serves challenges from
+  ansible.builtin.file:
+    path: "{{ certificates_webroot }}/.well-known/acme-challenge"
+    state: directory
+    owner: root
+    group: qpbx
+    mode: "0755"
+
+- name: Bootstrap certificate so the app can start before the first issue
+  ansible.builtin.include_tasks: selfsigned.yml
+
+- name: Tenant certificate script
+  ansible.builtin.template:
+    src: qpbx-acme-tenants.j2
+    dest: /usr/local/sbin/qpbx-acme-tenants
+    mode: "0700"
+
+- name: Tenant certificate service and timer
+  ansible.builtin.copy:
+    dest: "/etc/systemd/system/{{ item.name }}"
+    content: "{{ item.content }}"
+    mode: "0644"
+  loop:
+    - name: qpbx-acme-tenants.service
+      content: |
+        [Unit]
+        Description=Issue certificates for new Q-PBX tenant domains
+        After=qpbx.service
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/local/sbin/qpbx-acme-tenants
+    - name: qpbx-acme-tenants.timer
+      content: |
+        [Unit]
+        Description=Check for new Q-PBX tenant domains every 5 minutes
+        [Timer]
+        OnBootSec=2min
+        OnUnitActiveSec=5min
+        [Install]
+        WantedBy=timers.target
+
+- name: Tenant certificate timer enabled
+  ansible.builtin.systemd:
+    name: qpbx-acme-tenants.timer
+    enabled: true
+    state: started
+    daemon_reload: true

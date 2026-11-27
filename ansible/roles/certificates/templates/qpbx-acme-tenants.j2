@@ -1,0 +1,15 @@
+#!/bin/sh
+# {{ ansible_managed }}
+# Issues a certificate for every tenant SIP domain that does not have one yet (HTTP-01).
+# Certificates land in {{ qpbx_tls_dir }}/tenants/<domain>/; Kamailio uses them by SNI (phase 2).
+set -eu
+/usr/local/sbin/qpbx eval 'QPBX.Release.list_sip_domains()' | while read -r domain; do
+  case $domain in *[!a-z0-9.-]*|'') continue ;; esac
+  dir={{ qpbx_tls_dir }}/tenants/$domain
+  [ -s "$dir/fullchain.pem" ] && continue
+  mkdir -p "$dir"
+  /usr/local/sbin/qpbx-acme --issue -w {{ certificates_webroot }} -d "$domain" --keylength ec-256 \
+    && /usr/local/sbin/qpbx-acme --install-cert -d "$domain" --ecc --fullchain-file "$dir/fullchain.pem" \
+         --key-file "$dir/privkey.pem" --reloadcmd /usr/local/sbin/qpbx-tls-reload \
+    || echo "certificate for $domain failed; will retry" >&2
+done

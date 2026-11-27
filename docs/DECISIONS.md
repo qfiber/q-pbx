@@ -2,6 +2,18 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Certificates (P1-10)
+
+- **acme.sh**, pinned by commit, runs as root from systemd timers (daily renewal, and every 5
+  minutes for new tenant domains in per_host mode). Rejected: certbot (no broad DNS plugin
+  set without extra packages per provider).
+- **Reload without restart:** after every issue or renewal, the app clears Erlang's PEM cache
+  over `bin/qpbx rpc`, and Kamailio reloads TLS over JSON-RPC. Calls and portal sessions stay up.
+- **Wildcard certificate files use `*.<domain>` as the main name,** so wildcard and per_host
+  certificates never share files in acme.sh's store.
+- **Lab testing uses Pebble** (Let's Encrypt's test ACME server) with real HTTP-01 and DNS-01
+  validation (`lab/acme/`); the lab-only DNS plugin never ships in the roles.
+
 ## 2026-11-27: Packaging and server layout (P1-09)
 
 - **FreeSWITCH modules:** the spec's list (sofia, xml_curl, event_socket, spandsp, conference,

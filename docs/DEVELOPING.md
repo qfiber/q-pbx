@@ -87,6 +87,7 @@ then `podman exec qpbx-pg psql -U postgres -c "create role qpbx login password '
 | `packaging/freeswitch/build-in-container.sh` | FreeSWITCH `.deb` into `out/` (Debian 12, about 10 minutes) |
 | `lab/create-vm.sh` | Local Debian 12 lab VM (libvirt, bridged to `br0`; `QPBX_LAB_NET=network=default` for NAT) |
 | `cd ansible && ansible-playbook site.yml` | Install or update the server in the inventory (lab by default) |
+| `lab/acme/pebble.sh <vm-ip>` | Local test ACME server (Pebble) with DNS, to test the certificate modes |
 | `cd ansible && ansible-lint` | Lint the playbook and roles |
 | `scripts/check_module_docs.sh <base>` | Fails if an area's public API module changed without its `README.md` |
 | `scripts/test/module_docs_test.sh` | Tests for the module-doc check |
@@ -112,6 +113,7 @@ Each area's public API module lives inside its folder (`lib/qpbx/core/core.ex` d
 `ansible/site.yml` builds a whole server from the packages in `out/`. Set the inventory
 (`ansible/inventories/<env>/`): `qpbx_domain`, `qpbx_management_ips` (must include the machine
 running Ansible, or the run stops before touching the firewall), `qpbx_cert_mode`, SMTP
-settings. Collections: `ansible-galaxy collection install -r ansible/requirements.yml`.
+settings, and for `wildcard` mode `qpbx_acme_dns_provider` and `qpbx_acme_dns_env` (keep these in
+Ansible Vault). Collections: `ansible-galaxy collection install -r ansible/requirements.yml`.
 On the server, `qpbx eval '...'` runs release commands (for example
 `QPBX.Release.create_platform_admin("you@example.com", "You")`).

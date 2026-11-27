@@ -34,3 +34,15 @@ qpbx_smtp_username: ""
 qpbx_smtp_password: ""
 
 qpbx_data_dir: /var/lib/qpbx
+
+# ACME (wildcard and per_host certificate modes).
+qpbx_acme_email: ""
+# acme.sh server: letsencrypt, letsencrypt_test, or a directory URL (lab: Pebble).
+qpbx_acme_server: letsencrypt
+# Wildcard mode: an acme.sh DNS plugin and its credentials (keep these in Ansible Vault).
+qpbx_acme_dns_provider: dns_cf
+qpbx_acme_dns_env: {}   # for Cloudflare: {CF_Token: "...", CF_Zone_ID: "..."}
+# Labs only: trust a test ACME server's certificate (Pebble), and wait a fixed number of seconds
+# for DNS-01 records instead of checking public resolvers (they cannot see a lab DNS server).
+qpbx_acme_insecure: false
+qpbx_acme_dns_sleep: 0

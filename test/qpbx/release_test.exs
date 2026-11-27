@@ -28,4 +28,9 @@ defmodule QPBX.ReleaseTest do
     assert out =~ "already present"
     assert [%{cidr: "198.51.100.0/24", scope: "all"}] = QPBX.Firewall.list_entries()
   end
+
+  test "list_sip_domains prints every tenant domain" do
+    t = tenant_fixture(slug: "listme")
+    assert capture_io(fn -> QPBX.Release.list_sip_domains() end) =~ t.sip_domain
+  end
 end

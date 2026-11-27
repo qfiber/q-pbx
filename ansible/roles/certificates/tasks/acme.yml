@@ -1,0 +1,65 @@
+# acme.sh, pinned by commit, plus the reload hook and the daily renewal timer.
+- name: Packages
+  ansible.builtin.apt:
+    name: [git, socat]
+    state: present
+
+- name: Source
+  ansible.builtin.git:
+    repo: https://github.com/acmesh-official/acme.sh.git
+    dest: /usr/local/src/acme.sh
+    version: "{{ certificates_acme_version }}"
+    single_branch: true
+  register: certificates_acme_src
+
+- name: Install acme.sh
+  ansible.builtin.command:
+    cmd: >-
+      ./acme.sh --install --nocron --no-profile --home {{ certificates_acme_home }}
+      --config-home {{ certificates_acme_config }} {% if qpbx_acme_email %}--accountemail {{ qpbx_acme_email }}{% endif %}
+    chdir: /usr/local/src/acme.sh
+  when: certificates_acme_src.changed  # noqa: no-handler
+  changed_when: true
+
+- name: Reload hook (after every issue or renewal)
+  ansible.builtin.template:
+    src: qpbx-tls-reload.j2
+    dest: /usr/local/sbin/qpbx-tls-reload
+    mode: "0750"
+
+- name: Wrapper with the server and options this installation uses
+  ansible.builtin.template:
+    src: qpbx-acme.j2
+    dest: /usr/local/sbin/qpbx-acme
+    mode: "0700"
+
+- name: Renewal service and timer
+  ansible.builtin.copy:
+    dest: "/etc/systemd/system/{{ item.name }}"
+    content: "{{ item.content }}"
+    mode: "0644"
+  loop:
+    - name: qpbx-acme-renew.service
+      content: |
+        [Unit]
+        Description=Renew Q-PBX certificates
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/local/sbin/qpbx-acme --cron
+    - name: qpbx-acme-renew.timer
+      content: |
+        [Unit]
+        Description=Daily Q-PBX certificate renewal
+        [Timer]
+        OnCalendar=daily
+        RandomizedDelaySec=3h
+        Persistent=true
+        [Install]
+        WantedBy=timers.target
+
+- name: Renewal timer enabled
+  ansible.builtin.systemd:
+    name: qpbx-acme-renew.timer
+    enabled: true
+    state: started
+    daemon_reload: true

@@ -31,6 +31,7 @@ if config_env() == :prod do
     socket: System.get_env("QPBX_FWD_SOCKET", "/run/qpbx-fwd/fwd.sock")
 
   config :qpbx, :health_token, System.get_env("QPBX_HEALTH_TOKEN")
+  config :qpbx, :acme_webroot, System.get_env("QPBX_ACME_WEBROOT")
 
   config :qpbx, QPBX.Web.Health,
     interval: 10_000,

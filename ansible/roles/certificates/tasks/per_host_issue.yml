@@ -1,0 +1,21 @@
+# Runs after the app is up (it answers the HTTP-01 challenges): included from qpbx_app.
+- name: Issue the platform certificate (HTTP-01)
+  ansible.builtin.command:
+    argv: "{{ ['/usr/local/sbin/qpbx-acme', '--issue', '-w', certificates_webroot, '--keylength', 'ec-256']
+              + (certificates_platform_names | map('regex_replace', '^', '-d ') | map('split', ' ') | flatten) }}"
+    creates: "{{ certificates_acme_config }}/{{ qpbx_domain }}_ecc/fullchain.cer"
+
+- name: Install it where the app and Kamailio read it
+  ansible.builtin.command:
+    argv: [/usr/local/sbin/qpbx-acme, --install-cert, -d, "{{ qpbx_domain }}", --ecc,
+           --fullchain-file, "{{ qpbx_tls_dir }}/fullchain.pem", --key-file, "{{ qpbx_tls_dir }}/privkey.pem",
+           --reloadcmd, /usr/local/sbin/qpbx-tls-reload]
+    creates: "{{ qpbx_tls_dir }}/.acme-installed-per_host"
+
+- name: Mark the ACME certificate as installed (replaces the bootstrap one)
+  ansible.builtin.file:
+    path: "{{ qpbx_tls_dir }}/.acme-installed-per_host"
+    state: touch
+    modification_time: preserve
+    access_time: preserve
+    mode: "0644"

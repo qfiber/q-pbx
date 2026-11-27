@@ -1,4 +1,4 @@
-# Labs only: a self-signed certificate for the base domain and its wildcard.
+# Labs, and the bootstrap for per_host mode until the first real certificate is installed.
 - name: Self-signed certificate
   ansible.builtin.command:
     cmd: >-
