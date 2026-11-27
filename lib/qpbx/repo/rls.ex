@@ -17,8 +17,9 @@ defmodule QPBX.Repo.RLS do
 
   def check, do: @check
 
-  def enable(table) do
-    check = @check
+  @doc "Enables the policy on `table`, matching the tenant on `column` (`id` for `tenants`)."
+  def enable(table, column \\ "tenant_id") do
+    check = String.replace(@check, "tenant_id =", "#{column} =")
 
     execute(
       "ALTER TABLE #{table} ENABLE ROW LEVEL SECURITY",

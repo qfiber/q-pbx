@@ -135,7 +135,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 1b-4 Row-level security in force.
+- 1b-5 Database roles.
 
 ## Next
 
@@ -159,6 +159,12 @@ Kamailio gets its real config.
   5 min), Cloudflare Turnstile, Friendly Captcha v2, Captcha.eu, or none; an outage of an
   outside service lets attempts through (logged), a rejected key does not. Ansible:
   `qpbx_captcha_provider`, `qpbx_captcha_site_key`, `qpbx_captcha_secret`. 18 new tests (100).
+- 1b-4 Row-level security in force (done): `QPBX.Core.Scope` (platform or tenant) assigned at
+  login for every request and live page; tenant-facing reads (`list_users/1`, `my_tenant/1`,
+  `list_my_sessions/1`) run inside the tenant scope on top of their own filters; RLS added on
+  `tenants` (own row only). Tests prove an unfiltered query in a tenant scope sees only that
+  tenant's users, tenant row and sessions, and cannot write another tenant's rows. 4 new
+  tests (104).
 - Done after the phase 1 review: nginx in front (non-root, real client IP, optional
   ModSecurity), FreeSWITCH modules added (G.729, Opus/MP3 recording, loopback, CDR spool; all
   load in the lab), languages moved to one config list, firewall and plan forms now clear

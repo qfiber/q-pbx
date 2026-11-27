@@ -9,7 +9,7 @@ defmodule QPBX.Web.Account.SessionsLive do
   end
 
   defp load(socket),
-    do: assign(socket, sessions: Core.list_sessions(socket.assigns.current_account))
+    do: assign(socket, sessions: Core.list_my_sessions(socket.assigns.current_scope))
 
   @impl true
   def handle_event("revoke", %{"id" => id}, socket) do

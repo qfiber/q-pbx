@@ -22,6 +22,9 @@ and writes an audit entry in the same transaction.
   (`QPBX.Core.LoginGuard`; never locks accounts).
 - Audit: `audit/4` (for changes made by other areas), `list_audit_logs/1`.
 - `with_tenant/2`: run a function with row-level security scoped to one tenant.
+- Scopes: `scope_for/1` (`QPBX.Core.Scope`: `:platform` or `:tenant`); scoped reads
+  `list_users/1` (tenant scope) or `list_users/2` (platform scope and a tenant), `my_tenant/1`,
+  `list_my_sessions/1`.
 - `effective_limits/1`: plan limits merged with the tenant's overrides; nil = unlimited.
 - `locales/0`: language codes offered by the installation (`config :qpbx, :locales`).
 - `sip_base_domain/0`: tenant SIP domains are `<slug>.<base>` (`QPBX_SIP_BASE_DOMAIN` in prod).
@@ -29,7 +32,8 @@ and writes an audit entry in the same transaction.
 **Events emitted:** `QPBX.Events.SessionsRevoked` (whenever sessions end). **Events consumed:** none.
 
 **Gotchas:**
-- New tenant tables get `QPBX.Repo.RLS.enable/1` in their migration.
+- New tenant tables get `QPBX.Repo.RLS.enable/1` in their migration, and every tenant-facing
+  function takes a `Scope` and runs through `Scope.run/2` (keep the explicit tenant filter too).
 - The DB user must not be a superuser, or RLS is silently bypassed.
 - Audit entries drop `password`, `hashed_password` and `totp_secret`; add new secret fields to
   `@secret_fields` in `audit.ex`.

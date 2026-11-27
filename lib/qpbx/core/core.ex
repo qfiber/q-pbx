@@ -8,7 +8,17 @@ defmodule QPBX.Core do
   """
   use Boundary,
     deps: [QPBX.Repo, QPBX.Events],
-    exports: [Plan, Tenant, PlatformAdmin, User, AuditLog, Vault, UserSession, SessionSweeper]
+    exports: [
+      Plan,
+      Tenant,
+      PlatformAdmin,
+      User,
+      AuditLog,
+      Vault,
+      UserSession,
+      SessionSweeper,
+      Scope
+    ]
 
   import Ecto.Query
   alias Ecto.Multi
@@ -92,7 +102,6 @@ defmodule QPBX.Core do
   defdelegate get_platform_admin(id), to: Accounts
   defdelegate get_user(id), to: Accounts
   defdelegate find_account_by_email(email), to: Accounts
-  defdelegate list_users(tenant), to: Accounts
   defdelegate authenticate_platform_admin(email, password), to: Accounts
   defdelegate authenticate_user(email, password), to: Accounts
   defdelegate setup_token(account), to: Accounts
@@ -138,6 +147,28 @@ defmodule QPBX.Core do
       :error -> Repo.all(query)
     end
   end
+
+  ## Scoped reads (row-level security in force for tenant scopes)
+
+  alias QPBX.Core.Scope
+
+  @doc "The scope a signed-in account acts in."
+  defdelegate scope_for(account), to: Scope, as: :for_account
+
+  @doc "The users of the scope's tenant (a platform scope must name the tenant)."
+  # Explicit tenant filter and, on top, row-level security from the scope.
+  def list_users(%Scope{kind: :tenant, tenant_id: id} = scope),
+    do: Scope.run(scope, fn -> Accounts.list_users(%Tenant{id: id}) end)
+
+  def list_users(%Scope{kind: :platform}, %Tenant{} = tenant), do: Accounts.list_users(tenant)
+
+  @doc "The scope's own tenant."
+  def my_tenant(%Scope{kind: :tenant, tenant_id: id} = scope),
+    do: Scope.run(scope, fn -> Tenant |> Repo.get!(id) |> Repo.preload(:plan) end)
+
+  @doc "The signed-in account's sessions, read in its scope."
+  def list_my_sessions(%Scope{account: account} = scope),
+    do: Scope.run(scope, fn -> QPBX.Core.Sessions.list(account) end)
 
   ## Tenant scope
 

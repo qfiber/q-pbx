@@ -4,7 +4,13 @@ defmodule QPBX.Web.Tenant.HomeLive do
   alias QPBX.Core
 
   @impl true
-  def mount(_params, _session, socket), do: {:ok, assign(socket, page_title: gettext("Home"))}
+  def mount(_params, _session, socket) do
+    {:ok,
+     assign(socket,
+       page_title: gettext("Home"),
+       tenant: Core.my_tenant(socket.assigns.current_scope)
+     )}
+  end
 
   @impl true
   def render(assigns) do
@@ -16,8 +22,8 @@ defmodule QPBX.Web.Tenant.HomeLive do
       idle_timeout={@idle_timeout}
     >
       <.header>
-        {@current_account.tenant.name}
-        <:subtitle><span dir="ltr">{@current_account.tenant.sip_domain}</span></:subtitle>
+        {@tenant.name}
+        <:subtitle><span dir="ltr">{@tenant.sip_domain}</span></:subtitle>
       </.header>
       <ul class="list-disc ps-6" id="account-summary">
         <li>{gettext("Signed in as %{name}", name: @current_account.name)}</li>

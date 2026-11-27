@@ -16,6 +16,8 @@ missing or looks wrong, stop and ask. Do not guess and do not change the archite
 - Never leave a stale statement: if code contradicts a doc, fix the doc in the same change.
 - Work one module at a time through its public API; never reach into another module's internals.
 - Every new feature lands with tests and its events documented.
+- Tenant-facing code passes the request's `QPBX.Core.Scope` to Core; Core runs tenant scopes
+  under row-level security (`Scope.run/2`) and still filters by tenant explicitly.
 
 CI flags a public API change to a module that arrives without a change to that module's
 `README.md`.

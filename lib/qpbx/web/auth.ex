@@ -94,7 +94,10 @@ defmodule QPBX.Web.Auth do
   def fetch_current_account(conn, _opts) do
     case Core.fetch_session(get_session(conn, :session_token)) do
       {:ok, account, session} ->
-        conn |> assign(:current_account, account) |> assign(:current_session, session)
+        conn
+        |> assign(:current_account, account)
+        |> assign(:current_session, session)
+        |> assign(:current_scope, Core.scope_for(account))
 
       :error ->
         conn |> delete_session(:session_token) |> assign(:current_account, nil)
@@ -131,6 +134,7 @@ defmodule QPBX.Web.Auth do
           |> Phoenix.Component.assign(
             current_account: account,
             current_session: current,
+            current_scope: Core.scope_for(account),
             locale: locale
           )
           |> Phoenix.Component.assign(
