@@ -13,7 +13,11 @@ defmodule QPBX.Core.ScopeTest do
     %{a: a, b: b, scope_a: Core.scope_for(a)}
   end
 
-  test "even a query with no tenant filter sees only the scope's tenant", %{a: a, b: b, scope_a: scope} do
+  test "even a query with no tenant filter sees only the scope's tenant", %{
+    a: a,
+    b: b,
+    scope_a: scope
+  } do
     {users, tenants, sessions} =
       Scope.run(scope, fn ->
         # Deliberately unfiltered, as a bug would be.
@@ -42,7 +46,9 @@ defmodule QPBX.Core.ScopeTest do
 
   test "writing another tenant's row from a tenant scope is refused", %{b: b, scope_a: scope} do
     assert_raise Postgrex.Error, ~r/row-level security/, fn ->
-      Scope.run(scope, fn -> Repo.insert!(%User{tenant_id: b.tenant_id, email: "x@y.test", name: "X"}) end)
+      Scope.run(scope, fn ->
+        Repo.insert!(%User{tenant_id: b.tenant_id, email: "x@y.test", name: "X"})
+      end)
     end
   end
 end
