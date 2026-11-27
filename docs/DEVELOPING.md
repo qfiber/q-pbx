@@ -144,3 +144,15 @@ CDN set `qpbx_cdn` (`cloudflare`, `imperva` with `qpbx_cdn_ranges`, or `custom` 
 `qpbx_cdn_ip_header` and `qpbx_cdn_ranges`). `qpbx_nginx_modsecurity: true` loads ModSecurity
 in detection-only mode; put rules in `/etc/nginx/qpbx-modsecurity.d/*.conf` and other nginx
 additions in `/etc/nginx/qpbx.d/*.conf`.
+
+## Master key in AWS KMS
+
+1. Back up the `cloak_key` value from `/etc/qpbx/secrets.json` somewhere safe off the server.
+2. Create a KMS key (symmetric) and an IAM user allowed `kms:Encrypt` and `kms:Decrypt` on it.
+3. Set in the inventory (credentials in Ansible Vault): `qpbx_key_provider: aws_kms`,
+   `qpbx_kms_region`, `qpbx_kms_key_id`, `qpbx_aws_access_key_id`,
+   `qpbx_aws_secret_access_key`, `qpbx_kms_key_backed_up: true`, then run the playbook.
+
+Going back to a local key: put the backed-up value back as `cloak_key` in
+`/etc/qpbx/secrets.json` (mode 0600), delete `/etc/qpbx/master-key.kms`, set
+`qpbx_key_provider: local` and run the playbook.

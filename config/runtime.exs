@@ -78,14 +78,23 @@ if config_env() == :prod do
            port: String.to_integer(System.get_env("QPBX_SMTP_PORT", "587"))
          ] ++ smtp_auth
 
-  config :qpbx, QPBX.Core.Vault,
-    ciphers: [
-      default:
-        {Cloak.Ciphers.AES.GCM,
-         tag: "AES.GCM.V1",
-         key: Base.decode64!(System.fetch_env!("QPBX_CLOAK_KEY")),
-         iv_length: 12}
-    ]
+  # Master key: local (QPBX_CLOAK_KEY) or AWS KMS (wrapped key file, unwrapped at start-up).
+  key_provider =
+    case System.get_env("QPBX_KEY_PROVIDER", "local") do
+      "aws_kms" ->
+        [
+          source: :aws_kms,
+          region: System.fetch_env!("QPBX_KMS_REGION"),
+          key_id: System.fetch_env!("QPBX_KMS_KEY_ID"),
+          blob_file: System.get_env("QPBX_KMS_BLOB_FILE", "/etc/qpbx/master-key.kms"),
+          endpoint: System.get_env("QPBX_KMS_ENDPOINT")
+        ]
+
+      "local" ->
+        [source: :local, key: System.fetch_env!("QPBX_CLOAK_KEY")]
+    end
+
+  config :qpbx, QPBX.Core.KeyProvider, key_provider
 
   database_url =
     System.get_env("DATABASE_URL") ||

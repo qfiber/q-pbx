@@ -70,6 +70,29 @@ defmodule QPBX.Release do
     end
   end
 
+  @doc """
+  Wraps the current local master key with AWS KMS and prints the blob (base64) for the server
+  to keep in place of the plain key. Data stays readable: the key itself does not change.
+  Needs AWS credentials and `QPBX_KMS_REGION`/`QPBX_KMS_KEY_ID` (optional `QPBX_KMS_ENDPOINT`).
+  """
+  def kms_wrap_key do
+    load()
+
+    opts = [
+      region: System.fetch_env!("QPBX_KMS_REGION"),
+      key_id: System.fetch_env!("QPBX_KMS_KEY_ID"),
+      endpoint: System.get_env("QPBX_KMS_ENDPOINT")
+    ]
+
+    {:ok, _} = Application.ensure_all_started(:req)
+    key = Base.decode64!(System.fetch_env!("QPBX_CLOAK_KEY"))
+
+    case QPBX.Core.KeyProvider.wrap(key, opts) do
+      {:ok, blob} -> IO.puts(blob)
+      {:error, reason} -> fail("KMS wrap failed: #{inspect(reason)}")
+    end
+  end
+
   @doc "Prints every tenant SIP domain, one per line (for per-hostname certificates)."
   def list_sip_domains do
     with_db(fn -> Enum.each(QPBX.Core.list_tenants(), &IO.puts(&1.sip_domain)) end)
@@ -101,7 +124,8 @@ defmodule QPBX.Release do
   defp with_db(fun) do
     load()
     # plug_crypto: its key cache (an ETS table) is needed to sign setup links.
-    {:ok, _} = Application.ensure_all_started([:cloak_ecto, :phoenix_pubsub, :plug_crypto])
+    # req: the vault may fetch its key from AWS KMS.
+    {:ok, _} = Application.ensure_all_started([:cloak_ecto, :phoenix_pubsub, :plug_crypto, :req])
 
     case Supervisor.start_link([], strategy: :one_for_one, name: QPBX.Release.Sup) do
       {:ok, _} -> :ok

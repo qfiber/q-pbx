@@ -5,8 +5,27 @@
   ansible.builtin.assert:
     that:
       - qpbx_captcha_provider in ['pow', 'turnstile', 'friendly_captcha', 'captcha_eu', 'none']
-      - qpbx_captcha_provider in ['pow', 'none'] or (qpbx_captcha_site_key and qpbx_captcha_secret)
+      - qpbx_captcha_provider in ['pow', 'none'] or (qpbx_captcha_site_key | length > 0 and qpbx_captcha_secret | length > 0)
     fail_msg: qpbx_captcha_provider must be pow, turnstile, friendly_captcha, captcha_eu or none; outside services need site key and secret.
+
+- name: KMS settings complete, and the plain key backed up off the server
+  ansible.builtin.assert:
+    that:
+      - qpbx_kms_region | length > 0
+      - qpbx_kms_key_id | length > 0
+      - qpbx_aws_access_key_id | length > 0
+      - qpbx_aws_secret_access_key | length > 0
+      - qpbx_kms_key_backed_up | bool
+    fail_msg: >-
+      aws_kms needs qpbx_kms_region, qpbx_kms_key_id and AWS credentials, and
+      qpbx_kms_key_backed_up: true once the master key from /etc/qpbx/secrets.json is stored
+      safely off the server (it is removed from the server after the switch).
+  when: qpbx_key_provider == 'aws_kms'
+
+- name: Wrapped master key present?
+  ansible.builtin.stat:
+    path: /etc/qpbx/master-key.kms
+  register: qpbx_app_kms_blob
 
 - name: Package cache folder
   ansible.builtin.file:
@@ -48,6 +67,31 @@
       export HOME={{ qpbx_data_dir }} RELEASE_TMP=/tmp
       exec runuser -u qpbx -- /opt/qpbx/bin/qpbx "$@"
 
+- name: Wrap the current master key with KMS (the key itself does not change)
+  ansible.builtin.command:
+    argv: [/usr/local/sbin/qpbx, eval, "QPBX.Release.kms_wrap_key()"]
+  environment:
+    QPBX_CLOAK_KEY: "{{ qpbx_secrets.cloak_key }}"
+    QPBX_KMS_REGION: "{{ qpbx_kms_region }}"
+    QPBX_KMS_KEY_ID: "{{ qpbx_kms_key_id }}"
+    QPBX_KMS_ENDPOINT: "{{ qpbx_kms_endpoint }}"
+    AWS_ACCESS_KEY_ID: "{{ qpbx_aws_access_key_id }}"
+    AWS_SECRET_ACCESS_KEY: "{{ qpbx_aws_secret_access_key }}"
+  register: qpbx_app_wrapped
+  changed_when: true
+  no_log: true
+  when: qpbx_key_provider == 'aws_kms' and not qpbx_app_kms_blob.stat.exists
+
+- name: Store the wrapped key (useless without KMS access)
+  ansible.builtin.copy:
+    dest: /etc/qpbx/master-key.kms
+    content: "{{ qpbx_app_wrapped.stdout_lines | last }}\n"
+    owner: root
+    group: qpbx
+    mode: "0640"
+  when: qpbx_app_wrapped is changed  # noqa: no-handler
+  notify: Restart qpbx
+
 - name: Unit
   ansible.builtin.template:
     src: qpbx.service.j2
@@ -73,6 +117,29 @@
   until: health.status in [200, 503] and health.json is defined
   retries: 30
   delay: 2
+
+# Healthy above means the app unwrapped its key through KMS; only now may the plain copy go.
+- name: Remove the plain master key from the server (aws_kms)
+  ansible.builtin.shell:
+    cmd: |
+      set -e
+      umask 077
+      python3 - <<'PY'
+      import json, os
+      path = "/etc/qpbx/secrets.json"
+      s = json.load(open(path))
+      if "cloak_key" in s:
+          del s["cloak_key"]
+          tmp = path + ".tmp"
+          with open(tmp, "w") as f:
+              json.dump(s, f)
+          os.chmod(tmp, 0o600)
+          os.replace(tmp, path)
+          print("removed")
+      PY
+  register: qpbx_app_key_removed
+  changed_when: "'removed' in qpbx_app_key_removed.stdout"
+  when: qpbx_key_provider == 'aws_kms'
 
 - name: Seed management IPs into the database (only if none exist yet)
   ansible.builtin.command:

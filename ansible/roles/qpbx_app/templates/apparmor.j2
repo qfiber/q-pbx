@@ -15,6 +15,7 @@ profile qpbx-app /opt/qpbx/erts-*/bin/beam.smp flags=(complain) {
   /opt/qpbx/** mrix,
   /usr/bin/df ix,
   /etc/qpbx/qpbx.env r,
+  /etc/qpbx/master-key.kms r,
   {{ qpbx_tls_dir }}/fullchain.pem r,
   # df (health check) opens the folders it reports on.
   / r,

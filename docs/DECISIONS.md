@@ -2,6 +2,17 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Master key in AWS KMS (1b-6)
+
+- **The same master key is wrapped by KMS** (Encrypt), not replaced by a new KMS data key, so
+  switching needs no re-encryption of stored data and can be reversed with the backed-up key.
+- **AWS credentials sit in the server's environment file.** A thief of the server can still
+  ask KMS for the key while the credentials are valid, but every unwrap is logged in AWS and
+  access can be revoked there; the plain key is never on disk. On AWS machines, an instance
+  role would remove the stored credentials (later, if Q-PBX runs on AWS).
+- **The switch removes the plain key from the server only after the app has started with
+  KMS, and only when the operator confirms an off-server backup** (`qpbx_kms_key_backed_up`).
+
 ## 2026-11-27: Login protection details (1b-3)
 
 - **Blocks are per client IP only;** accounts are never locked, so nobody can lock an

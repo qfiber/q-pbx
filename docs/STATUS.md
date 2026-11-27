@@ -135,7 +135,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 1b-6 Key provider (local file, AWS KMS).
+- 1b-7 Temporary data in memory.
 
 ## Next
 
@@ -172,6 +172,16 @@ Kamailio gets its real config.
   peer. Existing installs are converted in place (`REASSIGN OWNED`); new secrets are added to
   `secrets.json` without touching existing ones. Verified in the lab: the app role cannot
   update or delete audit entries, create or drop tables; remote superuser login refused.
+- 1b-6 Key provider (done): `QPBX.Core.KeyProvider` gives the vault its master key at start-up:
+  `local` (default, from the root-only secrets file) or `aws_kms` (only a KMS-wrapped copy on
+  the server, unwrapped with a signed KMS `Decrypt` bound to Q-PBX by an encryption context).
+  Ansible switches an existing server without re-encrypting anything (wrap the same key,
+  restart, check health, then remove the plain key, only with `qpbx_kms_key_backed_up: true`).
+  Tested against `local-kms` (an AWS KMS-compatible server): the same 8 TOTP secrets decrypt
+  before, under KMS and after switching back; no plain key left on the server; second run
+  `changed=0`. Found and fixed on the way: a rewrite of `secrets.json` left it
+  world-readable (0644) for a few minutes in the lab; it is now forced to 0600 every run.
+  4 new tests (108).
 - Done after the phase 1 review: nginx in front (non-root, real client IP, optional
   ModSecurity), FreeSWITCH modules added (G.729, Opus/MP3 recording, loopback, CDR spool; all
   load in the lab), languages moved to one config list, firewall and plan forms now clear

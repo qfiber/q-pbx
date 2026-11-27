@@ -31,6 +31,8 @@ and writes an audit entry in the same transaction.
 
 **Events emitted:** `QPBX.Events.SessionsRevoked` (whenever sessions end). **Events consumed:** none.
 
+**Keys:** `QPBX.Core.KeyProvider` (`master_key/0`, `wrap/2`); the vault loads its key at start-up.
+
 **Gotchas:**
 - New tenant tables get `QPBX.Repo.RLS.enable/1` in their migration, and every tenant-facing
   function takes a `Scope` and runs through `Scope.run/2` (keep the explicit tenant filter too).
