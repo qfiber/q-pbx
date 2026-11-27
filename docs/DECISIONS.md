@@ -13,6 +13,10 @@ Newest first. Each entry: date, what, why, alternatives rejected.
   - 2FA becomes mandatory for tenant admins too, not only platform admins.
   - The Cloak key gets a key-provider behaviour (local file, AWS KMS) instead of only an
     environment variable.
+- **Answers:** plain SIP on 5060 stays open for phones and trunks (carriers mostly
+  use it), with TLS 5061 and SRTP as the default and in provisioning; AWS KMS is the first
+  external key store; a built-in self-hosted proof of work is the default login challenge,
+  next to Friendly Captcha, Turnstile and Captcha.eu; full-disk encryption is a later option.
 - **Why now:** sessions, login protection, enforced row-level security and the database role
   split change code that phase 2 builds on, so they come before phase 2 ("phase 1b").
   Recording encryption and private media buffers come with recording (phase 4), and

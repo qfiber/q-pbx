@@ -534,10 +534,13 @@ These apply to every phase; `docs/STATUS.md` ("Security plan") tracks when each 
   escaped (HEEx); Kamailio gets a read-only role on a narrow view.
 - **Login:** 2FA required for platform admins and tenant admins (optional for tenant users);
   login, setup and password pages protected by rate limits, lockout with backoff, and a
-  CAPTCHA or proof-of-work challenge from a provider chosen per installation: Friendly
-  Captcha, Cloudflare Turnstile, Captcha.eu, or none.
+  CAPTCHA or proof-of-work challenge chosen per installation: a built-in, self-hosted
+  proof of work (the default, no outside service), Friendly Captcha, Cloudflare Turnstile,
+  Captcha.eu, or none.
 - **TLS everywhere** a network is crossed: HTTPS with HSTS for the portal, API and
-  provisioning; SIP over TLS and SRTP for phones and apps; TLS for SMTP with credentials,
+  provisioning; SIP over TLS (5061) with SRTP is the default for phones and apps and what
+  provisioning sets up, while plain SIP on 5060 stays open to phones and trunks that need it
+  (most carriers use 5060); TLS for SMTP with credentials,
   outbound webhooks and CRM calls; TLS or an encrypted tunnel between servers once there is
   more than one. Plain protocols stay only on localhost.
 - **Sessions:** checked server-side on every request and LiveView event; ended within
@@ -545,8 +548,8 @@ These apply to every phase; `docs/STATUS.md` ("Security plan") tracks when each 
   sessions and live connections) when their password, 2FA or role changes or an admin
   revokes them. API keys are checked on every request and revocable instantly.
 - **Encryption at rest:** secrets and sensitive fields encrypted with Cloak; the master key
-  comes from a key provider: a local file by default, or an external service such as AWS KMS
-  for installations that want the key off the server. Backups are encrypted.
+  comes from a key provider: a local file by default, or AWS KMS for installations that want
+  the key off the server. Backups are encrypted. Full-disk encryption (LUKS) is a later option.
 - **Recordings, voicemail and faxes** are encrypted at rest (a data key per file, wrapped by
   the master key) and decrypted only while streamed to an authorized user.
 - **Temporary data** (media being recorded, uploads, document conversion) lives only in
