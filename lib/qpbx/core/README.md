@@ -62,7 +62,10 @@ and writes an audit entry in the same transaction.
 - Scopes: `scope_for/1` (`QPBX.Core.Scope`: `:platform` or `:tenant`); scoped reads
   `list_users/1` (tenant scope) or `list_users/2` (platform scope and a tenant), `my_tenant/1`,
   `list_my_sessions/1`.
-- `effective_limits/1`: plan limits merged with the tenant's overrides; nil = unlimited.
+- `effective_limits/1`: plan limits merged with the tenant's overrides; nil = unlimited. Plan
+  limits include `max_concurrent_calls_per_extension` and the outbound minute caps per
+  destination class and period (`minutes_<class>_per_<hour|day|month>`,
+  `Plan.class_minutes_limit/2`), used by call admission.
 - `locales/0`: language codes offered by the installation (`config :qpbx, :locales`).
 - `sip_base_domain/0`: tenant SIP domains are `<slug>.<base>` (`QPBX_SIP_BASE_DOMAIN` in prod).
 

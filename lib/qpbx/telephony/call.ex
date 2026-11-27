@@ -10,7 +10,7 @@ defmodule QPBX.Telephony.Call do
 
   @max_redirects 3
   require Logger
-  alias QPBX.Telephony.{Cache, Calls, Router}
+  alias QPBX.Telephony.{Admission, Cache, Calls, Router, Usage}
   alias QPBX.Telephony.ESL.Connection
 
   def start_link(event),
@@ -38,7 +38,11 @@ defmodule QPBX.Telephony.Call do
       tenant_id: call.tenant_id,
       transfer_history: event["variable_transfer_history"],
       awaiting_transfer: false,
-      redirects: 0
+      redirects: 0,
+      # Call admission: destinations already admitted (number => seconds left), and the
+      # carrier call being timed for usage ({meta, bridged_at}).
+      admitted: %{},
+      talking: nil
     }
 
     {:ok, state, {:continue, :route}}
@@ -63,7 +67,22 @@ defmodule QPBX.Telephony.Call do
         do: lamp(s, caller_ext.number, caller_ext.domain, call.destination, "initiator", "early"),
         else: s
 
-    {:noreply, run(action, s)}
+    # Concurrent call caps of the tenant (and of the calling extension) before anything rings.
+    direction = if call.source == :trunk, do: :inbound, else: :internal
+
+    case admit_call(s, direction, caller_ext && caller_ext.id) do
+      :ok -> {:noreply, run(action, s)}
+      {:reject, cause} -> {:noreply, run(%{op: :reject, cause: cause}, s)}
+    end
+  end
+
+  defp admit_call(%{tenant_id: nil}, _direction, _ext_id), do: :ok
+
+  defp admit_call(s, direction, ext_id) do
+    case safe_tenant(s.tenant_id) do
+      nil -> :ok
+      snapshot -> Admission.admit_call(snapshot, direction, ext_id)
+    end
   end
 
   defp safe_tenant(tid) do
@@ -91,7 +110,7 @@ defmodule QPBX.Telephony.Call do
         {:noreply, run(reroute(s, target), s)}
 
       true ->
-        {:noreply, after_dial(outcome(e), action, %{s | pending: nil})}
+        {:noreply, after_dial(outcome(e), action, stop_talking(%{s | pending: nil}))}
     end
   end
 
@@ -109,6 +128,14 @@ defmodule QPBX.Telephony.Call do
   end
 
   # Answered and connected: the extension rung is on a call (call waiting off makes it busy).
+  # Connected to a carrier: its talk time counts from now (minute caps).
+  def handle_info(
+        {:event, "CHANNEL_BRIDGE", _e},
+        %{action: %{trunk_call: %{emergency: false} = meta}} = s
+      ) do
+    {:noreply, caller_lamp(%{s | talking: {meta, DateTime.utc_now()}}, "confirmed")}
+  end
+
   def handle_info({:event, "CHANNEL_BRIDGE", _e}, %{action: %{ext_id: ext_id} = a} = s)
       when is_binary(ext_id) do
     Calls.mark_in_use(ext_id)
@@ -123,7 +150,9 @@ defmodule QPBX.Telephony.Call do
 
   def handle_info({:event, "CHANNEL_BRIDGE", _e}, s), do: {:noreply, caller_lamp(s, "confirmed")}
 
-  def handle_info({:event, "CHANNEL_HANGUP_COMPLETE", _e}, s), do: {:stop, :normal, lamps_off(s)}
+  def handle_info({:event, "CHANNEL_HANGUP_COMPLETE", _e}, s),
+    do: {:stop, :normal, s |> stop_talking() |> lamps_off()}
+
   def handle_info({:event, _name, _e}, s), do: {:noreply, s}
 
   ## Deciding
@@ -184,7 +213,70 @@ defmodule QPBX.Telephony.Call do
     %{s | action: nil}
   end
 
-  defp run(%{op: :dial} = action, s) do
+  # A dial to a carrier passes call admission first (once per destination number).
+  defp run(%{op: :dial, trunk_call: %{} = meta} = action, s) do
+    case admit_outbound(meta, s) do
+      {:ok, left, s} -> dial(limit_duration(action, left), s)
+      {:reject, cause, s} -> run(%{op: :reject, cause: cause}, s)
+    end
+  end
+
+  defp run(%{op: :dial} = action, s), do: dial(action, s)
+
+  defp admit_outbound(%{e164: number} = meta, s) do
+    case Map.fetch(s.admitted, number) do
+      # The next carrier for the same number (failover): admitted already; the outbound slot
+      # the failed attempt gave back is taken again.
+      {:ok, left} ->
+        unless meta.emergency, do: Admission.join({:out, s.tenant_id})
+        {:ok, left, s}
+
+      :error ->
+        snapshot = safe_tenant(s.tenant_id)
+        from = s.caller_ext && s.caller_ext.number
+
+        case snapshot && Admission.admit_outbound(snapshot, meta, from) do
+          {:ok, left} -> {:ok, left, %{s | admitted: Map.put(s.admitted, number, left)}}
+          {:reject, cause} -> {:reject, cause, s}
+          nil -> {:reject, "NORMAL_TEMPORARY_FAILURE", s}
+        end
+    end
+  end
+
+  # The tightest minute cap left: the carrier leg hangs up when it runs out.
+  defp limit_duration(action, nil), do: action
+
+  defp limit_duration(%{dial: dial} = action, left) do
+    var = "execute_on_answer='sched_hangup +#{max(left, 1)} ALLOTTED_TIMEOUT'"
+
+    dial =
+      case dial do
+        "{" <> rest -> "{" <> var <> "," <> rest
+        _ -> "{" <> var <> "}" <> dial
+      end
+
+    %{action | dial: dial}
+  end
+
+  # A carrier call ended (or this call did): its talk time goes to the usage, its slot is freed.
+  defp stop_talking(%{talking: {meta, since}} = s) do
+    Usage.add(s.tenant_id, meta.class, DateTime.diff(DateTime.utc_now(), since), since)
+    Admission.leave({:out, s.tenant_id})
+    %{s | talking: nil}
+  rescue
+    e ->
+      Logger.error("call #{s.call.uuid}: usage not recorded: #{Exception.message(e)}")
+      %{s | talking: nil}
+  end
+
+  defp stop_talking(%{action: %{trunk_call: %{}}} = s) do
+    Admission.leave({:out, s.tenant_id})
+    s
+  end
+
+  defp stop_talking(s), do: s
+
+  defp dial(%{op: :dial} = action, s) do
     s =
       if action[:ext_number],
         do: lamp(s, action.ext_number, action.domain, s.call.caller, "recipient", "early"),

@@ -2,6 +2,20 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Call admission and fraud protection (2-6)
+
+- **Admission runs in the call process before each carrier bridge,** not in the dialplan
+  answer: the destination is known only after routing (forwarding, follow-me, transfers), and
+  every path out goes through a trunk dial that carries its number and class.
+- **An empty class list allows local, mobile and international, never premium,** so existing
+  plans keep working and the high-cost list is blocked unless a plan names premium.
+- **Minute caps are enforced during the call** (`sched_hangup` with the seconds left), so one
+  long call cannot run past a cap. Usage is counted now (hourly rows) rather than waiting for
+  CDRs (2-8).
+- **Concurrency and velocity counts live in memory per node** (one active node carries calls;
+  revisit with HA). Blocks are stored; lifting one clears its attempt window.
+- **Money-based caps stay out** (spec: only if operators need them).
+
 ## 2026-11-27: Echo test, transfers and redirects in phase 2; SRTP from phones (2-5b)
 
 - **Moved into phase 2 (decided by the project owner):** the `*43` echo test, blind and

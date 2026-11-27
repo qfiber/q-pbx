@@ -15,7 +15,7 @@ running endpoint).
 
 **Portal routes:** `/login`, `/platform/login`, `/2fa`, `/2fa/setup`, `/2fa/skip`,
 `/setup/:token`, `/locale/:locale`, `/logout`; platform LiveViews under `/platform`
-(tenants, new tenant, plans, firewall, trunks, numbers, numbering, protection); tenant LiveViews under
+(tenants, new tenant, plans, firewall, trunks, numbers, numbering, protection, fraud); tenant LiveViews under
 `/app`. The tenant configuration pages (`/app/extensions`, `/app/extensions/:id`,
 `/app/numbers`, `/app/routes`, `/app/office-ips`, `/app/number-format`) are in the
 `:tenant_admin` live session: tenant users are sent back to `/app`. `QPBX.Web.NumberInput`

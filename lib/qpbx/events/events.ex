@@ -8,6 +8,8 @@ defmodule QPBX.Events do
     exports: [
       CallState,
       ConfigChanged,
+      FraudAlert,
+      LimitReached,
       EdgeAlert,
       FirewallChanged,
       SessionsRevoked,

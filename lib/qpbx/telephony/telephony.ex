@@ -5,7 +5,9 @@ defmodule QPBX.Telephony do
   park every call; one process per call then drives it over the event socket. See
   `lib/qpbx/telephony/README.md`.
   """
-  use Boundary, deps: [QPBX.Core, QPBX.Events], exports: [Router, Dialplan, Cache, Calls]
+  use Boundary,
+    deps: [QPBX.Repo, QPBX.Core, QPBX.Events],
+    exports: [Router, Dialplan, Cache, Calls, Usage, Fraud, Admission]
 
   alias QPBX.Telephony.{Calls, Dialplan}
   alias QPBX.Telephony.ESL.Connection
@@ -15,6 +17,15 @@ defmodule QPBX.Telephony do
 
   @doc "Whether the event socket to FreeSWITCH is up (health check)."
   def connected?, do: Process.whereis(Connection) != nil and Connection.connected?()
+
+  ## Fraud protection (platform admins)
+
+  alias QPBX.Telephony.Fraud
+  defdelegate fraud_settings(), to: Fraud, as: :settings
+  defdelegate change_fraud_settings(settings, attrs \\ %{}), to: Fraud, as: :change_settings
+  defdelegate update_fraud_settings(attrs, actor), to: Fraud, as: :update_settings
+  defdelegate list_fraud_blocks(), to: Fraud, as: :list_blocks
+  defdelegate lift_fraud_block(id, actor), to: Fraud, as: :lift
 
   @doc "The password FreeSWITCH must send with dialplan requests."
   def curl_password, do: Application.get_env(:qpbx, __MODULE__, [])[:curl_password]
@@ -31,6 +42,9 @@ defmodule QPBX.Telephony do
       [
         {Registry, keys: :unique, name: QPBX.Telephony.Registry},
         {Registry, keys: :duplicate, name: QPBX.Telephony.InUse},
+        # Call admission's concurrency counts (joined by call processes).
+        {Registry, keys: :duplicate, name: QPBX.Telephony.Active},
+        QPBX.Telephony.Fraud,
         {DynamicSupervisor, name: QPBX.Telephony.CallSupervisor, strategy: :one_for_one},
         QPBX.Telephony.Cache
       ] ++ if(esl?, do: [Connection], else: [])

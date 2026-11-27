@@ -101,7 +101,14 @@ defmodule QPBX.Telephony.Router do
   defp emergency_call(route, caller, ctx) do
     case ctx.platform.trunks[route.trunk_id] do
       %{enabled: true} = trunk ->
-        trunk_dial([{trunk, route.number}], caller.external, reject("NORMAL_TEMPORARY_FAILURE"))
+        meta = %{e164: route.number, class: "emergency", emergency: true}
+
+        trunk_dial(
+          [{trunk, route.number}],
+          caller.external,
+          reject("NORMAL_TEMPORARY_FAILURE"),
+          meta
+        )
 
       _ ->
         reject("NORMAL_TEMPORARY_FAILURE")
@@ -138,16 +145,23 @@ defmodule QPBX.Telephony.Router do
               trunk.enabled,
               do: {trunk, number}
 
+        # Call admission checks each trunk attempt against the number's destination class.
+        meta = %{
+          e164: e164,
+          class: Numbers.classify(e164, t.rule, ctx.platform.classes),
+          emergency: false
+        }
+
         if trunks == [],
           do: reject("NO_ROUTE_DESTINATION"),
-          else: trunk_dial(trunks, caller.external, reject("NORMAL_TEMPORARY_FAILURE"))
+          else: trunk_dial(trunks, caller.external, reject("NORMAL_TEMPORARY_FAILURE"), meta)
     end
   end
 
   # Trunks in order: busy or no answer is final; a carrier failure moves to the next trunk.
-  defp trunk_dial([], _cid, last), do: last
+  defp trunk_dial([], _cid, last, _meta), do: last
 
-  defp trunk_dial([{trunk, number} | rest], cid, last) do
+  defp trunk_dial([{trunk, number} | rest], cid, last, meta) do
     shown = if trunk.caller_id_mode == "own_number", do: trunk.default_caller_id, else: cid
     # The name is the number too: never an internal name or login towards a carrier.
     vars = %{
@@ -160,9 +174,10 @@ defmodule QPBX.Telephony.Router do
       op: :dial,
       dial: leg(vars, "sofia/qpbx/#{number}@127.0.0.1:5060"),
       timeout: 60,
+      trunk_call: meta,
       busy: reject("USER_BUSY"),
       no_answer: reject("NO_ANSWER"),
-      failed: trunk_dial(rest, cid, last)
+      failed: trunk_dial(rest, cid, last, meta)
     }
   end
 
@@ -303,6 +318,7 @@ defmodule QPBX.Telephony.Router do
             op: :dial,
             dial: dial,
             timeout: ext.no_answer_seconds,
+            trunk_call: follow_me_meta(ext, ctx),
             busy: final,
             no_answer: final,
             failed: final
@@ -346,6 +362,30 @@ defmodule QPBX.Telephony.Router do
 
   # shortcut: an outside follow-me number uses the first trunk of its route only (no failover
   # inside a simultaneous ring); chain them if a tenant needs it.
+  @risk ~w(local mobile international premium)
+
+  # Follow-me rings outside numbers too: admission checks the riskiest of them (nil: none).
+  defp follow_me_meta(ext, %{tenant: t} = ctx) do
+    outside =
+      for n <- ext.follow_me_numbers, is_nil(extension(t, n)), String.starts_with?(n, "+"), do: n
+
+    case outside do
+      [] ->
+        nil
+
+      numbers ->
+        numbers
+        |> Enum.map(
+          &%{
+            e164: &1,
+            class: Numbers.classify(&1, t.rule, ctx.platform.classes),
+            emergency: false
+          }
+        )
+        |> Enum.max_by(&Enum.find_index(@risk, fn c -> c == &1.class end))
+    end
+  end
+
   defp follow_me_dial(ext, caller, %{tenant: t} = ctx) do
     legs =
       Enum.flat_map(ext.follow_me_numbers, fn n ->
@@ -393,7 +433,7 @@ defmodule QPBX.Telephony.Router do
   def caller_extension(t, auth_user) do
     case device_extension(t, auth_user) do
       nil -> nil
-      ext -> %{number: ext.number, domain: t.tenant.sip_domain}
+      ext -> %{id: ext.id, number: ext.number, domain: t.tenant.sip_domain}
     end
   end
 

@@ -259,6 +259,36 @@ defmodule QPBX.Web.TelephonyPagesTest do
       assert QPBX.Edge.list_bans() == []
     end
 
+    test "fraud protection: settings saved; a blocked tenant listed and lifted", %{
+      conn: conn,
+      tenant: t
+    } do
+      {:ok, view, _} = live(conn, ~p"/platform/fraud")
+
+      html =
+        view |> form("#fraud-form", settings: %{international_spike_calls: 0}) |> render_submit()
+
+      assert html =~ "must be greater than or equal to 1"
+
+      view
+      |> form("#fraud-form", settings: %{international_spike_calls: 7, block_hours: 2})
+      |> render_submit()
+
+      assert QPBX.Telephony.fraud_settings().international_spike_calls == 7
+
+      b =
+        QPBX.Repo.insert!(%QPBX.Telephony.Fraud.Block{
+          tenant_id: t.id,
+          reason: "international_spike",
+          until: DateTime.utc_now() |> DateTime.add(3600) |> DateTime.truncate(:second)
+        })
+
+      {:ok, view, html} = live(conn, ~p"/platform/fraud")
+      assert html =~ t.name and html =~ "International spike"
+      view |> element("#lift-#{b.id}") |> render_click()
+      assert QPBX.Telephony.list_fraud_blocks() == []
+    end
+
     test "numbers, classes and emergency routes", %{conn: conn, tenant: t} do
       platform = Core.scope_for(platform_admin_fixture())
 

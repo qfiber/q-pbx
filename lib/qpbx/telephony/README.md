@@ -37,6 +37,8 @@ platform's and the DID index, loaded on first use and all dropped on `ConfigChan
 `SipCredentialsChanged` or `TenantsChanged`.
 
 **Public API:** `dialplan_xml/1`, `connected?/0`, `active_calls/0`, `curl_password/0`;
+`fraud_settings/0`, `change_fraud_settings/2`, `update_fraud_settings/2`, `list_fraud_blocks/0`,
+`lift_fraud_block/2`;
 `child_spec/1` (started by the application; the event socket only with `config :qpbx,
 QPBX.Telephony, esl: true`, i.e. production).
 
@@ -49,13 +51,36 @@ destination, which `Router.transfer/3` routes with the same caller (a carrier ca
 its number's tenant). Attended transfers (REFER with Replaces) are done by FreeSWITCH
 itself. A 302 from the far end is followed (`sip_redirect_contact_user_0`), up to 3 times.
 
+**Call admission (`Admission`, 2-6):** when a call starts, the tenant's total and inbound
+concurrent caps and the calling extension's own cap; before every bridge to a carrier (each
+trunk dial carries `trunk_call: %{e164, class, emergency}`): emergency numbers pass (audited
+`call.emergency`); otherwise the destination class must be in the plan's
+`allowed_destination_classes` (an empty list allows local, mobile and international, never
+premium, i.e. the high-cost prefixes), no fraud block for international or premium, the
+outbound concurrent cap, the class's minutes per hour, day and month, the total outbound
+minutes per day and month. Admitted calls get `execute_on_answer='sched_hangup +N'` with
+the seconds the tightest cap has left. Refusals (`OUTGOING_CALL_BARRED`, 403; a full cap
+`NORMAL_CIRCUIT_CONGESTION`, 503, which reaches phones as 500 through Kamailio) are audited
+(`call.refused`) and announced (`LimitReached`). Concurrency is counted from live call
+processes (`Registry` `QPBX.Telephony.Active`). One admission per destination number, so
+carrier failover does not count twice.
+
+**Usage (`Usage`):** outbound talk time per tenant, class and hour (`call_usage`), recorded
+when a carrier call's bridge ends; day and month in the tenant's time zone.
+
+**Velocity (`Fraud`):** international and premium attempts per tenant in memory: more than
+`international_spike_calls` in 10 minutes, or one in the tenant's quiet hours, raises
+`FraudAlert` (audited, once per hour per rule) and, as the settings say, blocks the tenant's
+international and premium calls for `block_hours` (`fraud_blocks`). Lifting a block also
+clears the attempts that caused it. Settings and blocks: Platform > Fraud protection.
+
 **Busy lamps:** the call process publishes `CallState` for the calling extension (initiator:
 early, confirmed) and each extension rung (recipient: early, confirmed, terminated when not
 answered there); everything goes terminated when the call ends. The caller is named by
 extension number.
 
 **Events consumed:** `ConfigChanged`, `SipCredentialsChanged`, `TenantsChanged` (cache).
-**Emitted:** `CallState`.
+**Emitted:** `CallState`, `LimitReached`, `FraudAlert`.
 
 **Gotchas:**
 - Without `continue_on_fail=true` FreeSWITCH hangs up the caller after a failed bridge, so
@@ -68,6 +93,8 @@ extension number.
   `rtp_allow_crypto_in_avp=true` and `rtp_secure_media_inbound=optional`, and the sofia
   profile with `enable-soa=false` (sofia-sip's offer/answer otherwise turns the SRTP answer
   into `m=audio 0`). Calls FreeSWITCH places to phones are plain RTP for now.
-- Admission (limits, destination classes, fraud) is 2-6; voicemail on no answer is 2-7.
+- Concurrency and velocity counts are per node (in memory); with two nodes (HA) only the
+  active one carries calls.
+- Voicemail on no answer is 2-7.
 - Lab check with real calls: `lab/done-when/phase2-calls.py <vm-ip>` (endpoints in
   `lab/tools/sipua_daemon.py`).

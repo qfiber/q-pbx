@@ -3,11 +3,19 @@ defmodule QPBX.Core.Plan do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @limits ~w(max_extensions max_concurrent_calls_inbound max_concurrent_calls_outbound
-             max_concurrent_calls_total max_queues max_ivrs max_conferences
-             recording_storage_gb fax_storage_gb outbound_minutes_per_day
-             outbound_minutes_per_month api_rate_limit_per_minute)a
   @destination_classes ~w(local mobile international premium)
+  @periods ~w(hour day month)
+  # Outbound minutes per destination class and period (call admission).
+  @class_minutes for c <- @destination_classes, p <- @periods, do: :"minutes_#{c}_per_#{p}"
+  # Built at compile time: no atoms are made from data at run time.
+  @class_minutes_by_key for c <- @destination_classes,
+                            p <- @periods,
+                            into: %{},
+                            do: {{c, p}, :"minutes_#{c}_per_#{p}"}
+  @limits ~w(max_extensions max_concurrent_calls_inbound max_concurrent_calls_outbound
+             max_concurrent_calls_total max_concurrent_calls_per_extension max_queues max_ivrs
+             max_conferences recording_storage_gb fax_storage_gb outbound_minutes_per_day
+             outbound_minutes_per_month api_rate_limit_per_minute)a ++ @class_minutes
   @features ~w(fax crm flow_builder recording)
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -23,6 +31,11 @@ defmodule QPBX.Core.Plan do
   @doc "Integer limit fields. Tenants may override any of these."
   def limits, do: @limits
   def destination_classes, do: @destination_classes
+  def periods, do: @periods
+
+  @doc "The limit holding outbound minutes for a destination class and period."
+  def class_minutes_limit(class, period), do: Map.fetch!(@class_minutes_by_key, {class, period})
+
   def features, do: @features
 
   def changeset(plan, attrs) do

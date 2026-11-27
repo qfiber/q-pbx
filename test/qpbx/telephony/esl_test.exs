@@ -181,6 +181,57 @@ defmodule QPBX.Telephony.ESLTest do
       assert dial =~ "102-desk@"
     end
 
+    test "call admission: a barred class is hung up; an allowed call is cut off when its minutes run out",
+         %{fs: fs} do
+      plan = plan_fixture(%{allowed_destination_classes: ["local"], minutes_local_per_hour: 5})
+      t = tenant_fixture(plan_id: plan.id)
+      scope = Core.scope_for(user_fixture(t))
+      {:ok, e} = Core.create_extension(scope, %{number: "101", name: "A"}, @actor)
+      {:ok, _, _} = Core.add_device(scope, e, %{label: "desk", kind: "desk_phone"}, @actor)
+      platform = Core.scope_for(platform_admin_fixture())
+
+      {:ok, trunk} =
+        Core.create_trunk(
+          platform,
+          %{name: "A", auth_mode: "ip", addresses: [%{host: "192.0.2.99"}]},
+          @actor
+        )
+
+      {:ok, _} = Core.create_number_class(platform, %{prefix: "+9725", class: "mobile"}, @actor)
+
+      {:ok, _} =
+        Core.create_route(
+          scope,
+          %{name: "IL", prefixes: ["+972"], destination_class: "local", trunk_ids: [trunk.id]},
+          @actor
+        )
+
+      Cache.clear()
+
+      device = %{
+        "variable_sip_h_X-QPBX-Source" => "device",
+        "variable_sip_h_X-QPBX-Tenant" => t.id,
+        "variable_sip_h_X-QPBX-Auth-User" => "101-desk"
+      }
+
+      park(fs, "call-6", Map.put(device, "Caller-Destination-Number", "0501234567"))
+      assert %{command: "hangup", cause: "OUTGOING_CALL_BARRED"} = recv_sendmsg(fs, "call-6")
+
+      park(fs, "call-7", Map.put(device, "Caller-Destination-Number", "02-765-4321"))
+      assert %{app: "set"} = recv_sendmsg(fs, "call-7")
+      assert %{app: "bridge", arg: dial, event_uuid: id} = recv_sendmsg(fs, "call-7")
+      assert dial =~ "{execute_on_answer='sched_hangup +300 ALLOTTED_TIMEOUT'}"
+      assert dial =~ "sofia/qpbx/+97227654321@127.0.0.1:5060"
+
+      # Talk time is recorded when the carrier call ends.
+      event(fs, %{"Event-Name" => "CHANNEL_BRIDGE", "Unique-ID" => "call-7"})
+      Process.sleep(1_100)
+      complete(fs, "call-7", id, "SUCCESS")
+      assert %{command: "hangup"} = recv_sendmsg(fs, "call-7")
+      assert %{"local" => %{hour: secs}} = QPBX.Telephony.Usage.used(t.id, t.timezone)
+      assert secs >= 1
+    end
+
     test "a call nobody can route is hung up with its cause; calls not parked by us are left alone",
          %{fs: fs, tenant: t} do
       park(fs, "other", %{"variable_qpbx_call" => "false"})

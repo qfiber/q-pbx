@@ -41,6 +41,21 @@ Kamailio gets its real config.
 
 ## Done
 
+- 2-6 Call admission and fraud protection (done): concurrent caps per tenant (total, inbound,
+  outbound) and per extension; destination classes per plan (premium, i.e. the high-cost
+  prefixes, only when allowed); outbound minute caps per class per hour, day and month, plus
+  the total per day and month, with calls cut off when a cap runs out; talk time recorded per
+  class and hour; velocity rules (international spike, quiet hours) that alert and block
+  international and premium calls, with a platform page to set them and lift blocks;
+  emergency calls pass every limit and are logged; refusals audited and announced
+  (`LimitReached`, `FraudAlert`). Lab: `phase2-admission.py` 21/21 with real calls (premium
+  and barred classes refused, second outbound and inbound call refused, emergency through
+  a full cap, a local call cut off after its one minute and the next refused, a spike of 4
+  international calls blocking the 4th, local and emergency still working, lifting
+  restoring international); `phase2-calls.py` 29/29 and Meow 94/94 still pass. Found in the
+  lab: lifting a block let the same spike block again at once (the window is now cleared).
+  217 tests.
+
 - 2-5b Echo test, transfers, redirects, SRTP (done; moved into phase 2 by decision, see
   DECISIONS): `*43` echo (loopback service with a tone prompt), blind and attended
   transfers, following a 302; SRTP from phones accepted; a new registration replaces the
@@ -259,7 +274,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 2-6 Admission and fraud (next).
+- 2-7 Voicemail (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next

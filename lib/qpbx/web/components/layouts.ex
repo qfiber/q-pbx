@@ -62,6 +62,9 @@ defmodule QPBX.Web.Layouts do
           <.link navigate={~p"/platform/protection"} class="btn btn-ghost btn-sm" id="nav-protection">
             {gettext("SIP protection")}
           </.link>
+          <.link navigate={~p"/platform/fraud"} class="btn btn-ghost btn-sm" id="nav-fraud">
+            {gettext("Fraud protection")}
+          </.link>
         </nav>
         <nav :if={tenant_admin?(@current_account)} class="flex flex-wrap gap-2">
           <.link navigate={~p"/app/extensions"} class="btn btn-ghost btn-sm" id="nav-extensions">

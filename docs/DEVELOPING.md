@@ -93,6 +93,7 @@ uses two roles (`qpbx_owner` for migrations, `qpbx` for the app); development us
 | `lab/acme/pebble.sh <vm-ip>` | Local test ACME server (Pebble) with DNS, to test the certificate modes |
 | `node lab/done-when/phase1b.mjs <vm-ip>` | Phase 1b security checks in the lab (needs `qpbx_session_idle_timeout=60`) |
 | `node lab/done-when/phase2-config.mjs <vm-ip>` | 2-2 lab check: telephony pages end to end, device registration |
+| `lab/done-when/phase2-admission.py <vm-ip>` | 2-6 lab check: call admission and fraud protection with real calls |
 | `lab/done-when/phase2-calls.py <vm-ip>` | 2-5 lab check: real calls (extensions, features, outbound, failover, inbound, fallback) |
 | `lab/done-when/phase2-protect.py <vm-ip>` | 2-4 lab check: floods, scanners, failed logins, rate limits, office IPs |
 | `lab/done-when/phase2-edge.py <vm-ip> <host-ip>` | 2-3 lab check: Kamailio edge with simulated carriers on this host |

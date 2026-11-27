@@ -111,6 +111,22 @@ defmodule QPBX.Web.Platform.PlansLive do
   defp limit_label(:outbound_minutes_per_month), do: gettext("Outbound minutes per month")
   defp limit_label(:api_rate_limit_per_minute), do: gettext("API requests per minute")
 
+  defp limit_label(:max_concurrent_calls_per_extension),
+    do: gettext("Max concurrent calls per extension")
+
+  defp limit_label(limit) do
+    ["minutes", class, "per", period] = limit |> Atom.to_string() |> String.split("_")
+
+    gettext("%{class} minutes per %{period}",
+      class: class_label(class),
+      period: period_label(period)
+    )
+  end
+
+  defp period_label("hour"), do: gettext("hour")
+  defp period_label("day"), do: gettext("day")
+  defp period_label("month"), do: gettext("month")
+
   defp class_label("local"), do: gettext("Local")
   defp class_label("mobile"), do: gettext("Mobile")
   defp class_label("international"), do: gettext("International")
