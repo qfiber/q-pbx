@@ -36,18 +36,74 @@
     name: qpbx_app
     tasks_from: secrets
 
-- name: App role (not a superuser, so row-level security applies)
+# Two roles: qpbx_owner owns the schema and runs migrations; the app connects as qpbx with
+# data rights only (no schema changes; the audit log is append-only, see its migration).
+# Neither is a superuser, so row-level security applies.
+- name: Roles
   community.postgresql.postgresql_user:
-    name: qpbx
-    password: "{{ qpbx_secrets.db_password }}"
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
     role_attr_flags: NOSUPERUSER,NOCREATEDB,NOCREATEROLE
+  loop:
+    - {name: qpbx_owner, password: "{{ qpbx_secrets.db_owner_password }}"}
+    - {name: qpbx, password: "{{ qpbx_secrets.db_password }}"}
+  loop_control:
+    label: "{{ item.name }}"
+  no_log: true
   become: true
   become_user: postgres
 
-- name: App database
+- name: Database owned by the owner role
   community.postgresql.postgresql_db:
     name: qpbx
-    owner: qpbx
+    owner: qpbx_owner
     encoding: UTF8
   become: true
   become_user: postgres
+
+- name: Hand objects created before the role split to the owner role
+  community.postgresql.postgresql_query:
+    login_db: qpbx
+    query: |
+      DO $$ BEGIN
+        IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tableowner = 'qpbx') THEN
+          REASSIGN OWNED BY qpbx TO qpbx_owner;
+        END IF;
+      END $$;
+  changed_when: false
+  become: true
+  become_user: postgres
+
+- name: App role rights (data only, for existing and future tables)
+  community.postgresql.postgresql_query:
+    login_db: qpbx
+    query: |
+      ALTER SCHEMA public OWNER TO qpbx_owner;
+      REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+      GRANT CONNECT ON DATABASE qpbx TO qpbx;
+      GRANT USAGE ON SCHEMA public TO qpbx;
+      GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO qpbx;
+      ALTER DEFAULT PRIVILEGES FOR ROLE qpbx_owner IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO qpbx;
+      ALTER DEFAULT PRIVILEGES FOR ROLE qpbx_owner IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO qpbx;
+      -- Existing tables: full data rights, except the append-only audit log.
+      DO $$ DECLARE t text; BEGIN
+        FOR t IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP
+          IF t = 'audit_logs' THEN
+            EXECUTE format('GRANT SELECT, INSERT ON %I TO qpbx', t);
+          ELSE
+            EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON %I TO qpbx', t);
+          END IF;
+        END LOOP;
+      END $$;
+  changed_when: false
+  become: true
+  become_user: postgres
+
+- name: Client authentication (scram on localhost only, for the Q-PBX roles)
+  ansible.builtin.template:
+    src: pg_hba.conf.j2
+    dest: /etc/postgresql/16/main/pg_hba.conf
+    owner: postgres
+    group: postgres
+    mode: "0640"
+  notify: Reload postgresql

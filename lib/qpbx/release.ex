@@ -12,8 +12,19 @@ defmodule QPBX.Release do
   @app :qpbx
   @actor {:system, "cli"}
 
+  @doc """
+  Runs migrations. In production they connect as the schema owner
+  (`MIGRATION_DATABASE_URL`); the app itself connects as a role without schema rights.
+  """
   def migrate do
     load()
+
+    # Only this short-lived migration process connects as the owner; with_repo/3 does not take
+    # connection options, so the repo's configuration is changed here.
+    if url = System.get_env("MIGRATION_DATABASE_URL") do
+      config = Application.get_env(@app, QPBX.Repo, [])
+      Application.put_env(@app, QPBX.Repo, Keyword.put(config, :url, url))
+    end
 
     for repo <- Application.fetch_env!(@app, :ecto_repos),
         do: {:ok, _, _} = Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :up, all: true))

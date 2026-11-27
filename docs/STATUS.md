@@ -135,7 +135,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 1b-5 Database roles.
+- 1b-6 Key provider (local file, AWS KMS).
 
 ## Next
 
@@ -165,6 +165,13 @@ Kamailio gets its real config.
   `tenants` (own row only). Tests prove an unfiltered query in a tenant scope sees only that
   tenant's users, tenant row and sessions, and cannot write another tenant's rows. 4 new
   tests (104).
+- 1b-5 Database roles (done): `qpbx_owner` owns the database and schema and runs migrations
+  (`MIGRATION_DATABASE_URL`, start-up step only); the app connects as `qpbx` with data rights
+  only; `audit_logs` is insert/select only for the app (migration plus grants that skip it);
+  `pg_hba` allows the two roles over TCP on localhost with scram, `postgres` only by local
+  peer. Existing installs are converted in place (`REASSIGN OWNED`); new secrets are added to
+  `secrets.json` without touching existing ones. Verified in the lab: the app role cannot
+  update or delete audit entries, create or drop tables; remote superuser login refused.
 - Done after the phase 1 review: nginx in front (non-root, real client IP, optional
   ModSecurity), FreeSWITCH modules added (G.729, Opus/MP3 recording, loopback, CDR spool; all
   load in the lab), languages moved to one config list, firewall and plan forms now clear

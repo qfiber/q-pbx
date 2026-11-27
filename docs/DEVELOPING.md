@@ -72,7 +72,8 @@ Each module folder has its own `README.md`: purpose, public API, events emitted 
 Toolchain: see `.tool-versions` (Elixir 1.18.4 / OTP 28). Dev Postgres 16:
 `podman run -d --name qpbx-pg -e POSTGRES_PASSWORD=postgres -p 5432:5432 docker.io/library/postgres:16`,
 then `podman exec qpbx-pg psql -U postgres -c "create role qpbx login password 'qpbx' createdb"`
-(the app's DB user must not be a superuser, or row-level security is bypassed).
+(the app's DB user must not be a superuser, or row-level security is bypassed). Production
+uses two roles (`qpbx_owner` for migrations, `qpbx` for the app); development uses one.
 
 | Command | Does |
 | --- | --- |

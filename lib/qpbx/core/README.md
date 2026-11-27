@@ -34,7 +34,8 @@ and writes an audit entry in the same transaction.
 **Gotchas:**
 - New tenant tables get `QPBX.Repo.RLS.enable/1` in their migration, and every tenant-facing
   function takes a `Scope` and runs through `Scope.run/2` (keep the explicit tenant filter too).
-- The DB user must not be a superuser, or RLS is silently bypassed.
+- The DB user must not be a superuser, or RLS is silently bypassed. In production the app's
+  role has no schema rights and cannot change `audit_logs` rows; migrations run as `qpbx_owner`.
 - Audit entries drop `password`, `hashed_password` and `totp_secret`; add new secret fields to
   `@secret_fields` in `audit.ex`.
 - Plan limit names are `QPBX.Core.Plan.limits/0`; overrides are validated against it. every non-platform table carries `tenant_id`; queries are tenant-scoped.
