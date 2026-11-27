@@ -24,14 +24,35 @@ defmodule QPBX.Telephony.Call do
       caller: event["Caller-Caller-ID-Number"]
     }
 
-    {:ok, %{call: call, action: nil, pending: nil}, {:continue, :route}}
+    {:ok, %{call: call, action: nil, pending: nil, caller_ext: nil, lamps: %{}},
+     {:continue, :route}}
   end
 
   @impl true
   def handle_continue(:route, %{call: call} = s) do
     action = decide(call)
     Logger.info("call #{call.uuid}: #{call.source} #{call.caller} -> #{call.destination}")
+
+    caller_ext =
+      if call.source == :device,
+        do: Router.caller_extension(safe_tenant(call.tenant_id), call.auth_user)
+
+    # Lamps name a phone's caller by its extension, not its device login.
+    call = if caller_ext, do: %{call | caller: caller_ext.number}, else: call
+    s = %{s | caller_ext: caller_ext, call: call}
+
+    s =
+      if caller_ext,
+        do: lamp(s, caller_ext.number, caller_ext.domain, call.destination, "initiator", "early"),
+        else: s
+
     {:noreply, run(action, s)}
+  end
+
+  defp safe_tenant(tid) do
+    Cache.tenant(tid)
+  rescue
+    _ -> nil
   end
 
   @impl true
@@ -46,13 +67,21 @@ defmodule QPBX.Telephony.Call do
   end
 
   # Answered and connected: the extension rung is on a call (call waiting off makes it busy).
-  def handle_info({:event, "CHANNEL_BRIDGE", _e}, %{action: %{ext_id: ext_id}} = s)
+  def handle_info({:event, "CHANNEL_BRIDGE", _e}, %{action: %{ext_id: ext_id} = a} = s)
       when is_binary(ext_id) do
     Calls.mark_in_use(ext_id)
+
+    s =
+      s
+      |> lamp(a.ext_number, a.domain, s.call.caller, "recipient", "confirmed")
+      |> caller_lamp("confirmed")
+
     {:noreply, s}
   end
 
-  def handle_info({:event, "CHANNEL_HANGUP_COMPLETE", _e}, s), do: {:stop, :normal, s}
+  def handle_info({:event, "CHANNEL_BRIDGE", _e}, s), do: {:noreply, caller_lamp(s, "confirmed")}
+
+  def handle_info({:event, "CHANNEL_HANGUP_COMPLETE", _e}, s), do: {:stop, :normal, lamps_off(s)}
   def handle_info({:event, _name, _e}, s), do: {:noreply, s}
 
   ## Deciding
@@ -84,6 +113,11 @@ defmodule QPBX.Telephony.Call do
   end
 
   defp run(%{op: :dial} = action, s) do
+    s =
+      if action[:ext_number],
+        do: lamp(s, action.ext_number, action.domain, s.call.caller, "recipient", "early"),
+        else: s
+
     uuid = s.call.uuid
     id = Ecto.UUID.generate()
     Connection.execute(uuid, "set", "call_timeout=#{action.timeout}", Ecto.UUID.generate())
@@ -105,7 +139,55 @@ defmodule QPBX.Telephony.Call do
   end
 
   defp after_dial(:cancelled, _action, s), do: s
-  defp after_dial(outcome, action, s), do: run(Map.fetch!(action, outcome), s)
+
+  defp after_dial(outcome, action, s) do
+    # Not answered there: that extension's lamp goes off before the next step.
+    s =
+      if action[:ext_number],
+        do: lamp(s, action.ext_number, action.domain, s.call.caller, "recipient", "terminated"),
+        else: s
+
+    run(Map.fetch!(action, outcome), s)
+  end
+
+  ## Busy lamps (QPBX.Edge publishes CallState to Kamailio's presence server)
+
+  defp lamp(s, ext, domain, peer, direction, state) do
+    key = {ext, domain}
+
+    if s.lamps[key] == {direction, state} do
+      s
+    else
+      QPBX.Events.publish(%QPBX.Events.CallState{
+        tenant_id: s.call.tenant_id,
+        domain: domain,
+        extension: ext,
+        peer: peer,
+        call_id: "#{s.call.uuid}-#{ext}",
+        state: state,
+        direction: direction,
+        at: DateTime.utc_now()
+      })
+
+      lamps =
+        if state == "terminated",
+          do: Map.delete(s.lamps, key),
+          else: Map.put(s.lamps, key, {direction, state})
+
+      %{s | lamps: lamps}
+    end
+  end
+
+  defp caller_lamp(%{caller_ext: %{number: n, domain: d}} = s, state),
+    do: lamp(s, n, d, s.call.destination, "initiator", state)
+
+  defp caller_lamp(s, _state), do: s
+
+  defp lamps_off(s) do
+    Enum.reduce(s.lamps, s, fn {{ext, domain}, {direction, _}}, acc ->
+      lamp(acc, ext, domain, nil, direction, "terminated")
+    end)
+  end
 
   @doc false
   # What a finished bridge means for the next step.

@@ -7,7 +7,7 @@ defmodule QPBX.Edge do
   """
   use Boundary,
     deps: [QPBX.Repo, QPBX.Core, QPBX.Events, QPBX.Firewall],
-    exports: [Reloader, Registrations, Bans, Settings, Ban]
+    exports: [Reloader, Registrations, Bans, Settings, Ban, Presence]
 
   import Ecto.Query
   alias QPBX.Edge.{Ban, Settings}

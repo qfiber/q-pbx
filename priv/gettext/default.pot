@@ -37,8 +37,8 @@ msgstr ""
 msgid "CRM"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:45
-#: lib/qpbx/web/controllers/auth_html.ex:79
+#: lib/qpbx/web/controllers/auth_html.ex:48
+#: lib/qpbx/web/controllers/auth_html.ex:82
 #, elixir-autogen, elixir-format
 msgid "Code"
 msgstr ""
@@ -63,13 +63,13 @@ msgstr ""
 msgid "Create tenant"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:16
+#: lib/qpbx/web/controllers/auth_html.ex:19
 #: lib/qpbx/web/live/platform/tenants_live.ex:126
 #, elixir-autogen, elixir-format
 msgid "Email"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:39
+#: lib/qpbx/web/controllers/auth_html.ex:42
 #, elixir-autogen, elixir-format
 msgid "Enter the 6-digit code from your authenticator app."
 msgstr ""
@@ -131,8 +131,8 @@ msgstr ""
 msgid "Local"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:9
-#: lib/qpbx/web/controllers/auth_html.ex:28
+#: lib/qpbx/web/controllers/auth_html.ex:12
+#: lib/qpbx/web/controllers/auth_html.ex:31
 #: lib/qpbx/web/controllers/session_controller.ex:51
 #, elixir-autogen, elixir-format
 msgid "Log in"
@@ -191,7 +191,7 @@ msgstr ""
 #: lib/qpbx/web/live/platform/tenants_live.ex:136
 #: lib/qpbx/web/live/platform/trunks_live.ex:109
 #: lib/qpbx/web/live/platform/trunks_live.ex:140
-#: lib/qpbx/web/live/tenant/extension_live.ex:203
+#: lib/qpbx/web/live/tenant/extension_live.ex:202
 #: lib/qpbx/web/live/tenant/extensions_live.ex:65
 #: lib/qpbx/web/live/tenant/extensions_live.ex:81
 #: lib/qpbx/web/live/tenant/routes_live.ex:124
@@ -200,7 +200,7 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:105
+#: lib/qpbx/web/controllers/auth_html.ex:108
 #, elixir-autogen, elixir-format
 msgid "New password (at least 12 characters)"
 msgstr ""
@@ -216,12 +216,12 @@ msgstr ""
 msgid "New tenant"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:87
+#: lib/qpbx/web/controllers/auth_html.ex:90
 #, elixir-autogen, elixir-format
 msgid "Not now"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:71
+#: lib/qpbx/web/controllers/auth_html.ex:74
 #, elixir-autogen, elixir-format
 msgid "Or enter this key by hand:"
 msgstr ""
@@ -236,7 +236,7 @@ msgstr ""
 msgid "Outbound minutes per month"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:23
+#: lib/qpbx/web/controllers/auth_html.ex:26
 #: lib/qpbx/web/live/tenant/extension_live.ex:137
 #, elixir-autogen, elixir-format
 msgid "Password"
@@ -261,7 +261,7 @@ msgstr ""
 msgid "Plans"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:9
+#: lib/qpbx/web/controllers/auth_html.ex:12
 #, elixir-autogen, elixir-format
 msgid "Platform admin login"
 msgstr ""
@@ -288,7 +288,7 @@ msgstr ""
 msgid "Recording storage (GB)"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:112
+#: lib/qpbx/web/controllers/auth_html.ex:115
 #, elixir-autogen, elixir-format
 msgid "Repeat the password"
 msgstr ""
@@ -304,7 +304,7 @@ msgstr ""
 msgid "SIP domain name"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:117
+#: lib/qpbx/web/controllers/auth_html.ex:120
 #, elixir-autogen, elixir-format
 msgid "Save password"
 msgstr ""
@@ -314,18 +314,18 @@ msgstr ""
 msgid "Saving..."
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:65
+#: lib/qpbx/web/controllers/auth_html.ex:68
 #, elixir-autogen, elixir-format
 msgid "Scan this code with an authenticator app, then enter the 6-digit code it shows."
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:63
+#: lib/qpbx/web/controllers/auth_html.ex:66
 #: lib/qpbx/web/controllers/totp_controller.ex:79
 #, elixir-autogen, elixir-format
 msgid "Set up two-factor authentication"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:97
+#: lib/qpbx/web/controllers/auth_html.ex:100
 #: lib/qpbx/web/controllers/setup_controller.ex:57
 #, elixir-autogen, elixir-format
 msgid "Set up your account"
@@ -384,12 +384,12 @@ msgstr ""
 msgid "Time zone"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:84
+#: lib/qpbx/web/controllers/auth_html.ex:87
 #, elixir-autogen, elixir-format
 msgid "Turn on 2FA"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:38
+#: lib/qpbx/web/controllers/auth_html.ex:41
 #: lib/qpbx/web/controllers/totp_controller.ex:31
 #, elixir-autogen, elixir-format
 msgid "Two-factor authentication"
@@ -411,7 +411,7 @@ msgstr ""
 msgid "Unlimited"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:51
+#: lib/qpbx/web/controllers/auth_html.ex:54
 #, elixir-autogen, elixir-format
 msgid "Verify"
 msgstr ""
@@ -509,7 +509,7 @@ msgstr ""
 #: lib/qpbx/web/live/platform/firewall_live.ex:97
 #: lib/qpbx/web/live/platform/firewall_live.ex:119
 #: lib/qpbx/web/live/tenant/extension_live.ex:149
-#: lib/qpbx/web/live/tenant/extension_live.ex:192
+#: lib/qpbx/web/live/tenant/extension_live.ex:191
 #, elixir-autogen, elixir-format
 msgid "Kind"
 msgstr ""
@@ -631,13 +631,13 @@ msgstr ""
 msgid "The automatic check did not pass. Please try again."
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:126
+#: lib/qpbx/web/controllers/auth_html.ex:129
 #: lib/qpbx/web/login_protection.ex:58
 #, elixir-autogen, elixir-format
 msgid "Too many attempts"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:128
+#: lib/qpbx/web/controllers/auth_html.ex:131
 #, elixir-autogen, elixir-format
 msgid "Too many failed attempts from your network. Try again after %{time} (UTC)."
 msgstr ""
@@ -683,7 +683,7 @@ msgstr ""
 msgid "Add address"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:198
+#: lib/qpbx/web/live/tenant/extension_live.ex:197
 #, elixir-autogen, elixir-format
 msgid "Add device"
 msgstr ""
@@ -713,7 +713,7 @@ msgstr ""
 msgid "An outside number"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:259
+#: lib/qpbx/web/live/tenant/extension_live.ex:258
 #, elixir-autogen, elixir-format
 msgid "Analog adapter (ATA)"
 msgstr ""
@@ -759,12 +759,12 @@ msgstr ""
 msgid "By IP address"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:201
+#: lib/qpbx/web/live/tenant/extension_live.ex:200
 #, elixir-autogen, elixir-format
 msgid "Call features"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:210
+#: lib/qpbx/web/live/tenant/extension_live.ex:209
 #, elixir-autogen, elixir-format
 msgid "Call waiting"
 msgstr ""
@@ -843,12 +843,12 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:248
+#: lib/qpbx/web/live/tenant/extension_live.ex:247
 #, elixir-autogen, elixir-format
 msgid "Delete extension"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:245
+#: lib/qpbx/web/live/tenant/extension_live.ex:244
 #, elixir-autogen, elixir-format
 msgid "Delete extension %{number} and all its devices?"
 msgstr ""
@@ -878,7 +878,7 @@ msgstr ""
 msgid "Description (e.g. Tel Aviv office)"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:257
+#: lib/qpbx/web/live/tenant/extension_live.ex:256
 #, elixir-autogen, elixir-format
 msgid "Desk phone"
 msgstr ""
@@ -909,7 +909,7 @@ msgstr ""
 msgid "Digits to remove before sending (after +)"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:209
+#: lib/qpbx/web/live/tenant/extension_live.ex:208
 #: lib/qpbx/web/live/tenant/extensions_live.ex:67
 #, elixir-autogen, elixir-format
 msgid "Do not disturb"
@@ -986,27 +986,27 @@ msgstr ""
 msgid "Fax error correction (ECM)"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:225
+#: lib/qpbx/web/live/tenant/extension_live.ex:224
 #, elixir-autogen, elixir-format
 msgid "Follow me"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:230
+#: lib/qpbx/web/live/tenant/extension_live.ex:229
 #, elixir-autogen, elixir-format
 msgid "Follow-me numbers (comma-separated, up to 5)"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:211
+#: lib/qpbx/web/live/tenant/extension_live.ex:210
 #, elixir-autogen, elixir-format
 msgid "Forward all calls to"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:212
+#: lib/qpbx/web/live/tenant/extension_live.ex:211
 #, elixir-autogen, elixir-format
 msgid "Forward when busy to"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:215
+#: lib/qpbx/web/live/tenant/extension_live.ex:214
 #, elixir-autogen, elixir-format
 msgid "Forward when not answered to"
 msgstr ""
@@ -1051,17 +1051,12 @@ msgstr ""
 msgid "Label"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:185
-#, elixir-autogen, elixir-format
-msgid "Label (e.g. desk)"
-msgstr ""
-
 #: lib/qpbx/web/live/tenant/extension_live.ex:150
 #, elixir-autogen, elixir-format
 msgid "MAC"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:195
+#: lib/qpbx/web/live/tenant/extension_live.ex:194
 #, elixir-autogen, elixir-format
 msgid "MAC (optional)"
 msgstr ""
@@ -1081,12 +1076,12 @@ msgstr ""
 msgid "May show the tenant's numbers, even from other carriers"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:260
+#: lib/qpbx/web/live/tenant/extension_live.ex:259
 #, elixir-autogen, elixir-format
 msgid "Mobile app"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:196
+#: lib/qpbx/web/live/tenant/extension_live.ex:195
 #, elixir-autogen, elixir-format
 msgid "Model (optional)"
 msgstr ""
@@ -1198,7 +1193,7 @@ msgstr ""
 msgid "Numbers"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:235
+#: lib/qpbx/web/live/tenant/extension_live.ex:234
 #, elixir-autogen, elixir-format
 msgid "Numbers can be typed the local way, for example 02-123-4567."
 msgstr ""
@@ -1227,7 +1222,7 @@ msgstr ""
 msgid "Outbound routes"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:206
+#: lib/qpbx/web/live/tenant/extension_live.ex:205
 #, elixir-autogen, elixir-format
 msgid "Outside caller ID (one of your numbers)"
 msgstr ""
@@ -1309,7 +1304,7 @@ msgstr ""
 msgid "Remove device %{label}?"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:221
+#: lib/qpbx/web/live/tenant/extension_live.ex:220
 #, elixir-autogen, elixir-format
 msgid "Ring for (seconds)"
 msgstr ""
@@ -1338,7 +1333,7 @@ msgstr ""
 #: lib/qpbx/web/live/platform/numbering_live.ex:159
 #: lib/qpbx/web/live/platform/protection_live.ex:107
 #: lib/qpbx/web/live/platform/trunks_live.ex:246
-#: lib/qpbx/web/live/tenant/extension_live.ex:237
+#: lib/qpbx/web/live/tenant/extension_live.ex:236
 #: lib/qpbx/web/live/tenant/number_format_live.ex:92
 #: lib/qpbx/web/live/tenant/numbers_live.ex:127
 #: lib/qpbx/web/live/tenant/routes_live.ex:192
@@ -1364,7 +1359,7 @@ msgstr ""
 msgid "Signalling addresses"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:258
+#: lib/qpbx/web/live/tenant/extension_live.ex:257
 #, elixir-autogen, elixir-format
 msgid "Softphone"
 msgstr ""
@@ -1576,4 +1571,9 @@ msgstr ""
 #: lib/qpbx/web/live/platform/protection_live.ex:119
 #, elixir-autogen, elixir-format
 msgid "all"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/extension_live.ex:185
+#, elixir-autogen, elixir-format
+msgid "Label (e.g. desk; empty: login is the extension number)"
 msgstr ""

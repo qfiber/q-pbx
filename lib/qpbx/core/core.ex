@@ -286,6 +286,9 @@ defmodule QPBX.Core do
   defdelegate telephony_platform(), to: QPBX.Core.TelephonySnapshot, as: :platform
   defdelegate telephony_dids(), to: QPBX.Core.TelephonySnapshot, as: :dids
 
+  defdelegate extension_addresses(tenant_id \\ nil),
+    to: QPBX.Core.TelephonySnapshot
+
   @doc "What a user typed (local formats allowed) as E.164, with the scope's number rule."
   def to_e164(scope, input), do: QPBX.Core.Numbers.to_e164(input, number_rule(scope))
 

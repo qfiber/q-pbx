@@ -67,6 +67,12 @@ loadmodule "nathelper.so"
 loadmodule "dispatcher.so"
 loadmodule "permissions.so"
 loadmodule "uac.so"
+loadmodule "json.so"
+loadmodule "presence.so"
+loadmodule "presence_xml.so"
+loadmodule "presence_dialoginfo.so"
+loadmodule "presence_mwi.so"
+loadmodule "pua_json.so"
 
 modparam("tls", "config", "/etc/kamailio/tls.cfg")
 modparam("jsonrpcs", "transport", 1)
@@ -93,6 +99,18 @@ modparam("htable", "htable", "ipban=>size=12;autoexpire=2592000;dbtable=ipban;")
 modparam("htable", "htable", "counters=>size=14;autoexpire=1000;updateexpire=0;")
 modparam("htable", "htable", "edgealert=>size=8;autoexpire=3600;updateexpire=0;")
 modparam("htable", "timer_interval", 10)
+
+# Busy lamps, presence and voicemail lights: Kamailio answers the phones' subscriptions; the
+# app publishes call states and message counts as JSON on /presence (pua_json). All in memory:
+# runtime state the app rebuilds.
+modparam("presence", "publ_cache", 2)
+modparam("presence", "subs_db_mode", 0)
+modparam("presence", "server_address", "sip:presence@{{ qpbx_service_ipv4 }}:5060")
+modparam("presence_xml", "force_active", 1)
+modparam("presence_xml", "disable_winfo", 1)
+modparam("presence_xml", "force_dummy_presence", 1)
+# An extension with no state yet reads as idle, not unknown.
+modparam("presence_dialoginfo", "force_dummy_dialog", 1)
 
 # Registrations in memory, one location table across tenants (address of record user@domain).
 modparam("usrloc", "db_mode", 0)
@@ -165,6 +183,16 @@ request_route {
   if (!route(FROM_CORE_ADDR)) {
     route(PROTECT);
     remove_hf_re("^X-QPBX-");
+  }
+
+  # Subscriptions (and their in-dialog refreshes) and presence publications end here.
+  if (!route(FROM_CORE_ADDR)) {
+    if (is_method("SUBSCRIBE")) {
+      route(SUBSCRIBE);
+    }
+    if (is_method("PUBLISH")) {
+      route(PUBLISH);
+    }
   }
 
   route(WITHINDLG);
@@ -379,6 +407,53 @@ route[AUTH] {
   consume_credentials();
 }
 
+# A phone watches extensions of its own tenant: busy lamps (dialog), presence and its voicemail
+# light (message-summary).
+route[SUBSCRIBE] {
+  if ($sht(domains=>$fd) == $null) {
+    sl_send_reply("403", "Forbidden");
+    exit;
+  }
+  if (!($hdr(Event) =~ "^(dialog|presence|message-summary)")) {
+    sl_send_reply("489", "Bad Event");
+    exit;
+  }
+  $var(realm) = $fd;
+  route(AUTH);
+  if ($rd != $fd) {
+    sl_send_reply("403", "Forbidden");
+    exit;
+  }
+  if (!t_newtran()) {
+    sl_reply_error();
+    exit;
+  }
+  handle_subscribe();
+  t_release();
+  exit;
+}
+
+# A phone publishes its own presence only.
+route[PUBLISH] {
+  if ($sht(domains=>$fd) == $null) {
+    sl_send_reply("403", "Forbidden");
+    exit;
+  }
+  $var(realm) = $fd;
+  route(AUTH);
+  if ($rd != $fd || $rU != $au) {
+    sl_send_reply("403", "Forbidden");
+    exit;
+  }
+  if (!t_newtran()) {
+    sl_reply_error();
+    exit;
+  }
+  handle_publish();
+  t_release();
+  exit;
+}
+
 route[FROM_CORE_ADDR] {
   if ($si == "127.0.0.1" && $sp == 5080) {
     return 1;
@@ -391,6 +466,9 @@ route[NATDETECT] {
   if (nat_uac_test("19")) {
     if (is_method("REGISTER")) {
       fix_nated_register();
+    } else if (is_method("SUBSCRIBE")) {
+      # Notifications go to where the subscription came from.
+      fix_nated_contact();
     } else if (is_first_hop()) {
       set_contact_alias();
     }
@@ -630,6 +708,12 @@ event_route[xhttp:request] {
   }
   if ($hu =~ "^/RPC") {
     jsonrpc_dispatch();
+  } else if ($hu =~ "^/presence") {
+    if (pua_json_publish($rb)) {
+      xhttp_reply("200", "OK", "text/plain", "ok\n");
+    } else {
+      xhttp_reply("400", "Bad Request", "text/plain", "rejected\n");
+    }
   } else {
     xhttp_reply("404", "Not Found", "", "");
   }

@@ -106,6 +106,17 @@ defmodule QPBX.Core.TelephonyConfigTest do
       assert Core.list_sip_credentials(scope) == []
     end
 
+    test "one device may log in as the extension number itself", %{t: t, scope: scope} do
+      e = ext!(scope, "105")
+      assert {:ok, d, _} = Core.add_device(scope, e, %{label: "", kind: "softphone"}, @actor)
+      assert d.label == "" and d.sip_credential.username == "105"
+      %{rows: rows} = Repo.query!("SELECT key_name FROM kamailio.credentials")
+      assert ["105@#{t.sip_domain}"] in rows
+      assert {:error, cs} = Core.add_device(scope, e, %{kind: "desk_phone"}, @actor)
+      assert errors_on(cs)[:label]
+      assert {:ok, _, _} = Core.add_device(scope, e, %{label: "desk", kind: "desk_phone"}, @actor)
+    end
+
     test "deleting an extension removes its devices' logins", %{scope: scope} do
       e = ext!(scope, "101")
       {:ok, _, _} = Core.add_device(scope, e, %{label: "a", kind: "softphone"}, @actor)

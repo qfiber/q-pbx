@@ -142,7 +142,7 @@ defmodule QPBX.Web.Tenant.ExtensionLive do
 
       <h2 class="text-lg font-semibold">{gettext("Devices")}</h2>
       <.table id="devices" rows={@ext.devices}>
-        <:col :let={d} label={gettext("Label")}>{d.label}</:col>
+        <:col :let={d} label={gettext("Label")}>{if d.label == "", do: "—", else: d.label}</:col>
         <:col :let={d} label={gettext("SIP user")}>
           <span dir="ltr">{d.sip_credential.username}</span>
         </:col>
@@ -182,9 +182,8 @@ defmodule QPBX.Web.Tenant.ExtensionLive do
         <div class="grid sm:grid-cols-4 gap-2">
           <.input
             field={@device_form[:label]}
-            label={gettext("Label (e.g. desk)")}
+            label={gettext("Label (e.g. desk; empty: login is the extension number)")}
             dir="ltr"
-            required
           />
           <.input
             field={@device_form[:kind]}

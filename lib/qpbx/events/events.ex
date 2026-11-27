@@ -6,6 +6,7 @@ defmodule QPBX.Events do
   use Boundary,
     deps: [],
     exports: [
+      CallState,
       ConfigChanged,
       EdgeAlert,
       FirewallChanged,

@@ -2,6 +2,17 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Busy lamps in production; a device may log in as its extension (2-0b)
+
+- **A device with no label logs in as the extension number** (one per extension). Most
+  phones, softphones (Meow) and FreePBX habits expect login = extension: they dial and watch
+  "102", and show callers as "101". Other devices keep `<extension>-<label>`. Changes the
+  2-2 rule (every login `<extension>-<label>`) only by allowing the empty label.
+- **Busy lamps follow the 2-0a design:** the call process emits `CallState`, the edge area
+  publishes it through `pua_json`; Kamailio's presence server answers subscriptions. The
+  app republishes voicemail lights when Kamailio's start time changes, because its presence
+  state is in memory.
+
 ## 2026-11-27: Call control (2-5)
 
 - **Inbound event socket, one connection:** Elixir connects to FreeSWITCH (127.0.0.1:8021),

@@ -238,7 +238,9 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 2-0b Meow end to end (next, now that calls work), then 2-6 admission and fraud.
+- 2-0b Meow end to end (in progress): busy lamps, presence and voicemail lights are built and
+  pass the scripted lab check (`phase2-calls.py` 27/27); Meow's own live test is next (needs a
+  hosts entry for the lab tenant on the machine running Meow). Then 2-6 admission and fraud.
   (Meow end to end) waits for call control (2-5).
 
 ## Next

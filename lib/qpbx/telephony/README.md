@@ -40,8 +40,13 @@ platform's and the DID index, loaded on first use and all dropped on `ConfigChan
 `child_spec/1` (started by the application; the event socket only with `config :qpbx,
 QPBX.Telephony, esl: true`, i.e. production).
 
+**Busy lamps:** the call process publishes `CallState` for the calling extension (initiator:
+early, confirmed) and each extension rung (recipient: early, confirmed, terminated when not
+answered there); everything goes terminated when the call ends. The caller is named by
+extension number.
+
 **Events consumed:** `ConfigChanged`, `SipCredentialsChanged`, `TenantsChanged` (cache).
-**Emitted:** none yet (call events and CDRs arrive with 2-8).
+**Emitted:** `CallState`.
 
 **Gotchas:**
 - Without `continue_on_fail=true` FreeSWITCH hangs up the caller after a failed bridge, so

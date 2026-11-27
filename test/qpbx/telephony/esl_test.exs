@@ -81,6 +81,8 @@ defmodule QPBX.Telephony.ESLTest do
 
     test "a parked call from a phone is bridged; busy follows the forward-on-busy; answered ends it",
          %{fs: fs, tenant: t} do
+      QPBX.Events.subscribe(QPBX.Events.CallState)
+
       park(fs, "call-1", %{
         "variable_sip_h_X-QPBX-Source" => "device",
         "variable_sip_h_X-QPBX-Tenant" => t.id,
@@ -116,6 +118,19 @@ defmodule QPBX.Telephony.ESLTest do
       assert %{command: "hangup", cause: "NORMAL_CLEARING"} = recv_sendmsg(fs, "call-1")
       event(fs, %{"Event-Name" => "CHANNEL_HANGUP_COMPLETE", "Unique-ID" => "call-1"})
       wait_until(fn -> Registry.lookup(QPBX.Telephony.Registry, "call-1") == [] end)
+
+      # Busy lamps: 101 (calling) early, 102 rang then went off (busy), 101's device rang
+      # (forward on busy: 101 itself), connected, then everything off.
+      states = collect_states()
+      assert {"101", "initiator", "early"} in states
+      assert {"102", "recipient", "early"} in states
+
+      # The lamp names the caller by extension, not by its device login.
+      assert "101" in Process.get(:peers_of_102)
+
+      assert {"102", "recipient", "terminated"} in states
+      assert {"101", "recipient", "confirmed"} in states
+      assert states |> List.last() |> elem(2) == "terminated"
     end
 
     test "a call nobody can route is hung up with its cause; calls not parked by us are left alone",
@@ -140,6 +155,16 @@ defmodule QPBX.Telephony.ESLTest do
       })
 
       assert %{command: "hangup", cause: "UNALLOCATED_NUMBER"} = recv_sendmsg(fs, "call-3")
+    end
+  end
+
+  defp collect_states(acc \\ []) do
+    receive do
+      {:event, %QPBX.Events.CallState{extension: e, direction: d, state: st, peer: peer}} ->
+        if e == "102", do: Process.put(:peers_of_102, [peer | Process.get(:peers_of_102, [])])
+        collect_states([{e, d, st} | acc])
+    after
+      100 -> Enum.reverse(acc)
     end
   end
 

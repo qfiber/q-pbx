@@ -158,6 +158,30 @@ try:
         do(cmd="bye", dialog=held["dialog"])
     ext("102", call_waiting=True)
 
+    # Busy lamps, presence and the voicemail light (Kamailio's presence server, fed by the app).
+    r1 = do(cmd="subscribe", **{"from": "p103", "target": "102", "event": "dialog"})
+    r2 = do(cmd="subscribe", **{"from": "p103", "target": "102", "event": "presence"})
+    r3 = do(cmd="subscribe", **{"from": "p103", "target": "103", "event": "message-summary"})
+    check("103 subscribes to 102's lamp, 102's presence and its own voicemail light", [r1["status"], r2["status"], r3["status"]] == ["202"] * 3 or all(x["status"].startswith("2") for x in (r1, r2, r3)), f"{r1['status']} {r2['status']} {r3['status']}")
+    time.sleep(1.5)
+    first = do(cmd="notifies", name="p103")["notifies"]
+    ev = lambda lst, e: [n for n in lst if n["event"] == e]
+    check("…102's lamp starts idle", any(n["state"] in ("idle", "terminated") for n in ev(first, "dialog")), str(ev(first, "dialog")))
+    check("…presence is served", len(ev(first, "presence")) >= 1, str(ev(first, "presence")))
+    check("…the voicemail light says no messages", any(n["state"] == "no" for n in ev(first, "message-summary")), str(ev(first, "message-summary")))
+    held = do(cmd="call", **{"from": "p101", "to": "102", "hold": True})
+    time.sleep(1.5)
+    during = ev(do(cmd="notifies", name="p103")["notifies"], "dialog")
+    if held.get("dialog"):
+        do(cmd="bye", dialog=held["dialog"])
+    time.sleep(1.5)
+    after = ev(do(cmd="notifies", name="p103")["notifies"], "dialog")
+    states = [n["state"] for n in during]
+    check("BLF: 102 shows ringing while called, as the one being called, naming 101",
+          any(n["state"] == "early" and n["direction"] == "recipient" and "101" in (n["peer"] or "") for n in during), str(during))
+    check("BLF: 102 shows on a call after the answer", "confirmed" in states, str(states))
+    check("BLF: 102 is idle again after the hangup", after and after[-1]["state"] in ("terminated", "idle"), str(after))
+
     # Outbound: the national number reaches carrier A in E.164, with the tenant's number.
     seen("A"), seen("B")
     r = do(cmd="call", **{"from": "p101", "to": "02-765-4321"})

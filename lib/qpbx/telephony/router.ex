@@ -238,8 +238,10 @@ defmodule QPBX.Telephony.Router do
           op: :dial,
           dial: dial,
           timeout: ext.no_answer_seconds,
-          # Answered: the extension is on a call (call waiting off makes it busy).
+          # Answered: the extension is on a call (call waiting off makes it busy); its busy lamp.
           ext_id: ext.id,
+          ext_number: ext.number,
+          domain: t.tenant.sip_domain,
           busy: on_busy(ext, caller, ctx, hops),
           no_answer: no_answer,
           failed: no_answer
@@ -346,6 +348,16 @@ defmodule QPBX.Telephony.Router do
       ]
     else
       _ -> []
+    end
+  end
+
+  @doc "The extension a device belongs to (its number and domain, for the caller's busy lamp)."
+  def caller_extension(nil, _auth_user), do: nil
+
+  def caller_extension(t, auth_user) do
+    case device_extension(t, auth_user) do
+      nil -> nil
+      ext -> %{number: ext.number, domain: t.tenant.sip_domain}
     end
   end
 

@@ -25,6 +25,7 @@ defmodule QPBX.Application do
       # Off in tests: their actions are tested directly, and they would react to every test.
       Application.get_env(:qpbx, :edge_workers, true) && QPBX.Edge.Reloader,
       Application.get_env(:qpbx, :edge_workers, true) && QPBX.Edge.Bans,
+      Application.get_env(:qpbx, :edge_workers, true) && QPBX.Edge.Presence,
       QPBX.Telephony,
       QPBX.Web.Health,
       QPBX.Web.SessionReaper,

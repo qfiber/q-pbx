@@ -65,6 +65,18 @@ defmodule QPBX.Core.TelephonySnapshot do
     }
   end
 
+  @doc "Every extension as `{number, sip_domain}`, optionally of one tenant (voicemail lights)."
+  def extension_addresses(tenant_id \\ nil) do
+    query =
+      from e in Extension,
+        join: t in Tenant,
+        on: t.id == e.tenant_id,
+        select: {e.number, t.sip_domain}
+
+    query = if tenant_id, do: where(query, [e], e.tenant_id == ^tenant_id), else: query
+    Repo.all(query)
+  end
+
   @doc "Every DID by number (E.164), for incoming calls from carriers."
   def dids, do: Map.new(Repo.all(from(d in Did)), &{&1.number, &1})
 end

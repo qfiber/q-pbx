@@ -13,6 +13,7 @@
 | `QPBX.Events.SessionsRevoked` | `sessions` | 1 | `session_ids`, `at` | `QPBX.Core` (sessions) |
 | `QPBX.Events.SipCredentialsChanged` | `sip_credentials` | 1 | `tenant_id`, `at` | `QPBX.Core` |
 | `QPBX.Events.TenantsChanged` | `tenants` | 1 | `tenant_id`, `at` | `QPBX.Core` |
+| `QPBX.Events.CallState` | `call_state` | 1 | `tenant_id`, `domain`, `extension`, `peer`, `call_id`, `state` (early, confirmed, terminated), `direction` (initiator, recipient), `at` | `QPBX.Telephony` (busy lamps) |
 | `QPBX.Events.EdgeAlert` | `edge_alerts` | 1 | `ip`, `reason`, `at` | `QPBX.Edge` (an office IP would have been banned) |
 | `QPBX.Events.ConfigChanged` | `config` | 1 | `tenant_id` (nil: platform), `kind`, `at` | `QPBX.Core` (telephony configuration) |
 

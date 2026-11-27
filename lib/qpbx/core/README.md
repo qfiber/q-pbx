@@ -30,7 +30,8 @@ and writes an audit entry in the same transaction.
 - Extensions (tenant scope): `list_extensions/1`, `get_extension!/2`, `change_extension/2`,
   `create_extension/3` (checks `max_extensions` under a lock on the tenant row),
   `update_extension/4`, `delete_extension/3` (removes its devices and their SIP logins).
-- Devices: `change_device/1`, `add_device/4` (own SIP login `<extension>-<label>`; returns the
+- Devices: `change_device/1`, `add_device/4` (own SIP login `<extension>-<label>`, or the
+  extension number itself when the label is empty (one such device per extension); returns the
   password once), `delete_device/3`, `reset_device_password/3`.
 - Trunks (platform scope: shared carriers; tenant scope: its own): `list_trunks/1`,
   `trunk_choices/1` (own and platform trunks for a tenant's routes), `get_trunk!/2`,
@@ -53,7 +54,7 @@ and writes an audit entry in the same transaction.
   `change_emergency_route/1`, `create_emergency_route/3` (platform trunk only),
   `delete_emergency_route/3`.
 - Call control snapshots (internal, for `QPBX.Telephony` only): `telephony_tenant/1`,
-  `telephony_platform/0`, `telephony_dids/0`.
+  `telephony_platform/0`, `telephony_dids/0`, `extension_addresses/1`.
 - `QPBX.Core.Numbers` (pure): `to_e164/2`, `display/2`, `classify/3`, `select_route/2`,
   `carrier_number/2`.
 - `with_tenant/2`: run a function with row-level security scoped to one tenant; a function

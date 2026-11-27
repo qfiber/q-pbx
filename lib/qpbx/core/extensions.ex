@@ -2,7 +2,8 @@ defmodule QPBX.Core.Extensions do
   @moduledoc """
   Extensions and their devices, in a tenant scope. Creating an extension checks the plan's
   `max_extensions` under a lock on the tenant row, so parallel requests cannot pass it. A
-  device gets its own SIP login `<extension>-<label>` whose password is returned once.
+  device gets its own SIP login `<extension>-<label>` (or the extension number when the label
+  is empty) whose password is returned once.
   """
   import Ecto.Query
   alias QPBX.Core.{Audit, Changes, Device, Extension, Scope, SipCredentials, Tenant}
@@ -94,7 +95,7 @@ defmodule QPBX.Core.Extensions do
         with {:ok, _} <- Ecto.Changeset.apply_action(cs, :insert),
              label = Ecto.Changeset.get_field(cs, :label),
              {:ok, cred, password} <-
-               SipCredentials.insert(tid, %{username: "#{ext.number}-#{label}"}, actor)
+               SipCredentials.insert(tid, %{username: Device.username(ext.number, label)}, actor)
                |> label_taken(cs),
              {:ok, device} <-
                cs |> Ecto.Changeset.put_change(:sip_credential_id, cred.id) |> Repo.insert() do
@@ -165,7 +166,13 @@ defmodule QPBX.Core.Extensions do
 
   # The SIP username is derived from the label: a clash means the label is taken.
   defp label_taken({:error, %Ecto.Changeset{}}, cs),
-    do: {:error, Ecto.Changeset.add_error(cs, :label, "already used on this extension")}
+    do:
+      {:error,
+       Ecto.Changeset.add_error(
+         cs,
+         :label,
+         "already used on this extension (or its login is taken)"
+       )}
 
   defp label_taken(ok, _cs), do: ok
 

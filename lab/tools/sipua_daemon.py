@@ -13,6 +13,8 @@ Commands:
   {"cmd": "call", "from": N, "to": NUMBER, "hold": bool, "wait": SECONDS}
   {"cmd": "bye", "dialog": ID}
   {"cmd": "seen", "name": N}                     INVITEs received since the last "seen"
+  {"cmd": "subscribe", "from": N, "target": EXT, "event": dialog|presence|message-summary}
+  {"cmd": "notifies", "name": N}                 NOTIFYs received (event, state) since the last call
 """
 import hashlib, json, queue, random, re, socket, sys, threading, time
 
@@ -46,7 +48,7 @@ class Endpoint(threading.Thread):
         self.port = self.sock.getsockname()[1]
         self.rtp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.rtp.bind((ip, 0))
-        self.responses, self.seen, self.ringing = queue.Queue(), [], {}
+        self.responses, self.seen, self.ringing, self.notifies = queue.Queue(), [], {}, []
 
     def send(self, msg, addr=KAMAILIO):
         self.sock.sendto(msg.encode(), addr)
@@ -79,7 +81,10 @@ class Endpoint(threading.Thread):
                 inv = self.ringing.pop(hdr(msg, "Call-ID"), None)
                 if inv:
                     self.reply(inv, addr, 487, "Request Terminated")
-            elif method in ("OPTIONS", "BYE", "NOTIFY"):
+            elif method == "NOTIFY":
+                self.notifies.append(summarize(msg))
+                self.reply(msg, addr, 200, "OK")
+            elif method in ("OPTIONS", "BYE"):
                 self.reply(msg, addr, 200, "OK")
 
     def on_invite(self, msg, addr):
@@ -171,6 +176,18 @@ class Endpoint(threading.Thread):
             self.bye(dialog)
         return {"status": "200", "dialog": dialog}
 
+    def subscribe(self, target, event):
+        accept = {"dialog": "application/dialog-info+xml", "presence": "application/pidf+xml",
+                  "message-summary": "application/simple-message-summary"}[event]
+        uri, call_id, tag = f"sip:{target}@{self.domain}", rnd(64), rnd()
+        extra = f"Event: {event}\r\nAccept: {accept}\r\nExpires: 600\r\n"
+        self.request("SUBSCRIBE", uri, call_id, 1, tag, f"<{uri}>", extra)
+        r = self.final(call_id, 1, 5)
+        if r and r.split(" ")[1] in ("401", "407"):
+            self.request("SUBSCRIBE", uri, call_id, 2, tag, f"<{uri}>", extra + self.auth_header(r, "SUBSCRIBE", uri))
+            r = self.final(call_id, 2, 5)
+        return r.split(" ")[1] if r else "timeout"
+
     def ack_negative(self, r, uri, call_id, tag, branch):
         self.request("ACK", uri, call_id, int(hdr(r, "CSeq").split()[0]), tag, hdr(r, "To"), branch=branch)
 
@@ -179,6 +196,23 @@ class Endpoint(threading.Thread):
         self.request("BYE", target, call_id, cseq, tag, to, routes)
         r = self.final(call_id, cseq, 5)
         return r.split(" ")[1] if r else "timeout"
+
+
+def summarize(msg):
+    """(event, state) of a NOTIFY: the dialog state, the presence basic, or Messages-Waiting."""
+    body = msg.split("\r\n\r\n", 1)[1] if "\r\n\r\n" in msg else ""
+    event = (hdr(msg, "Event") or "").split(";")[0]
+    if event == "dialog":
+        states = re.findall(r"<state[^>]*>([^<]+)</state>", body)
+        direction = re.search(r'direction="([^"]+)"', body)
+        state = states[0] if states else "idle"
+        return {"event": event, "state": state, "direction": direction.group(1) if direction else None,
+                "peer": (re.findall(r"<identity[^>]*>([^<]+)</identity>", body) or [None])[-1]}
+    if event == "presence":
+        basic = re.search(r"<basic>([^<]+)</basic>", body)
+        return {"event": event, "state": basic.group(1) if basic else None}
+    waiting = re.search(r"Messages-Waiting:\s*(\w+)", body, re.I)
+    return {"event": event, "state": waiting.group(1).lower() if waiting else None}
 
 
 def handle(c):
@@ -200,6 +234,12 @@ def handle(c):
         return endpoints[c["from"]].call(c["to"], c.get("hold", False), c.get("wait", 30))
     if cmd == "bye":
         return {"status": dialogs[c["dialog"]][0].bye(c["dialog"])}
+    if cmd == "subscribe":
+        return {"status": endpoints[c["from"]].subscribe(c["target"], c["event"])}
+    if cmd == "notifies":
+        e = endpoints[c["name"]]
+        n, e.notifies = e.notifies, []
+        return {"notifies": n}
     if cmd == "seen":
         e = endpoints[c["name"]]
         seen, e.seen = e.seen, []
