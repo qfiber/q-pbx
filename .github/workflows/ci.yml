@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  OTP_VERSION: "28.4.1"
+  ELIXIR_VERSION: "1.18.4"
+
+jobs:
+  elixir:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{ env.OTP_VERSION }}
+          elixir-version: ${{ env.ELIXIR_VERSION }}
+      - name: App database user (not a superuser, so row-level security applies)
+        run: PGPASSWORD=postgres psql -h localhost -U postgres -c "CREATE ROLE qpbx LOGIN PASSWORD 'qpbx' CREATEDB"
+      - uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+            priv/plts
+          key: mix-${{ runner.os }}-${{ env.OTP_VERSION }}-${{ env.ELIXIR_VERSION }}-${{ hashFiles('mix.lock') }}
+          restore-keys: mix-${{ runner.os }}-${{ env.OTP_VERSION }}-${{ env.ELIXIR_VERSION }}-
+      - run: mix deps.get
+      - run: mix format --check-formatted
+      - run: mix compile --force --warnings-as-errors
+      - run: mix credo --strict
+      - name: Boundary violations fail the build
+        run: scripts/check_boundary_enforced.sh
+      - run: mix test
+      - name: Module README updated with its public API
+        if: github.event_name == 'pull_request'
+        run: scripts/check_module_docs.sh "origin/${{ github.base_ref }}"
+      - run: scripts/test/module_docs_test.sh
+      - run: mix dialyzer --format github
+
+  fwd:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: fwd
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: fwd/go.mod
+      - run: test -z "$(gofmt -l .)"
+      - run: go vet ./...
+      - run: go test ./...
+      - name: Against real nftables (Debian 12 container)
+        run: ./integration_test.sh
+
+  ansible:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ansible-core ansible-lint netaddr
+      - run: ansible-galaxy collection install -r ansible/requirements.yml
+      - run: ansible-lint
+        working-directory: ansible

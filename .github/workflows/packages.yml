@@ -1,0 +1,61 @@
+name: Packages
+
+# Debian 12 packages: the app and qpbx-fwd on every push to main; FreeSWITCH when its
+# packaging changes, on tags, or by hand (it takes about 10 minutes).
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      freeswitch:
+        description: Also build FreeSWITCH
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  app:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: packaging/app/build-in-container.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qpbx-debs
+          path: out/*.deb
+          if-no-files-found: error
+
+  changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      freeswitch: ${{ steps.diff.outputs.freeswitch }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: diff
+        run: |
+          if [ "${{ github.event_name }}" = workflow_dispatch ]; then
+            echo "freeswitch=${{ inputs.freeswitch }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.ref_type }}" = tag ] || git diff --name-only HEAD~1 HEAD | grep -q '^packaging/freeswitch/'; then
+            echo "freeswitch=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "freeswitch=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  freeswitch:
+    needs: changes
+    if: needs.changes.outputs.freeswitch == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - run: packaging/freeswitch/build-in-container.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qpbx-freeswitch-deb
+          path: out/*.deb
+          if-no-files-found: error

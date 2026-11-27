@@ -118,13 +118,19 @@ Kamailio gets its real config.
   domain), wildcard through DNS-01, a forced renewal picked up live on 443 and 5061, second run
   `changed=0`. App: `/.well-known/acme-challenge/:token` (strict token check, 3 tests),
   `QPBX.Release.list_sip_domains/0`.
+- P1-11 CI (GitHub Actions): `.github/workflows/ci.yml` (Elixir format, compile with warnings
+  as errors, Credo strict, boundary proof, tests on Postgres 16 as a non-superuser, Dialyzer,
+  module README check on PRs; Go fmt/vet/tests and the real-nftables integration test;
+  ansible-lint) and `.github/workflows/packages.yml` (app and `qpbx-fwd` `.deb` on every push
+  to main, FreeSWITCH `.deb` when its packaging changes, on tags or by hand; uploaded as
+  artifacts).
 
 - License: AGPL-3.0 kept, `CLA.md` and `CONTRIBUTING.md`
   added, copyright notice in `README.md`. Code pushed to `github.com/qfiber/q-pbx` (public).
 
 ## In progress
 
-- P1-11 CI.
+- P1-11 CI: first runs on GitHub.
 
 ## Next
 

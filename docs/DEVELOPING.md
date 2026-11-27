@@ -108,6 +108,11 @@ Each area's public API module lives inside its folder (`lib/qpbx/core/core.ex` d
   link-local targets (checked after DNS resolution and on every redirect), size and time limits.
 - Target Debian 12. No Docker in production.
 
+## CI
+
+GitHub Actions: `.github/workflows/ci.yml` runs every check above on pushes and pull requests;
+`.github/workflows/packages.yml` builds the `.deb` packages as downloadable artifacts.
+
 ## Server install (Ansible)
 
 `ansible/site.yml` builds a whole server from the packages in `out/`. Set the inventory
