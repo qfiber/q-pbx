@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 1b — Security hardening: built; lab checks pass; waiting for review
+**Current phase:** 2 — Core calling and protection (planning; breakdown waiting for approval)
 **Last updated:** 2026-11-27
 
 ## Phase 1 goal
@@ -135,7 +135,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- Nothing. Phase 1b waits for review; phase 2 does not start without approval.
+- Phase 2 breakdown waiting for approval and answers (lab hardware, Kamailio version, voicemail encryption, backup target).
 
 ## Next
 
@@ -211,6 +211,33 @@ Kamailio gets its real config.
   ModSecurity), FreeSWITCH modules added (G.729, Opus/MP3 recording, loopback, CDR spool; all
   load in the lab), languages moved to one config list, firewall and plan forms now clear
   after a save (live validation added).
+
+## Phase 2 task breakdown (proposed 2026-11-27)
+
+From `docs/SPEC.md` phase 2, plus the phase 2 items in "Planned features" and the security
+plan. New areas start here: `QPBX.Telephony` (FreeSWITCH, call control, admission),
+`QPBX.Edge` (Kamailio) and `QPBX.Storage` (files).
+
+**Done when (spec):** two tenants with the same extension numbers call internally and
+externally with no crossover, changes apply without a reload, a simulated fraud burst is
+blocked automatically, busy lamps and voicemail lights work, and the restore succeeds within
+a measured time.
+
+| # | Task | Scope |
+| --- | --- | --- |
+| 2-0 | Busy lamps, presence and voicemail-light spike | Kamailio's presence server answers phone subscriptions; Elixir publishes call state (dialog-info) and message counts (message-summary) into it. Proven with a Grandstream phone and Meow on the lab; design written into the spec before the rest builds on it |
+| 2-1 | Kamailio upgrade and database view | Kamailio version for real use; read-only database role with a narrow view (credentials by SIP domain, domains, trunk addresses, bans) |
+| 2-2 | Telephony data and portal pages | Extensions (credentials shown once, caller IDs, multiple devices, DND, call waiting, follow-me, forwarding), devices, trunks with several addresses and per-trunk caller ID rules, DIDs with backup numbers, number normalization per tenant (Israeli local formats by default), outbound routes with ordered failover, emergency routes, destination classes and the high-cost prefix list; tenant pages (extensions, devices, office IPs) and platform pages (carriers, trunks, DIDs, prefixes); limits enforced on create |
+| 2-3 | Kamailio edge | Tenant from domain or trunk address; digest auth of REGISTER and INVITE; TLS 5061 (default) with per-tenant certificates by SNI and SRTP passed through, UDP/TCP 5060 kept; NAT handling (nathelper, keepalives); registration-based trunks registered by Kamailio; OPTIONS health checks and failover across a trunk's addresses; in-memory caches refreshed on change (no reload); firewall lists and tenant office IPs in Kamailio |
+| 2-4 | Edge protection | pike flood detection, per-IP rate limits on REGISTER and INVITE, automatic bans after repeated auth failures shared to nftables with a TTL (`qpbx-fwd` gains element timeouts), scanner user agents blocked, allowlist always wins, a whole office IP never banned without an alert |
+| 2-5 | Call control | `mod_xml_curl` handler parks every call; event socket client; one Elixir process per call; ETS configuration cache invalidated on change; static fallback dialplan ("temporarily unavailable" or the DID's carrier failover); routing: extension to extension (all devices), inbound DID, outbound with trunk failover and caller ID rules, emergency routes; extension features (DND, forwarding, follow-me, call waiting) |
+| 2-6 | Call admission and fraud protection | Concurrent call caps per extension and tenant (inbound, outbound, total); destination class check; minute caps per class per hour, day and month; high-cost prefixes as premium; velocity rules (international spikes, odd hours) that alert and can block; emergency calls exempt but logged; `limit.reached` event |
+| 2-7 | Voicemail | Storage area (local backend); mailboxes with PIN, greetings, recording, voicemail-to-email with audio, web playback; message-waiting lights through the 2-0 mechanism |
+| 2-8 | CDRs | One row per call leg from event-socket events, written in batches; import of the FreeSWITCH JSON spool (no CDR lost while the app is down); search and CSV export; daily usage roll-up |
+| 2-9 | Automated call tests | SIPp scenarios in CI against real Kamailio and FreeSWITCH (containers in CI only): register, internal call, inbound DID, outbound with limits and failover, voicemail, two tenants with the same extension numbers |
+| 2-10 | Backups and restore | pgBackRest (encrypted, point-in-time) and restic (files and the secrets file, separate password) to an off-server target, on timers, with backup status in health; a restore playbook; one timed restore onto a fresh VM |
+| 2-11 | Leftovers | Trim FreeSWITCH image dependencies; watch tenant certificate renewals; secrets file in the encrypted backup |
+| 2-12 | Done-when verification | Lab and CI: the spec's checks, measured restore time |
 
 ## Phase 1b task breakdown
 
