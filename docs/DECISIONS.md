@@ -2,6 +2,21 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Call tests: the real playbook in a container (2-9)
+
+- **CI installs Q-PBX with the same Ansible playbook as a server**, into a Debian 12 container
+  running systemd (podman, privileged), instead of a hand-written compose setup that would drift
+  from production. One switch, `qpbx_in_container`, skips what a container cannot do (load
+  AppArmor profiles, set the clock, realtime scheduling); everything else is identical.
+- **SIPp runs on the server, on loopback addresses**, so Kamailio tells phones from carriers by
+  source address as in production, and the same suite runs against the lab VM.
+- **Answering scenarios log a marker and stop themselves**, rather than counting calls:
+  Kamailio's OPTIONS pings to carriers (answered with `-aa`) would otherwise count as calls.
+- **Calling scenarios are generated straight-line files** (`gen.py`): SIPp fixes pcap paths and
+  response codes when it loads a scenario, and branches are fragile.
+- **The test waits for Kamailio to see the carriers up** (OPTIONS every 20 s) instead of
+  shortening the ping interval for tests.
+
 ## 2026-11-27: Call records from the JSON spool only (2-8)
 
 - **The spool is the one source of CDRs.** The plan said "from event-socket events, written in

@@ -121,6 +121,19 @@
   ansible.builtin.command: nginx -t -q
   changed_when: false
 
+# Run as root, the test creates the PID file when nginx is not running yet (a fresh install);
+# the service (www-data) then cannot open it and fails to start.
+- name: PID file left by the config test
+  ansible.builtin.stat:
+    path: /run/nginx/nginx.pid
+  register: nginx_pid
+
+- name: Remove a root-owned PID file
+  ansible.builtin.file:
+    path: /run/nginx/nginx.pid
+    state: absent
+  when: nginx_pid.stat.exists and nginx_pid.stat.pw_name == 'root'
+
 - name: Running
   ansible.builtin.systemd:
     name: nginx

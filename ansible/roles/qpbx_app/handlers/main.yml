@@ -1,6 +1,7 @@
 - name: Load AppArmor profile qpbx-app
   ansible.builtin.command: apparmor_parser -r /etc/apparmor.d/qpbx-app
   changed_when: true
+  when: not qpbx_in_container
 
 - name: Restart qpbx
   ansible.builtin.systemd:

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!-- A carrier that is out of order: replies 503 to one call, logs REFUSED and stops. -->
+<scenario name="refuse">
+  <recv request="INVITE" />
+  <send><![CDATA[
+SIP/2.0 503 Service Unavailable
+[last_Via:]
+[last_From:]
+[last_To:];tag=[pid]uas[call_number]
+[last_Call-ID:]
+[last_CSeq:]
+Content-Length: 0
+
+]]></send>
+  <recv request="ACK" />
+  <nop><action><log message="REFUSED" /><exec int_cmd="stop_now" /></action></nop>
+</scenario>

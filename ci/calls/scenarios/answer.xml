@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!-- A phone or carrier answers one call, waits for BYE, logs ANSWERED and stops. -->
+<scenario name="answer">
+  <recv request="INVITE" crlf="true" />
+  <send><![CDATA[
+SIP/2.0 180 Ringing
+[last_Via:]
+[last_From:]
+[last_To:];tag=[pid]uas[call_number]
+[last_Call-ID:]
+[last_CSeq:]
+[last_Record-Route:]
+Contact: <sip:answer@[local_ip]:[local_port]>
+Content-Length: 0
+
+]]></send>
+  <send retrans="500"><![CDATA[
+SIP/2.0 200 OK
+[last_Via:]
+[last_From:]
+[last_To:];tag=[pid]uas[call_number]
+[last_Call-ID:]
+[last_CSeq:]
+[last_Record-Route:]
+Contact: <sip:answer@[local_ip]:[local_port]>
+Content-Type: application/sdp
+Content-Length: [len]
+
+v=0
+o=- 1 1 IN IP[local_ip_type] [local_ip]
+s=-
+c=IN IP[media_ip_type] [media_ip]
+t=0 0
+m=audio [media_port] RTP/AVP 8 0 101
+a=rtpmap:8 PCMA/8000
+a=rtpmap:0 PCMU/8000
+a=rtpmap:101 telephone-event/8000
+a=sendrecv
+]]></send>
+  <recv request="ACK" />
+  <recv request="BYE" />
+  <send next="done"><![CDATA[
+SIP/2.0 200 OK
+[last_Via:]
+[last_From:]
+[last_To:]
+[last_Call-ID:]
+[last_CSeq:]
+Content-Length: 0
+
+]]></send>
+  <label id="done" />
+  <!-- One call is all: log it and stop (Kamailio's OPTIONS, answered by -aa, are not calls). -->
+  <nop><action><log message="ANSWERED" /><exec int_cmd="stop_now" /></action></nop>
+</scenario>

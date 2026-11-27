@@ -94,6 +94,8 @@ uses two roles (`qpbx_owner` for migrations, `qpbx` for the app); development us
 | `node lab/done-when/phase1b.mjs <vm-ip>` | Phase 1b security checks in the lab (needs `qpbx_session_idle_timeout=60`) |
 | `node lab/done-when/phase2-config.mjs <vm-ip>` | 2-2 lab check: telephony pages end to end, device registration |
 | `lab/done-when/phase2-admission.py <vm-ip>` | 2-6 lab check: call admission and fraud protection with real calls |
+| `ci/calls/test.sh` | Call tests: a fresh Debian 12 systemd container (podman), the playbook into it (`ansible/inventories/ci`), then the SIPp suite; needs the packages in `out/` (about 4 minutes) |
+| `ci/calls/run.py debian@<vm-ip> -i <key>` | The SIPp suite alone against any installed server (needs `sip-tester` there) |
 | `lab/done-when/phase2-cdrs.py <vm-ip>` | 2-8 lab check: call records of real calls, including one made while the app is stopped |
 | `lab/done-when/phase2-voicemail.py <vm-ip>` | 2-7 lab check: voicemail with real calls (message, encryption, email, lights, *97) |
 | `lab/done-when/phase2-calls.py <vm-ip>` | 2-5 lab check: real calls (extensions, features, outbound, failover, inbound, fallback) |
@@ -125,7 +127,9 @@ Each area's public API module lives inside its folder (`lib/qpbx/core/core.ex` d
 ## CI
 
 GitHub Actions: `.github/workflows/ci.yml` runs every check above on pushes and pull requests;
-`.github/workflows/packages.yml` builds the `.deb` packages as downloadable artifacts.
+`.github/workflows/packages.yml` builds the `.deb` packages as downloadable artifacts;
+`.github/workflows/calls.yml` runs the call tests (`ci/calls/test.sh`) with the packages built
+from the commit (FreeSWITCH from a cache keyed on `packaging/freeswitch/`).
 
 ## Server install (Ansible)
 

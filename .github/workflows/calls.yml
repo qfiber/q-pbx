@@ -1,0 +1,41 @@
+name: Call tests
+
+# SIPp against a real Kamailio, FreeSWITCH and app, installed by the playbook into a Debian 12
+# container (ci/calls/). Spec: register, internal call, inbound number, outbound with limits and
+# failover, voicemail, two tenants with the same extension numbers.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  calls:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      # FreeSWITCH takes about 10 minutes to build: rebuilt only when its packaging changes.
+      - id: fs-cache
+        uses: actions/cache@v4
+        with:
+          path: out/qpbx-freeswitch_*.deb
+          key: freeswitch-${{ hashFiles('packaging/freeswitch/**') }}
+      - if: steps.fs-cache.outputs.cache-hit != 'true'
+        run: packaging/freeswitch/build-in-container.sh
+      - run: packaging/app/build-in-container.sh
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ansible-core netaddr
+      - run: ansible-galaxy collection install -r ansible/requirements.yml
+      - run: ci/calls/test.sh
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: call-test-logs
+          path: ci/calls/logs/
+          if-no-files-found: ignore

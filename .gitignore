@@ -47,3 +47,4 @@ __pycache__/
 
 # Go build output
 /fwd/fwd
+/ci/calls/logs/

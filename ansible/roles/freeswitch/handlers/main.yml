@@ -1,6 +1,7 @@
 - name: Load AppArmor profile qpbx-freeswitch
   ansible.builtin.command: apparmor_parser -r /etc/apparmor.d/qpbx-freeswitch
   changed_when: true
+  when: not qpbx_in_container
 
 - name: Restart freeswitch
   ansible.builtin.systemd:

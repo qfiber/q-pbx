@@ -106,7 +106,7 @@ them. While the app or Postgres is down the files wait: the spool is the queue. 
 files move to `bad/`. Loopback legs (echo test) are skipped; a leg whose tenant no longer
 exists is kept without one. The call process tags the a-leg when routing starts (`export
 qpbx_tenant`, `qpbx_caller`, `qpbx_direction`; `set qpbx_destination`; `qpbx_direction=outbound`
-once a carrier is dialed); dial legs carry `qpbx_callee` (extension number or E.164) and,
+when a carrier is tried, also when admission refuses the call); dial legs carry `qpbx_callee` (extension number or E.164) and,
 towards carriers, `qpbx_trunk_id`. A b-leg's call is its `originating_leg_uuid`. Outcome:
 answered, busy, no_answer, failed. New a-legs roll up into `usage_daily` (calls, answered,
 talk seconds per tenant, day in the tenant's time zone, direction). Portal: Calls (search,

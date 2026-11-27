@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 2 — Core calling and protection (in progress: 2-0 to 2-8 done, next 2-9)
+**Current phase:** 2 — Core calling and protection (in progress: 2-0 to 2-9 done, next 2-10)
 **Last updated:** 2026-11-27
 
 ## Phase 1 goal
@@ -40,6 +40,21 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 2-9 Automated call tests (done): SIPp scenarios (`ci/calls/scenarios/`: register, answer,
+  refuse, and generated calling variants for phones, phones with audio, carriers) driven by
+  `ci/calls/run.py` against a real install: registration (right and wrong password), two
+  tenants with the same extension numbers (each call rings its own tenant's phone only), an
+  outbound call failing over from a 503 carrier to the next, a premium number barred before any
+  carrier, an inbound call to a number, voicemail with audio, and the call records of all of
+  it. In CI (`.github/workflows/calls.yml`, `ci/calls/test.sh`) the real playbook installs
+  everything into a fresh Debian 12 systemd container (inventory `ansible/inventories/ci`,
+  `qpbx_in_container`: no AppArmor loading, no chrony, no realtime scheduling). 11/11 in the
+  container (from scratch, about 4 minutes locally) and on the lab VM. Found by installing from
+  scratch: the storage role needed `acl` (now a base package); a host without public IPv6 got
+  its link-local address as Kamailio's service address (now ignored); `nginx -t` as root left
+  a root-owned PID file that stopped nginx starting on a fresh install (now removed). Found by
+  the tests: a call refused by admission was recorded as internal (now outbound).
 
 - 2-8 CDRs (done): one row per call leg from FreeSWITCH's JSON spool, imported in batches
   every 2 s and removed after (the spool is the queue while the app or database is down;
@@ -301,7 +316,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 2-9 Automated call tests (next).
+- 2-10 Backups and restore (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next

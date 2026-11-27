@@ -1,0 +1,8 @@
+qpbx_domain: pbx.ci.test
+# SSH reaches the container through a port forward from the CI runner: any source.
+qpbx_management_ips: ["0.0.0.0/0"]
+qpbx_cert_mode: selfsigned
+qpbx_mail_from: noreply@pbx.ci.test
+qpbx_smtp_host: localhost
+# No AppArmor kernel interface and no clock to set inside a container.
+qpbx_in_container: true

@@ -1,6 +1,6 @@
 - name: Base packages (chrony keeps TOTP codes and certificates valid)
   ansible.builtin.apt:
-    name: [unattended-upgrades, apt-listchanges, apparmor, apparmor-utils, chrony, ca-certificates, curl, openssl]
+    name: [unattended-upgrades, apt-listchanges, apparmor, apparmor-utils, chrony, ca-certificates, curl, openssl, acl]
     state: present
     update_cache: true
     cache_valid_time: 3600
@@ -28,4 +28,4 @@
     name: "{{ item }}"
     enabled: true
     state: started
-  loop: [apparmor, chrony, unattended-upgrades]
+  loop: "{{ ['unattended-upgrades'] if qpbx_in_container else ['apparmor', 'chrony', 'unattended-upgrades'] }}"

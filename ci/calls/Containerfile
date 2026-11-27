@@ -1,0 +1,14 @@
+# A Debian 12 "server" for the call tests in CI: systemd, SSH and sudo, so the real Ansible
+# playbook installs Q-PBX into it exactly as on a VM (inventory ansible/inventories/ci).
+FROM docker.io/library/debian:12
+ENV container=docker
+RUN apt-get update -qq \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
+      systemd systemd-sysv dbus openssh-server sudo python3 ca-certificates iproute2 sip-tester \
+ && rm -rf /var/lib/apt/lists/* \
+ && useradd -m -s /bin/bash debian \
+ && echo "debian ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/debian \
+ && mkdir -p /home/debian/.ssh && chmod 700 /home/debian/.ssh && chown debian: /home/debian/.ssh \
+ && systemctl enable ssh
+STOPSIGNAL SIGRTMIN+3
+CMD ["/sbin/init"]

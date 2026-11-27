@@ -256,10 +256,11 @@ defmodule QPBX.Telephony.Call do
 
   # A dial to a carrier passes call admission first (once per destination number).
   defp run(%{op: :dial, trunk_call: %{} = meta} = action, s) do
+    # A call to a carrier is outbound in its CDR, also when admission refuses it.
+    Connection.execute(s.call.uuid, "set", "qpbx_direction=outbound", Ecto.UUID.generate())
+
     case admit_outbound(meta, s) do
       {:ok, left, s} ->
-        # The call goes out to a carrier: its CDR says outbound.
-        Connection.execute(s.call.uuid, "set", "qpbx_direction=outbound", Ecto.UUID.generate())
         dial(limit_duration(action, left), s)
 
       {:reject, cause, s} ->

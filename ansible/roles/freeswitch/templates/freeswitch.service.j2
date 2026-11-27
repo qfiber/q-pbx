@@ -15,9 +15,11 @@ Restart=on-failure
 RestartSec=5
 LimitNOFILE=100000
 LimitRTPRIO=infinity
+{% if not qpbx_in_container %}
 IOSchedulingClass=realtime
 CPUSchedulingPolicy=rr
 CPUSchedulingPriority=89
+{% endif %}
 
 AmbientCapabilities=CAP_SYS_NICE
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE CAP_SYS_NICE
