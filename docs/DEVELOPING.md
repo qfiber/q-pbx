@@ -98,6 +98,8 @@ uses two roles (`qpbx_owner` for migrations, `qpbx` for the app); development us
 | `ci/calls/run.py debian@<vm-ip> -i <key>` | The SIPp suite alone against any installed server (needs `sip-tester` there) |
 | `QPBX_LAB_NAME=qpbx-backup lab/create-vm.sh` | The lab's backup target (a second VM; group `qpbx_backup` in the lab inventory) |
 | `cd ansible && ansible-playbook restore.yml -e qpbx_restore_confirm=yes` | Rebuild the inventory's server from its backups (a fresh machine; `-e qpbx_restore_target_time=...` for a point in time) |
+| `lab/done-when/phase2.py <vm-ip> <host-ip>` | Phase 2 done-when: every phase 2 lab check, then the spec's five conditions (add `MEOW_TEST=… MEOW_HOME=…` for the Meow client) |
+| `lab/done-when/phase2-tenants.py <vm-ip>` | Two tenants with the same numbers, no crossover in or out; changes apply without restarting Kamailio or FreeSWITCH |
 | `lab/done-when/phase2-restore.py <vm-ip>` | 2-10 lab check: timed restore of the lab server onto a fresh VM |
 | `sudo qpbx-backup db\|files` (on a server) | One backup now (the timers run them nightly) |
 | `lab/done-when/phase2-cdrs.py <vm-ip>` | 2-8 lab check: call records of real calls, including one made while the app is stopped |

@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 2 — Core calling and protection (in progress: 2-0 to 2-11 done, next 2-12)
+**Current phase:** 2 — Core calling and protection: **done** (2026-11-27). Next: phase 3 (breakdown to propose)
 **Last updated:** 2026-11-27
 
 ## Phase 1 goal
@@ -40,6 +40,11 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 2-12 Done-when verification (done): `lab/done-when/phase2.py` runs every phase 2 lab check
+  and reports the spec's five conditions; a new `phase2-tenants.py` shows two tenants with the
+  same numbers calling in, out and internally with no crossover, and changes applying on the
+  next call with Kamailio and FreeSWITCH not restarted. All met; results below.
 
 - 2-11 Leftovers (done): plans can be edited (`/platform/plans/:id`: limits, classes and
   features shown as saved; a save announces `ConfigChanged` "plans", so tenants' calls use the
@@ -347,7 +352,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 2-12 Done-when verification (next).
+- Phase 3 breakdown (next): to be proposed for approval.
   (Meow end to end) waits for call control (2-5).
 
 ## Next
@@ -555,6 +560,21 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
 - Tenant office IPs (tenant firewall entries) have an API but no tenant portal page yet;
   platform admins add them today.
 - Sessions are signed cookies; they expire but cannot be revoked server-side before expiry.
+
+## Done-when results (phase 2)
+
+Run on 2026-11-27 against the lab VM (`lab/done-when/phase2.py 192.168.10.25 192.168.10.236`
+with the Meow client's live test), 15 minutes in all; CI runs the SIPp suite on every push.
+
+| Condition | Result | Proof |
+| --- | --- | --- |
+| Two tenants with the same extension numbers call internally and externally with no crossover | Met | `phase2-tenants.py` 14/14 (each tenant's 102 rings only for its own 101 and its own number; outbound calls carry each tenant's own number), SIPp 11/11 |
+| Changes apply without a reload | Met | `phase2-tenants.py`: a new forwarding and a new extension with a device work on the very next call and registration; Kamailio's and FreeSWITCH's start times unchanged |
+| A simulated fraud burst is blocked automatically | Met | `phase2-admission.py` 21/21 (the 4th international call in 10 minutes blocked, one alert, local and emergency still work, lifting restores) |
+| Busy lamps and voicemail lights work | Met | `phase2-calls.py` 29/29 (BLF ringing, on a call, idle), `phase2-voicemail.py` 19/19 (light on with a message, off after delete), Meow live test 94/94 |
+| The restore succeeds within a measured time | Met | `phase2-restore.py` 8/8: **3.0 minutes** for `restore.yml` onto a fresh VM (2.5 in the first run), data up to the last archived change, voicemail decrypted byte for byte, phones register with their old passwords |
+
+The rest of phase 2 in the same run: config 15/15, edge 23/23, protection 31/31, CDRs 16/16.
 
 ## Lab results (phase 1b)
 
