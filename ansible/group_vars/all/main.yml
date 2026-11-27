@@ -20,6 +20,7 @@ qpbx_packages_dir: "{{ playbook_dir }}/../out"
 # Newest package of each kind in qpbx_packages_dir (file names carry the version).
 qpbx_app_deb: "{{ lookup('ansible.builtin.fileglob', qpbx_packages_dir ~ '/qpbx_*_amd64.deb', wantlist=True) | sort | last }}"
 qpbx_fwd_deb: "{{ lookup('ansible.builtin.fileglob', qpbx_packages_dir ~ '/qpbx-fwd_*_amd64.deb', wantlist=True) | sort | last }}"
+qpbx_sounds_deb: "{{ lookup('ansible.builtin.fileglob', qpbx_packages_dir ~ '/qpbx-sounds_*_all.deb', wantlist=True) | sort | last }}"
 qpbx_freeswitch_deb: "{{ lookup('ansible.builtin.fileglob', qpbx_packages_dir ~ '/qpbx-freeswitch_*_amd64.deb', wantlist=True) | sort | last }}"
 
 # Certificates: selfsigned (labs), wildcard (DNS-01) or per_host (HTTP-01).

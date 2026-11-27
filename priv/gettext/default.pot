@@ -26,8 +26,8 @@ msgstr ""
 msgid "Allowed destination classes"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:177
-#: lib/qpbx/web/components/layouts.ex:189
+#: lib/qpbx/web/components/layouts.ex:180
+#: lib/qpbx/web/components/layouts.ex:192
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
 msgstr ""
@@ -138,7 +138,7 @@ msgstr ""
 msgid "Log in"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:113
+#: lib/qpbx/web/components/layouts.ex:116
 #, elixir-autogen, elixir-format
 msgid "Log out"
 msgstr ""
@@ -191,7 +191,7 @@ msgstr ""
 #: lib/qpbx/web/live/platform/tenants_live.ex:136
 #: lib/qpbx/web/live/platform/trunks_live.ex:109
 #: lib/qpbx/web/live/platform/trunks_live.ex:140
-#: lib/qpbx/web/live/tenant/extension_live.ex:202
+#: lib/qpbx/web/live/tenant/extension_live.ex:217
 #: lib/qpbx/web/live/tenant/extensions_live.ex:65
 #: lib/qpbx/web/live/tenant/extensions_live.ex:81
 #: lib/qpbx/web/live/tenant/routes_live.ex:124
@@ -237,7 +237,7 @@ msgid "Outbound minutes per month"
 msgstr ""
 
 #: lib/qpbx/web/controllers/auth_html.ex:26
-#: lib/qpbx/web/live/tenant/extension_live.ex:137
+#: lib/qpbx/web/live/tenant/extension_live.ex:152
 #, elixir-autogen, elixir-format
 msgid "Password"
 msgstr ""
@@ -294,7 +294,7 @@ msgid "Repeat the password"
 msgstr ""
 
 #: lib/qpbx/web/live/platform/tenants_live.ex:137
-#: lib/qpbx/web/live/tenant/extension_live.ex:138
+#: lib/qpbx/web/live/tenant/extension_live.ex:153
 #, elixir-autogen, elixir-format
 msgid "SIP domain"
 msgstr ""
@@ -341,7 +341,7 @@ msgstr ""
 msgid "Signed in as %{name}"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:184
+#: lib/qpbx/web/components/layouts.ex:187
 #, elixir-autogen, elixir-format
 msgid "Something went wrong!"
 msgstr ""
@@ -416,7 +416,7 @@ msgstr ""
 msgid "Verify"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:172
+#: lib/qpbx/web/components/layouts.ex:175
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
 msgstr ""
@@ -508,8 +508,8 @@ msgstr ""
 
 #: lib/qpbx/web/live/platform/firewall_live.ex:97
 #: lib/qpbx/web/live/platform/firewall_live.ex:119
-#: lib/qpbx/web/live/tenant/extension_live.ex:149
-#: lib/qpbx/web/live/tenant/extension_live.ex:191
+#: lib/qpbx/web/live/tenant/extension_live.ex:164
+#: lib/qpbx/web/live/tenant/extension_live.ex:206
 #, elixir-autogen, elixir-format
 msgid "Kind"
 msgstr ""
@@ -527,7 +527,8 @@ msgstr ""
 #: lib/qpbx/web/live/platform/numbering_live.ex:174
 #: lib/qpbx/web/live/platform/numbering_live.ex:208
 #: lib/qpbx/web/live/platform/trunks_live.ex:189
-#: lib/qpbx/web/live/tenant/extension_live.ex:170
+#: lib/qpbx/web/live/tenant/extension_live.ex:185
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:153
 #: lib/qpbx/web/live/tenant/office_ips_live.ex:89
 #, elixir-autogen, elixir-format
 msgid "Remove"
@@ -570,7 +571,7 @@ msgstr ""
 msgid "Session ended."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:104
+#: lib/qpbx/web/components/layouts.ex:107
 #, elixir-autogen, elixir-format
 msgid "Sessions"
 msgstr ""
@@ -600,7 +601,7 @@ msgstr ""
 msgid "Signed out of %{count} other sessions."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:137
+#: lib/qpbx/web/components/layouts.ex:140
 #, elixir-autogen, elixir-format
 msgid "Stay signed in"
 msgstr ""
@@ -610,7 +611,7 @@ msgstr ""
 msgid "This browser"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:136
+#: lib/qpbx/web/components/layouts.ex:139
 #, elixir-autogen, elixir-format
 msgid "You will be signed out soon because of inactivity."
 msgstr ""
@@ -684,7 +685,7 @@ msgstr ""
 msgid "Add address"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:197
+#: lib/qpbx/web/live/tenant/extension_live.ex:212
 #, elixir-autogen, elixir-format
 msgid "Add device"
 msgstr ""
@@ -694,7 +695,7 @@ msgstr ""
 msgid "Addresses"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:128
+#: lib/qpbx/web/live/tenant/extension_live.ex:143
 #, elixir-autogen, elixir-format
 msgid "All extensions"
 msgstr ""
@@ -714,7 +715,7 @@ msgstr ""
 msgid "An outside number"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:258
+#: lib/qpbx/web/live/tenant/extension_live.ex:273
 #, elixir-autogen, elixir-format
 msgid "Analog adapter (ATA)"
 msgstr ""
@@ -760,12 +761,12 @@ msgstr ""
 msgid "By IP address"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:200
+#: lib/qpbx/web/live/tenant/extension_live.ex:215
 #, elixir-autogen, elixir-format
 msgid "Call features"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:209
+#: lib/qpbx/web/live/tenant/extension_live.ex:224
 #, elixir-autogen, elixir-format
 msgid "Call waiting"
 msgstr ""
@@ -814,7 +815,7 @@ msgstr ""
 msgid "Codecs"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:135
+#: lib/qpbx/web/live/tenant/extension_live.ex:150
 #, elixir-autogen, elixir-format
 msgid "Copy this password now. It is shown only once."
 msgstr ""
@@ -840,16 +841,17 @@ msgid "Default number format"
 msgstr ""
 
 #: lib/qpbx/web/live/tenant/routes_live.ex:145
+#: lib/qpbx/web/live/tenant/voicemail_live.ex:102
 #, elixir-autogen, elixir-format
 msgid "Delete"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:247
+#: lib/qpbx/web/live/tenant/extension_live.ex:262
 #, elixir-autogen, elixir-format
 msgid "Delete extension"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:244
+#: lib/qpbx/web/live/tenant/extension_live.ex:259
 #, elixir-autogen, elixir-format
 msgid "Delete extension %{number} and all its devices?"
 msgstr ""
@@ -879,7 +881,7 @@ msgstr ""
 msgid "Description (e.g. Tel Aviv office)"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:256
+#: lib/qpbx/web/live/tenant/extension_live.ex:271
 #, elixir-autogen, elixir-format
 msgid "Desk phone"
 msgstr ""
@@ -899,7 +901,7 @@ msgstr ""
 msgid "Device removed. Its SIP login no longer works."
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:143
+#: lib/qpbx/web/live/tenant/extension_live.ex:158
 #: lib/qpbx/web/live/tenant/extensions_live.ex:66
 #, elixir-autogen, elixir-format
 msgid "Devices"
@@ -910,13 +912,13 @@ msgstr ""
 msgid "Digits to remove before sending (after +)"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:208
+#: lib/qpbx/web/live/tenant/extension_live.ex:223
 #: lib/qpbx/web/live/tenant/extensions_live.ex:67
 #, elixir-autogen, elixir-format
 msgid "Do not disturb"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:140
+#: lib/qpbx/web/live/tenant/extension_live.ex:155
 #, elixir-autogen, elixir-format
 msgid "Done"
 msgstr ""
@@ -955,12 +957,13 @@ msgid "Enabled"
 msgstr ""
 
 #: lib/qpbx/web/live/tenant/numbers_live.ex:118
+#: lib/qpbx/web/live/tenant/voicemail_live.ex:68
 #, elixir-autogen, elixir-format
 msgid "Extension"
 msgstr ""
 
 #: lib/qpbx/web/live/tenant/extension_live.ex:19
-#: lib/qpbx/web/live/tenant/extension_live.ex:124
+#: lib/qpbx/web/live/tenant/extension_live.ex:132
 #, elixir-autogen, elixir-format
 msgid "Extension %{number}"
 msgstr ""
@@ -970,7 +973,7 @@ msgstr ""
 msgid "Extension %{number} created."
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:105
+#: lib/qpbx/web/live/tenant/extension_live.ex:113
 #, elixir-autogen, elixir-format
 msgid "Extension %{number} deleted."
 msgstr ""
@@ -987,27 +990,27 @@ msgstr ""
 msgid "Fax error correction (ECM)"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:224
+#: lib/qpbx/web/live/tenant/extension_live.ex:239
 #, elixir-autogen, elixir-format
 msgid "Follow me"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:229
+#: lib/qpbx/web/live/tenant/extension_live.ex:244
 #, elixir-autogen, elixir-format
 msgid "Follow-me numbers (comma-separated, up to 5)"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:210
+#: lib/qpbx/web/live/tenant/extension_live.ex:225
 #, elixir-autogen, elixir-format
 msgid "Forward all calls to"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:211
+#: lib/qpbx/web/live/tenant/extension_live.ex:226
 #, elixir-autogen, elixir-format
 msgid "Forward when busy to"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:214
+#: lib/qpbx/web/live/tenant/extension_live.ex:229
 #, elixir-autogen, elixir-format
 msgid "Forward when not answered to"
 msgstr ""
@@ -1047,22 +1050,22 @@ msgstr ""
 msgid "Its own number (E.164)"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:145
+#: lib/qpbx/web/live/tenant/extension_live.ex:160
 #, elixir-autogen, elixir-format
 msgid "Label"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:150
+#: lib/qpbx/web/live/tenant/extension_live.ex:165
 #, elixir-autogen, elixir-format
 msgid "MAC"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:194
+#: lib/qpbx/web/live/tenant/extension_live.ex:209
 #, elixir-autogen, elixir-format
 msgid "MAC (optional)"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:157
+#: lib/qpbx/web/live/tenant/extension_live.ex:172
 #, elixir-autogen, elixir-format
 msgid "Make a new password? The device stops working until it gets the new one."
 msgstr ""
@@ -1077,12 +1080,12 @@ msgstr ""
 msgid "May show the tenant's numbers, even from other carriers"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:259
+#: lib/qpbx/web/live/tenant/extension_live.ex:274
 #, elixir-autogen, elixir-format
 msgid "Mobile app"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:195
+#: lib/qpbx/web/live/tenant/extension_live.ex:210
 #, elixir-autogen, elixir-format
 msgid "Model (optional)"
 msgstr ""
@@ -1107,7 +1110,7 @@ msgstr ""
 msgid "New extension"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:160
+#: lib/qpbx/web/live/tenant/extension_live.ex:175
 #, elixir-autogen, elixir-format
 msgid "New password"
 msgstr ""
@@ -1165,7 +1168,7 @@ msgstr ""
 msgid "Number (e.g. 100)"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:83
+#: lib/qpbx/web/components/layouts.ex:86
 #: lib/qpbx/web/live/tenant/number_format_live.ex:8
 #: lib/qpbx/web/live/tenant/number_format_live.ex:64
 #, elixir-autogen, elixir-format
@@ -1185,7 +1188,7 @@ msgid "Numbering"
 msgstr ""
 
 #: lib/qpbx/web/components/layouts.ex:57
-#: lib/qpbx/web/components/layouts.ex:74
+#: lib/qpbx/web/components/layouts.ex:77
 #: lib/qpbx/web/live/platform/dids_live.ex:14
 #: lib/qpbx/web/live/platform/dids_live.ex:84
 #: lib/qpbx/web/live/tenant/numbers_live.ex:15
@@ -1194,12 +1197,12 @@ msgstr ""
 msgid "Numbers"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:234
+#: lib/qpbx/web/live/tenant/extension_live.ex:249
 #, elixir-autogen, elixir-format
 msgid "Numbers can be typed the local way, for example 02-123-4567."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:80
+#: lib/qpbx/web/components/layouts.ex:83
 #: lib/qpbx/web/live/tenant/office_ips_live.ex:14
 #: lib/qpbx/web/live/tenant/office_ips_live.ex:74
 #, elixir-autogen, elixir-format
@@ -1216,14 +1219,14 @@ msgstr ""
 msgid "Only tenant admins can open this page."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:77
+#: lib/qpbx/web/components/layouts.ex:80
 #: lib/qpbx/web/live/tenant/routes_live.ex:17
 #: lib/qpbx/web/live/tenant/routes_live.ex:114
 #, elixir-autogen, elixir-format
 msgid "Outbound routes"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:205
+#: lib/qpbx/web/live/tenant/extension_live.ex:220
 #, elixir-autogen, elixir-format
 msgid "Outside caller ID (one of your numbers)"
 msgstr ""
@@ -1300,12 +1303,12 @@ msgstr ""
 msgid "Remove %{number}?"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:168
+#: lib/qpbx/web/live/tenant/extension_live.ex:183
 #, elixir-autogen, elixir-format
 msgid "Remove device %{label}?"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:220
+#: lib/qpbx/web/live/tenant/extension_live.ex:235
 #, elixir-autogen, elixir-format
 msgid "Ring for (seconds)"
 msgstr ""
@@ -1325,8 +1328,8 @@ msgstr ""
 msgid "Routes are tried from the lowest position. A route without prefixes takes every number."
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:136
-#: lib/qpbx/web/live/tenant/extension_live.ex:146
+#: lib/qpbx/web/live/tenant/extension_live.ex:151
+#: lib/qpbx/web/live/tenant/extension_live.ex:161
 #, elixir-autogen, elixir-format
 msgid "SIP user"
 msgstr ""
@@ -1335,7 +1338,8 @@ msgstr ""
 #: lib/qpbx/web/live/platform/numbering_live.ex:159
 #: lib/qpbx/web/live/platform/protection_live.ex:107
 #: lib/qpbx/web/live/platform/trunks_live.ex:246
-#: lib/qpbx/web/live/tenant/extension_live.ex:236
+#: lib/qpbx/web/live/tenant/extension_live.ex:251
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:130
 #: lib/qpbx/web/live/tenant/number_format_live.ex:92
 #: lib/qpbx/web/live/tenant/numbers_live.ex:127
 #: lib/qpbx/web/live/tenant/routes_live.ex:192
@@ -1347,6 +1351,7 @@ msgstr ""
 #: lib/qpbx/web/live/platform/fraud_live.ex:29
 #: lib/qpbx/web/live/platform/numbering_live.ex:57
 #: lib/qpbx/web/live/tenant/extension_live.ex:46
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:39
 #: lib/qpbx/web/live/tenant/number_format_live.ex:42
 #, elixir-autogen, elixir-format
 msgid "Saved."
@@ -1362,7 +1367,7 @@ msgstr ""
 msgid "Signalling addresses"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:257
+#: lib/qpbx/web/live/tenant/extension_live.ex:272
 #, elixir-autogen, elixir-format
 msgid "Softphone"
 msgstr ""
@@ -1579,7 +1584,7 @@ msgstr ""
 msgid "all"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/extension_live.ex:185
+#: lib/qpbx/web/live/tenant/extension_live.ex:200
 #, elixir-autogen, elixir-format
 msgid "Label (e.g. desk; empty: login is the extension number)"
 msgstr ""
@@ -1679,4 +1684,193 @@ msgstr ""
 #: lib/qpbx/web/live/platform/plans_live.ex:128
 #, elixir-autogen, elixir-format
 msgid "month"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/voicemail_live.ex:77
+#, elixir-autogen, elixir-format
+msgid "%{seconds} s"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:128
+#, elixir-autogen, elixir-format
+msgid "Attach the audio to the email"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:100
+#, elixir-autogen, elixir-format
+msgid "Back to the extension"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:186
+#, elixir-autogen, elixir-format
+msgid "Busy"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:94
+#, elixir-autogen, elixir-format
+msgid "Callers leave a message when the extension is busy or does not answer. The owner dials *97 and the PIN to listen."
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:70
+#, elixir-autogen, elixir-format
+msgid "Choose a file first."
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/voicemail_live.ex:100
+#, elixir-autogen, elixir-format
+msgid "Delete this message?"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:123
+#, elixir-autogen, elixir-format
+msgid "Email new messages to (optional)"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/voicemail_live.ex:69
+#, elixir-autogen, elixir-format
+msgid "From"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:166
+#, elixir-autogen, elixir-format
+msgid "Greeting"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:79
+#, elixir-autogen, elixir-format
+msgid "Greeting removed."
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:61
+#, elixir-autogen, elixir-format
+msgid "Greeting saved."
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:134
+#, elixir-autogen, elixir-format
+msgid "Greetings"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/voicemail_live.ex:81
+#, elixir-autogen, elixir-format
+msgid "Heard"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/voicemail_live.ex:76
+#, elixir-autogen, elixir-format
+msgid "Length"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/voicemail_live.ex:84
+#, elixir-autogen, elixir-format
+msgid "Listen"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/voicemail_live.ex:46
+#, elixir-autogen, elixir-format
+msgid "Message deleted."
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/voicemail_live.ex:61
+#, elixir-autogen, elixir-format
+msgid "Messages left in the extensions' mailboxes. Playing a message here marks it as heard."
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/voicemail_live.ex:81
+#, elixir-autogen, elixir-format
+msgid "New"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:115
+#, elixir-autogen, elixir-format
+msgid "New PIN (leave empty to keep it)"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/voicemail_live.ex:66
+#, elixir-autogen, elixir-format
+msgid "No messages."
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:185
+#, elixir-autogen, elixir-format
+msgid "Not available"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:190
+#, elixir-autogen, elixir-format
+msgid "Only MP3 or WAV files."
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:116
+#, elixir-autogen, elixir-format
+msgid "PIN (4 to 10 digits)"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/voicemail_live.ex:79
+#, elixir-autogen, elixir-format
+msgid "Status"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:187
+#, elixir-autogen, elixir-format
+msgid "Temporary"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:64
+#, elixir-autogen, elixir-format
+msgid "That file is not MP3 or WAV audio."
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:191
+#, elixir-autogen, elixir-format
+msgid "The file could not be uploaded."
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:189
+#, elixir-autogen, elixir-format
+msgid "The file is larger than 5 MB."
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:67
+#, elixir-autogen, elixir-format
+msgid "The greeting could not be saved."
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/voicemail_live.ex:70
+#, elixir-autogen, elixir-format
+msgid "Unknown"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:178
+#, elixir-autogen, elixir-format
+msgid "Upload greeting"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:74
+#: lib/qpbx/web/live/tenant/extension_live.ex:140
+#: lib/qpbx/web/live/tenant/voicemail_live.ex:9
+#: lib/qpbx/web/live/tenant/voicemail_live.ex:59
+#, elixir-autogen, elixir-format
+msgid "Voicemail"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:15
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:92
+#, elixir-autogen, elixir-format
+msgid "Voicemail for %{number}"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:106
+#, elixir-autogen, elixir-format
+msgid "Voicemail on"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/voicemail_live.ex:75
+#, elixir-autogen, elixir-format
+msgid "When"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/mailbox_live.ex:136
+#, elixir-autogen, elixir-format
+msgid "Without a greeting callers hear a standard one with the extension number. A temporary greeting, while it exists, is played instead of the others."
 msgstr ""

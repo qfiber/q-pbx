@@ -54,7 +54,8 @@ and writes an audit entry in the same transaction.
   `change_emergency_route/1`, `create_emergency_route/3` (platform trunk only),
   `delete_emergency_route/3`.
 - Call control snapshots (internal, for `QPBX.Telephony` only): `telephony_tenant/1`,
-  `telephony_platform/0`, `telephony_dids/0`, `extension_addresses/1`.
+  `telephony_platform/0`, `telephony_dids/0`, `extension_addresses/1` (`{id, number,
+  sip_domain}`).
 - `QPBX.Core.Numbers` (pure): `to_e164/2`, `display/2`, `classify/3`, `select_route/2`,
   `carrier_number/2`.
 - `with_tenant/2`: run a function with row-level security scoped to one tenant; a function

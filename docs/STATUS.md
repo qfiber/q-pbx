@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 2 — Core calling and protection (planning; breakdown waiting for approval)
+**Current phase:** 2 — Core calling and protection (in progress: 2-0 to 2-7 done, next 2-8)
 **Last updated:** 2026-11-27
 
 ## Phase 1 goal
@@ -40,6 +40,21 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 2-7 Voicemail (done): new `QPBX.Storage` area (per-file AES-256-GCM, data key wrapped by
+  the master key, local backend; plain media only in tmpfs `/run/qpbx-media`, shared with
+  FreeSWITCH); a mailbox per extension (PIN hashed, email with or without the audio),
+  greetings (unavailable, busy, temporary; MP3 or WAV upload), unanswered and busy calls to
+  the mailbox (greeting, tone, record, encrypt), `*97` (PIN, counts, play, 7 delete, 9 or #
+  keep, 5 repeat), email with the audio (Oban `notify`, the job holds only the file key),
+  portal pages for mailbox, greetings and messages (browser playback through an audio
+  endpoint for the tenant's admins), voicemail lights with real counts, events
+  `VoicemailReceived` and `VoicemailChanged`; English prompts in a new `qpbx-sounds` package.
+  Lab: `phase2-voicemail.py` 19/19 with real calls (unanswered call to the mailbox, 5 s message
+  stored encrypted and nothing left in tmpfs, email built with the MP3, light on, three wrong
+  PINs hung up, right PIN plays and deletes with 7, light off, file gone, a custom greeting
+  played from a temporary copy removed after). Found in the lab: deleting an extension left
+  its audio files (now deleted first). 229 tests.
 
 - 2-6 Call admission and fraud protection (done): concurrent caps per tenant (total, inbound,
   outbound) and per extension; destination classes per plan (premium, i.e. the high-cost
@@ -274,7 +289,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 2-7 Voicemail (next).
+- 2-8 CDRs (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next
@@ -383,7 +398,7 @@ a measured time.
 | 2-8 | CDRs | One row per call leg from event-socket events, written in batches; import of the FreeSWITCH JSON spool (no CDR lost while the app is down); search and CSV export; daily usage roll-up |
 | 2-9 | Automated call tests | SIPp scenarios in CI against real Kamailio and FreeSWITCH (containers in CI only): register, internal call, inbound DID, outbound with limits and failover, voicemail, two tenants with the same extension numbers |
 | 2-10 | Backups and restore | pgBackRest (encrypted, point-in-time) and restic (files and the secrets file, separate password) to an off-server target (lab: a second VM), on timers, with backup status in health; a restore playbook; one timed restore onto a fresh VM |
-| 2-11 | Leftovers | Trim FreeSWITCH image dependencies; watch tenant certificate renewals; secrets file in the encrypted backup |
+| 2-11 | Leftovers | Trim FreeSWITCH image dependencies; watch tenant certificate renewals; secrets file in the encrypted backup; edit form for plans (today plans can only be created) |
 | 2-12 | Done-when verification | Lab and CI: the spec's checks, measured restore time |
 
 ## Phase 1b task breakdown
@@ -451,6 +466,12 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
 
 ## Open questions for later phases
 
+- Voicemail for tenant users: users are not linked to an extension yet, so only tenant admins
+  see and play messages in the portal (phones use `*97`). The spec gives tenant users their
+  own extension's voicemail: needs a user-extension link (proposed for 2-11 or phase 3).
+- Voice prompts: FreeSWITCH's "Callie" English set; packagers (including FreeSWITCH's own
+  spec file) list it as MPL. To confirm before the first public release.
+
 - ~~Phase 2, spend caps~~ Answered: minute caps per destination class plus a high-cost
   prefix list (see "Planned features").
 
@@ -467,6 +488,9 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
   not come back in 13 further runs and its name was not captured. Watch CI for a repeat.
 
 - FreeSWITCH depends on image libraries (cairo, X11) it does not need; harmless, planned to trim.
+
+- Deleting a tenant (no portal action yet; only by hand) leaves its encrypted media files on
+  disk: the database cascade removes the rows only.
 
 - The lab LAN has no IPv6, so dual-stack listening (Kamailio, nftables rules) is templated but
   not yet exercised end to end.

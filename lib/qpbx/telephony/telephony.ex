@@ -6,7 +6,7 @@ defmodule QPBX.Telephony do
   `lib/qpbx/telephony/README.md`.
   """
   use Boundary,
-    deps: [QPBX.Repo, QPBX.Core, QPBX.Events],
+    deps: [QPBX.Repo, QPBX.Core, QPBX.Events, QPBX.Storage, QPBX.Notify],
     exports: [Router, Dialplan, Cache, Calls, Usage, Fraud, Admission]
 
   alias QPBX.Telephony.{Calls, Dialplan}
@@ -17,6 +17,23 @@ defmodule QPBX.Telephony do
 
   @doc "Whether the event socket to FreeSWITCH is up (health check)."
   def connected?, do: Process.whereis(Connection) != nil and Connection.connected?()
+
+  ## Voicemail (tenant admins; see QPBX.Telephony.Voicemail)
+
+  alias QPBX.Telephony.Voicemail
+  defdelegate mailbox(scope, ext_id), to: Voicemail
+  defdelegate change_mailbox(mailbox, attrs \\ %{}), to: Voicemail
+  defdelegate save_mailbox(scope, ext_id, attrs, actor), to: Voicemail
+  defdelegate delete_mailbox(scope, ext_id, actor), to: Voicemail
+  defdelegate list_voicemails(scope), to: Voicemail, as: :list_messages
+  defdelegate voicemail_audio(scope, id), to: Voicemail, as: :message_audio
+  defdelegate save_voicemail(scope, id, actor), to: Voicemail, as: :mark_saved
+  defdelegate delete_voicemail(scope, id, actor), to: Voicemail, as: :delete_message
+  defdelegate greetings(scope, ext_id), to: Voicemail
+  defdelegate greeting_kinds(), to: Voicemail.Greeting, as: :kinds
+  defdelegate put_greeting(scope, ext_id, kind, audio, actor), to: Voicemail
+  defdelegate delete_greeting(scope, ext_id, kind, actor), to: Voicemail
+  defdelegate voicemail_counts(tenant_id \\ nil), to: Voicemail, as: :counts
 
   ## Fraud protection (platform admins)
 

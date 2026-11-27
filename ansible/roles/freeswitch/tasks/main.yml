@@ -37,6 +37,16 @@
     deb: "/var/cache/qpbx/{{ qpbx_freeswitch_deb | basename }}"
   notify: Restart freeswitch
 
+- name: Copy voice prompts package
+  ansible.builtin.copy:
+    src: "{{ qpbx_sounds_deb }}"
+    dest: /var/cache/qpbx/
+    mode: "0644"
+
+- name: Install voice prompts
+  ansible.builtin.apt:
+    deb: "/var/cache/qpbx/{{ qpbx_sounds_deb | basename }}"
+
 - name: Config folders
   ansible.builtin.file:
     path: "{{ item }}"

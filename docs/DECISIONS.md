@@ -2,6 +2,29 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Voicemail and encrypted storage (2-7)
+
+- **Voicemail lives in Telephony** (tables `mailboxes`, `greetings`, `voicemails`), next to
+  the call process that records and plays it; Core keeps extensions. Web and Edge use it
+  through `QPBX.Telephony`'s API and events.
+- **A data key per file, wrapped by the master key, in the file's own header** (spec: "a data
+  key per file wrapped by the master key"): a table stores only the file key, and moving to
+  KMS changes nothing in the files' format. AES-256-GCM with the format tag as AAD.
+- **Plain audio only in tmpfs** (`/run/qpbx-media`, group `qpbx-media`): FreeSWITCH records
+  there and plays decrypted copies from there; each file is removed as soon as it is stored
+  or played. Rejected: FreeSWITCH writing to `/var/lib/qpbx/voicemail` (plain on disk).
+- **The call process drives voicemail over the event socket** (answer, playback, record,
+  play_and_get_digits), like every other feature; no `mod_voicemail`, which would keep its
+  own storage and config.
+- **MP3 recordings** (mod_shout): small enough to attach to email; browsers play them.
+- **The email job carries the storage key, not the audio**, so Oban's table never holds
+  audio and a deleted message is not sent.
+- **English prompts: FreeSWITCH's "Callie" set** in its own package (`qpbx-sounds`, 8 kHz,
+  voicemail, digits, IVR, misc, time), pinned by SHA-256. Its license is listed as MPL by
+  packagers; to confirm before a public release.
+- **Without a mailbox, unanswered calls end as before**; a mailbox needs a PIN (Argon2,
+  trivial PINs refused, 3 tries per call).
+
 ## 2026-11-27: Call admission and fraud protection (2-6)
 
 - **Admission runs in the call process before each carrier bridge,** not in the dialplan

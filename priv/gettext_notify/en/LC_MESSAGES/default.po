@@ -30,3 +30,19 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "The link works once and expires in 48 hours."
 msgstr ""
+
+#: lib/qpbx/notify/voicemail_email.ex:33
+#, elixir-autogen, elixir-format
+msgid "Extension %{extension} has a new message from %{caller}, %{seconds} seconds long, left at %{at} (UTC)."
+msgstr ""
+
+#: lib/qpbx/notify/voicemail_email.ex:44
+#, elixir-autogen, elixir-format
+msgid "New voicemail from %{caller}"
+msgstr ""
+
+#: lib/qpbx/notify/voicemail_email.ex:51
+#: lib/qpbx/notify/voicemail_email.ex:53
+#, elixir-autogen, elixir-format
+msgid "an unknown caller"
+msgstr ""

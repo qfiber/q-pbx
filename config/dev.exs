@@ -1,6 +1,11 @@
 import Config
 
 # Configure your database
+config :qpbx, QPBX.Storage,
+  backend: QPBX.Storage.Local,
+  root: Path.expand("../tmp/dev-storage", __DIR__),
+  temp_dir: Path.expand("../tmp/dev-media", __DIR__)
+
 config :qpbx, QPBX.Repo,
   # Not a superuser: superusers bypass row-level security.
   username: "qpbx",

@@ -2,9 +2,9 @@ defmodule QPBX.Edge.Presence do
   @moduledoc """
   Feeds Kamailio's presence server, which answers the phones' subscriptions (busy lamps,
   presence, voicemail lights): every `CallState` becomes a `dialog` update, sent as JSON to
-  Kamailio's localhost-only `/presence` endpoint (`pua_json`). Voicemail lights: until
-  voicemail exists (2-7) every extension is published as "no messages", at start, when
-  extensions change and every 5 minutes. Kamailio keeps presence state in memory, so every
+  Kamailio's localhost-only `/presence` endpoint (`pua_json`). Voicemail lights: every
+  `VoicemailChanged` at once, and every extension's counts (`QPBX.Telephony.voicemail_counts/1`)
+  at start, when extensions change and every 5 minutes. Kamailio keeps presence state in memory, so every
   minute this checks Kamailio's start time: after a restart (or a failed round) it republishes
   at once.
   """
@@ -12,7 +12,7 @@ defmodule QPBX.Edge.Presence do
   require Logger
   alias QPBX.Edge
   alias QPBX.Events
-  alias QPBX.Events.{CallState, ConfigChanged}
+  alias QPBX.Events.{CallState, ConfigChanged, VoicemailChanged}
 
   @mwi_every_ms 5 * 60_000
   @check_every_ms 60_000
@@ -23,6 +23,7 @@ defmodule QPBX.Edge.Presence do
   def init(_) do
     Events.subscribe(CallState)
     Events.subscribe(ConfigChanged)
+    Events.subscribe(VoicemailChanged)
     Process.send_after(self(), :mwi, 2_000)
     Process.send_after(self(), :check, @check_every_ms)
     {:ok, %{up_since: nil, failed: false}}
@@ -40,6 +41,15 @@ defmodule QPBX.Edge.Presence do
   end
 
   def handle_info({:event, %ConfigChanged{}}, s), do: {:noreply, s}
+
+  def handle_info({:event, %VoicemailChanged{} = e}, s) do
+    case List.keyfind(QPBX.Core.extension_addresses(e.tenant_id), e.extension_id, 0) do
+      {_id, number, domain} -> send_json(mwi(number, domain, e.new, e.saved))
+      nil -> :ok
+    end
+
+    {:noreply, s}
+  end
 
   def handle_info(:mwi, s) do
     Process.send_after(self(), :mwi, @mwi_every_ms)
@@ -82,7 +92,7 @@ defmodule QPBX.Edge.Presence do
     }
   end
 
-  @doc "The `pua_json` message-summary update for an extension (counts until voicemail: none)."
+  @doc "The `pua_json` message-summary update for an extension."
   def mwi(number, domain, new \\ 0, saved \\ 0) do
     account = "sip:#{number}@#{domain}"
 
@@ -105,9 +115,13 @@ defmodule QPBX.Edge.Presence do
 
   defp publish_mwi(tenant_id) do
     if url() do
+      counts = QPBX.Telephony.voicemail_counts(tenant_id)
+
       results =
-        for {number, domain} <- QPBX.Core.extension_addresses(tenant_id),
-            do: send_json(mwi(number, domain))
+        for {id, number, domain} <- QPBX.Core.extension_addresses(tenant_id) do
+          {new, saved} = Map.get(counts, id, {0, 0})
+          send_json(mwi(number, domain, new, saved))
+        end
 
       if Enum.all?(results, &(&1 == :ok)), do: :ok, else: :error
     else

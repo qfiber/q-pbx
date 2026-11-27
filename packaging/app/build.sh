@@ -45,4 +45,7 @@ Description: Q-PBX firewall helper
  Applies Q-PBX allow and block lists to named nftables sets; the only Q-PBX part with CAP_NET_ADMIN.
 CTL
 dpkg-deb --build --root-owner-group $fstage /out/qpbx-fwd_${version}_amd64.deb >/dev/null
+
+# Voice prompts (a separate package: they change rarely).
+bash /src/packaging/sounds/build.sh
 ls -1 /out/*.deb

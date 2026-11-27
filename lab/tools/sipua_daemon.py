@@ -15,13 +15,15 @@ Commands:
   {"cmd": "seen", "name": N}                     INVITEs received since the last "seen"
   {"cmd": "subscribe", "from": N, "target": EXT, "event": dialog|presence|message-summary}
   {"cmd": "notifies", "name": N}                 NOTIFYs received (event, state) since the last call
+  {"cmd": "audio", "dialog": ID, "seconds": S}   sends a 400 Hz tone (PCMU) on an answered call
+  {"cmd": "dtmf", "dialog": ID, "digits": "12#"} sends keypad digits (RFC 4733 telephone-events)
 """
-import hashlib, json, queue, random, re, socket, sys, threading, time
+import hashlib, json, math, queue, random, re, socket, struct, sys, threading, time
 
 KAMAILIO = ("127.0.0.1", 5060)
 md5 = lambda s: hashlib.md5(s.encode()).hexdigest()
 rnd = lambda bits=32: format(random.getrandbits(bits), "x")
-endpoints, dialogs = {}, {}
+endpoints, dialogs, media = {}, {}, {}
 
 
 def hdr(msg, name):
@@ -41,7 +43,52 @@ def sdp(ip, port, codecs=("pcmu", "pcma"), crypto=False):
     maps = "".join(f"a=rtpmap:{CODECS[c][0]} {CODECS[c][1]}\r\n" for c in codecs)
     key = "a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:" + "QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNk\r\n" if crypto else ""
     return (f"v=0\r\no=- 1 1 IN IP4 {ip}\r\ns=-\r\nc=IN IP4 {ip}\r\nt=0 0\r\n"
-            f"m=audio {port} RTP/AVP {pts}\r\n{maps}a=sendrecv\r\n{key}")
+            f"m=audio {port} RTP/AVP {pts} 101\r\n{maps}a=rtpmap:101 telephone-event/8000\r\n"
+            f"a=fmtp:101 0-16\r\na=sendrecv\r\n{key}")
+
+
+def ulaw(sample):
+    """16-bit linear sample to G.711 mu-law."""
+    sign = 0x80 if sample < 0 else 0
+    sample = min(abs(sample), 32635) + 132
+    exp = max(0, min(7, int(math.log2(sample >> 7)) if sample >> 7 else 0))
+    mant = (sample >> (exp + 3)) & 0x0F
+    return ~(sign | (exp << 4) | mant) & 0xFF
+
+
+TONE = bytes(ulaw(int(8000 * math.sin(2 * math.pi * 400 * n / 8000))) for n in range(160))
+
+
+class Rtp:
+    """Our side of a call's media: sequence, timestamp, SSRC; sends to the far end's address."""
+    def __init__(self, sock, addr):
+        self.sock, self.addr = sock, addr
+        self.seq, self.ts, self.ssrc = random.randint(0, 9999), random.randint(0, 99999), random.getrandbits(32)
+
+    def packet(self, pt, payload, marker=False, advance=True):
+        hdr_ = struct.pack("!BBHII", 0x80, (0x80 if marker else 0) | pt, self.seq & 0xFFFF, self.ts & 0xFFFFFFFF, self.ssrc)
+        self.sock.sendto(hdr_ + payload, self.addr)
+        self.seq += 1
+        if advance:
+            self.ts += 160
+
+    def audio(self, seconds):
+        for _ in range(int(seconds * 50)):
+            self.packet(0, TONE)
+            time.sleep(0.02)
+
+    def dtmf(self, digits):
+        codes = {**{str(d): d for d in range(10)}, "*": 10, "#": 11}
+        for d in digits:
+            self.audio(0.2)
+            ev = codes[d]
+            for i in range(1, 9):  # 160 ms of the key, then three end packets
+                self.packet(101, struct.pack("!BBH", ev, 10, i * 160), marker=(i == 1), advance=False)
+                time.sleep(0.02)
+            for _ in range(3):
+                self.packet(101, struct.pack("!BBH", ev, 0x80 | 10, 9 * 160), advance=False)
+            self.ts += 9 * 160
+        self.audio(0.3)
 
 
 class Endpoint(threading.Thread):
@@ -179,6 +226,10 @@ class Endpoint(threading.Thread):
         self.request("ACK", target, call_id, cseq, tag, to, routes)
         dialog = rnd()
         dialogs[dialog] = (self, target, call_id, cseq + 1, tag, to, routes)
+        c_ip = re.search(r"^c=IN IP4 (\S+)", r, re.M)
+        m_port = re.search(r"^m=audio (\d+)", r, re.M)
+        if c_ip and m_port:
+            media[dialog] = Rtp(self.rtp, (c_ip.group(1), int(m_port.group(1))))
         if not hold:
             time.sleep(1)
             self.bye(dialog)
@@ -241,6 +292,12 @@ def handle(c):
     if cmd == "call":
         return endpoints[c["from"]].call(c["to"], c.get("hold", False), c.get("wait", 30),
                                          tuple(c.get("codecs", ["pcmu", "pcma"])), c.get("crypto", False))
+    if cmd == "audio":
+        media[c["dialog"]].audio(c["seconds"])
+        return {"status": "ok"}
+    if cmd == "dtmf":
+        media[c["dialog"]].dtmf(c["digits"])
+        return {"status": "ok"}
     if cmd == "bye":
         return {"status": dialogs[c["dialog"]][0].bye(c["dialog"])}
     if cmd == "subscribe":

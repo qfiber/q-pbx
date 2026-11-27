@@ -70,6 +70,9 @@ defmodule QPBX.Web.Layouts do
           <.link navigate={~p"/app/extensions"} class="btn btn-ghost btn-sm" id="nav-extensions">
             {gettext("Extensions")}
           </.link>
+          <.link navigate={~p"/app/voicemail"} class="btn btn-ghost btn-sm" id="nav-voicemail">
+            {gettext("Voicemail")}
+          </.link>
           <.link navigate={~p"/app/numbers"} class="btn btn-ghost btn-sm" id="nav-numbers">
             {gettext("Numbers")}
           </.link>

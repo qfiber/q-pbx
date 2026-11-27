@@ -6,7 +6,7 @@ defmodule QPBX.Edge do
   pushes registration trunks (with their passwords) over JSON-RPC. See `lib/qpbx/edge/README.md`.
   """
   use Boundary,
-    deps: [QPBX.Repo, QPBX.Core, QPBX.Events, QPBX.Firewall],
+    deps: [QPBX.Repo, QPBX.Core, QPBX.Events, QPBX.Firewall, QPBX.Telephony],
     exports: [Reloader, Registrations, Bans, Settings, Ban, Presence]
 
   import Ecto.Query

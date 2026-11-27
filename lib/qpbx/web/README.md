@@ -17,10 +17,16 @@ running endpoint).
 `/setup/:token`, `/locale/:locale`, `/logout`; platform LiveViews under `/platform`
 (tenants, new tenant, plans, firewall, trunks, numbers, numbering, protection, fraud); tenant LiveViews under
 `/app`. The tenant configuration pages (`/app/extensions`, `/app/extensions/:id`,
-`/app/numbers`, `/app/routes`, `/app/office-ips`, `/app/number-format`) are in the
+`/app/numbers`, `/app/routes`, `/app/office-ips`, `/app/number-format`,
+`/app/extensions/:id/voicemail` (mailbox and greetings), `/app/voicemail` (messages, played
+in the browser; playing marks heard)) are in the
 `:tenant_admin` live session: tenant users are sent back to `/app`. `QPBX.Web.NumberInput`
 turns numbers typed the local way into E.164 with the scope's number rule before Core sees
 them. A device's SIP password is shown once, after creation or reset.
+
+**Voicemail audio:** `GET /app/voicemail/:id/audio` (`VoicemailController`): the decrypted
+message for a signed-in tenant admin of its tenant (404 otherwise), `cache-control: private,
+no-store`. Deleting an extension deletes its mailbox (files included) first.
 
 **FreeSWITCH:** `POST /internal/freeswitch/dialplan` (`FreeswitchController`): loopback only
 (a request through nginx carries the client's address) and HTTP basic auth with FreeSWITCH's

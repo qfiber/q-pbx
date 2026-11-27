@@ -40,3 +40,19 @@
     etype: group
     permissions: x
     state: present
+
+# Plain media only briefly, in memory: FreeSWITCH records a voicemail here and the app encrypts
+# it into storage; the app decrypts a greeting or message here for FreeSWITCH to play. Leftovers
+# (a crash mid-call) are removed after a day.
+- name: Shared media folder in tmpfs, created at every boot
+  ansible.builtin.copy:
+    dest: /etc/tmpfiles.d/qpbx-media.conf
+    content: |
+      d /run/qpbx-media 2770 qpbx qpbx-media 1d
+    mode: "0644"
+  register: media_tmpfiles
+
+- name: Create the shared media folder now
+  ansible.builtin.command: systemd-tmpfiles --create /etc/tmpfiles.d/qpbx-media.conf
+  when: media_tmpfiles.changed  # noqa: no-handler
+  changed_when: true

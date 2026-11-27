@@ -10,6 +10,8 @@ defmodule QPBX.Events do
       ConfigChanged,
       FraudAlert,
       LimitReached,
+      VoicemailReceived,
+      VoicemailChanged,
       EdgeAlert,
       FirewallChanged,
       SessionsRevoked,

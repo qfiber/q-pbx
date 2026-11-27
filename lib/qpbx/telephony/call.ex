@@ -10,7 +10,7 @@ defmodule QPBX.Telephony.Call do
 
   @max_redirects 3
   require Logger
-  alias QPBX.Telephony.{Admission, Cache, Calls, Router, Usage}
+  alias QPBX.Telephony.{Admission, Cache, Calls, Router, Usage, Voicemail, VoicemailFlow}
   alias QPBX.Telephony.ESL.Connection
 
   def start_link(event),
@@ -25,7 +25,8 @@ defmodule QPBX.Telephony.Call do
       auth_user: event["variable_sip_h_X-QPBX-Auth-User"],
       trunk_id: event["variable_sip_h_X-QPBX-Trunk"],
       destination: event["Caller-Destination-Number"] || "",
-      caller: event["Caller-Caller-ID-Number"]
+      caller: event["Caller-Caller-ID-Number"],
+      caller_name: event["Caller-Caller-ID-Name"]
     }
 
     state = %{
@@ -42,7 +43,9 @@ defmodule QPBX.Telephony.Call do
       # Call admission: destinations already admitted (number => seconds left), and the
       # carrier call being timed for usage ({meta, bridged_at}).
       admitted: %{},
-      talking: nil
+      talking: nil,
+      # Voicemail (leaving a message or the mailbox menu): QPBX.Telephony.VoicemailFlow state.
+      vm: nil
     }
 
     {:ok, state, {:continue, :route}}
@@ -92,6 +95,16 @@ defmodule QPBX.Telephony.Call do
   end
 
   @impl true
+  def handle_info({:event, "CHANNEL_EXECUTE_COMPLETE", e}, %{vm: vm, pending: id} = s)
+      when vm != nil and id != nil do
+    if e["Application-UUID"] == id do
+      {apps, vm} = VoicemailFlow.next(e, vm)
+      {:noreply, flow(apps, %{s | vm: vm, pending: nil})}
+    else
+      {:noreply, s}
+    end
+  end
+
   def handle_info({:event, "CHANNEL_EXECUTE_COMPLETE", e}, %{pending: id, action: action} = s)
       when id != nil do
     cond do
@@ -150,8 +163,10 @@ defmodule QPBX.Telephony.Call do
 
   def handle_info({:event, "CHANNEL_BRIDGE", _e}, s), do: {:noreply, caller_lamp(s, "confirmed")}
 
-  def handle_info({:event, "CHANNEL_HANGUP_COMPLETE", _e}, s),
-    do: {:stop, :normal, s |> stop_talking() |> lamps_off()}
+  def handle_info({:event, "CHANNEL_HANGUP_COMPLETE", e}, s) do
+    if s.vm, do: VoicemailFlow.hangup(s.vm, e)
+    {:stop, :normal, s |> stop_talking() |> lamps_off()}
+  end
 
   def handle_info({:event, _name, _e}, s), do: {:noreply, s}
 
@@ -211,6 +226,40 @@ defmodule QPBX.Telephony.Call do
   defp run(%{op: :reject, cause: cause}, s) do
     Connection.hangup(s.call.uuid, cause)
     %{s | action: nil}
+  end
+
+  # The extension's mailbox takes a message; without one the call ends as it would have.
+  defp run(%{op: :voicemail} = a, s) do
+    case mailbox(s.tenant_id, a.ext_id) do
+      nil ->
+        run(a.otherwise, s)
+
+      mb ->
+        tenant = safe_tenant(s.tenant_id)
+
+        info = %{
+          caller_number: s.call.caller,
+          caller_name: s.call.caller_name,
+          extension_number: a.ext_number,
+          locale: tenant && tenant.tenant.locale,
+          reason: a.reason
+        }
+
+        {apps, vm} = VoicemailFlow.leave(mb, info)
+        flow(apps, %{s | vm: vm, action: a})
+    end
+  end
+
+  # *97: the calling phone's own mailbox, behind its PIN.
+  defp run(%{op: :voicemail_menu} = a, s) do
+    case s.caller_ext && mailbox(s.tenant_id, s.caller_ext.id) do
+      nil ->
+        run(%{op: :reject, cause: "UNALLOCATED_NUMBER"}, s)
+
+      mb ->
+        {apps, vm} = VoicemailFlow.menu(mb)
+        flow(apps, %{s | vm: vm, action: a})
+    end
   end
 
   # A dial to a carrier passes call admission first (once per destination number).
@@ -275,6 +324,32 @@ defmodule QPBX.Telephony.Call do
   end
 
   defp stop_talking(s), do: s
+
+  defp mailbox(nil, _ext_id), do: nil
+
+  defp mailbox(tid, ext_id) do
+    Voicemail.mailbox_system(tid, ext_id)
+  rescue
+    e ->
+      Logger.error("voicemail: mailbox lookup failed: #{Exception.message(e)}")
+      nil
+  end
+
+  # Sends the voicemail flow's applications in order; the last one's completion is the next step.
+  defp flow([], s), do: s
+
+  defp flow(apps, s) do
+    uuid = s.call.uuid
+
+    id =
+      Enum.reduce(apps, nil, fn {app, arg}, _ ->
+        id = Ecto.UUID.generate()
+        Connection.execute(uuid, app, arg, id)
+        id
+      end)
+
+    %{s | pending: id}
+  end
 
   defp dial(%{op: :dial} = action, s) do
     s =

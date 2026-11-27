@@ -93,6 +93,14 @@ defmodule QPBX.Web.Tenant.ExtensionLive do
   def handle_event("hide_secret", _, socket), do: {:noreply, assign(socket, secret: nil)}
 
   def handle_event("delete", _, socket) do
+    # Its voicemail first: messages and greetings are files the database cascade cannot remove.
+    :ok =
+      QPBX.Telephony.delete_mailbox(
+        socket.assigns.current_scope,
+        socket.assigns.ext.id,
+        socket.assigns.current_account
+      )
+
     {:ok, ext} =
       Core.delete_extension(
         socket.assigns.current_scope,
@@ -124,6 +132,13 @@ defmodule QPBX.Web.Tenant.ExtensionLive do
         {gettext("Extension %{number}", number: @ext.number)}
         <:subtitle>{@ext.name}</:subtitle>
         <:actions>
+          <.link
+            navigate={~p"/app/extensions/#{@ext.id}/voicemail"}
+            class="btn btn-ghost btn-sm"
+            id="ext-voicemail"
+          >
+            {gettext("Voicemail")}
+          </.link>
           <.link navigate={~p"/app/extensions"} class="btn btn-ghost btn-sm">
             {gettext("All extensions")}
           </.link>

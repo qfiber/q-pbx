@@ -86,7 +86,7 @@ uses two roles (`qpbx_owner` for migrations, `qpbx` for the app); development us
 | `scripts/check_boundary_enforced.sh` | Proves a cross-boundary reference fails the build |
 | `cd fwd && go test ./...` | `qpbx-fwd` unit tests |
 | `fwd/integration_test.sh` | `qpbx-fwd` against real nftables in a Debian 12 container |
-| `packaging/app/build-in-container.sh` | App and `qpbx-fwd` `.deb` packages into `out/` (Debian 12 image) |
+| `packaging/app/build-in-container.sh` | App, `qpbx-fwd` and `qpbx-sounds` (English voice prompts) `.deb` packages into `out/` (Debian 12 image) |
 | `packaging/freeswitch/build-in-container.sh` | FreeSWITCH `.deb` into `out/` (Debian 12, about 10 minutes) |
 | `lab/create-vm.sh` | Local Debian 12 lab VM (libvirt, bridged to `br0`; `QPBX_LAB_NET=network=default` for NAT) |
 | `cd ansible && ansible-playbook site.yml` | Install or update the server in the inventory (lab by default) |
@@ -94,6 +94,7 @@ uses two roles (`qpbx_owner` for migrations, `qpbx` for the app); development us
 | `node lab/done-when/phase1b.mjs <vm-ip>` | Phase 1b security checks in the lab (needs `qpbx_session_idle_timeout=60`) |
 | `node lab/done-when/phase2-config.mjs <vm-ip>` | 2-2 lab check: telephony pages end to end, device registration |
 | `lab/done-when/phase2-admission.py <vm-ip>` | 2-6 lab check: call admission and fraud protection with real calls |
+| `lab/done-when/phase2-voicemail.py <vm-ip>` | 2-7 lab check: voicemail with real calls (message, encryption, email, lights, *97) |
 | `lab/done-when/phase2-calls.py <vm-ip>` | 2-5 lab check: real calls (extensions, features, outbound, failover, inbound, fallback) |
 | `lab/done-when/phase2-protect.py <vm-ip>` | 2-4 lab check: floods, scanners, failed logins, rate limits, office IPs |
 | `lab/done-when/phase2-edge.py <vm-ip> <host-ip>` | 2-3 lab check: Kamailio edge with simulated carriers on this host |

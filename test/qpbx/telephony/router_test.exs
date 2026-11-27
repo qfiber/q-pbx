@@ -121,8 +121,18 @@ defmodule QPBX.Telephony.RouterTest do
       assert a.dial =~ "{origination_caller_id_name=Ext 101,origination_caller_id_number=101}"
       assert a.dial =~ "[sip_route_uri=sip:127.0.0.1:5060]sofia/qpbx/102-desk@#{@domain},"
       assert a.dial =~ "[sip_route_uri=sip:127.0.0.1:5060]sofia/qpbx/102-mobile@#{@domain}"
-      assert walk(a, [:busy]) == %{op: :reject, cause: "USER_BUSY"}
-      assert walk(a, [:no_answer]) == %{op: :reject, cause: "NO_ANSWER"}
+      # Unanswered or busy: the mailbox takes a message (the call ends if there is none).
+      assert %{
+               op: :voicemail,
+               ext_id: "ext-102",
+               ext_number: "102",
+               reason: :busy,
+               otherwise: %{cause: "USER_BUSY"}
+             } =
+               walk(a, [:busy])
+
+      assert %{op: :voicemail, reason: :unavailable, otherwise: %{cause: "NO_ANSWER"}} =
+               walk(a, [:no_answer])
     end
 
     test "an unknown device is refused; an extension without devices is unanswered" do
@@ -130,13 +140,17 @@ defmodule QPBX.Telephony.RouterTest do
                Router.plan(%{source: :device, auth_user: "999-x", destination: "102"}, ctx())
 
       ctx = ctx(extensions: [ext("101"), ext("102", devices: [])])
-      assert %{op: :reject, cause: "NO_ANSWER"} = from_phone("102", ctx)
+      assert %{op: :voicemail, reason: :unavailable} = from_phone("102", ctx)
     end
+  end
+
+  test "*97 is the caller's own mailbox" do
+    assert %{op: :voicemail_menu} = from_phone("*97", ctx(extensions: [ext("101")]))
   end
 
   describe "extension features" do
     test "do not disturb is busy, or forward-on-busy" do
-      assert %{op: :reject, cause: "USER_BUSY"} =
+      assert %{op: :voicemail, reason: :busy} =
                from_phone("102", ctx(extensions: [ext("101"), ext("102", dnd: true)]))
 
       a =
@@ -155,7 +169,7 @@ defmodule QPBX.Telephony.RouterTest do
           in_use: MapSet.new(["ext-102"])
         )
 
-      assert %{op: :reject, cause: "USER_BUSY"} = from_phone("102", ctx)
+      assert %{op: :voicemail, reason: :busy} = from_phone("102", ctx)
       # With call waiting on (the default) it rings.
       assert %{op: :dial} = from_phone("102", %{ctx | in_use: MapSet.new()})
     end

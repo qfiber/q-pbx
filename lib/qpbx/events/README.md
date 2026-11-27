@@ -15,6 +15,8 @@
 | `QPBX.Events.TenantsChanged` | `tenants` | 1 | `tenant_id`, `at` | `QPBX.Core` |
 | `QPBX.Events.CallState` | `call_state` | 1 | `tenant_id`, `domain`, `extension`, `peer`, `call_id`, `state` (early, confirmed, terminated), `direction` (initiator, recipient), `at` | `QPBX.Telephony` (busy lamps) |
 | `QPBX.Events.LimitReached` | `limits` | 1 | `tenant_id`, `limit`, `detail`, `at` | `QPBX.Telephony` (a call refused by admission) |
+| `QPBX.Events.VoicemailReceived` | `voicemail` | 1 | `tenant_id`, `voicemail_id`, `extension_id`, `caller_number`, `caller_name`, `duration`, `at` | `QPBX.Telephony` (a message was left) |
+| `QPBX.Events.VoicemailChanged` | `mwi` | 1 | `tenant_id`, `extension_id`, `new`, `saved`, `at` | `QPBX.Telephony` (a mailbox's counts changed) |
 | `QPBX.Events.FraudAlert` | `fraud` | 1 | `tenant_id`, `rule`, `detail`, `blocked`, `at` | `QPBX.Telephony` (a velocity rule fired) |
 | `QPBX.Events.EdgeAlert` | `edge_alerts` | 1 | `ip`, `reason`, `at` | `QPBX.Edge` (an office IP would have been banned) |
 | `QPBX.Events.ConfigChanged` | `config` | 1 | `tenant_id` (nil: platform), `kind`, `at` | `QPBX.Core` (telephony configuration) |

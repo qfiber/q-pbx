@@ -181,6 +181,107 @@ defmodule QPBX.Telephony.ESLTest do
       assert dial =~ "102-desk@"
     end
 
+    test "voicemail: an unanswered extension takes a message; *97 plays it behind the PIN",
+         %{fs: fs, tenant: t} do
+      user = user_fixture(t)
+      scope = Core.scope_for(user)
+      {:ok, e103} = Core.create_extension(scope, %{number: "103", name: "Away"}, @actor)
+      {:ok, _, _} = Core.add_device(scope, e103, %{label: "desk", kind: "desk_phone"}, @actor)
+      {:ok, _} = QPBX.Telephony.save_mailbox(scope, e103.id, %{pin: "4831"}, user)
+      QPBX.Events.subscribe(QPBX.Events.VoicemailChanged)
+      Cache.clear()
+
+      from = fn auth, uuid, dest ->
+        park(fs, uuid, %{
+          "variable_sip_h_X-QPBX-Source" => "device",
+          "variable_sip_h_X-QPBX-Tenant" => t.id,
+          "variable_sip_h_X-QPBX-Auth-User" => auth,
+          "Caller-Caller-ID-Number" => auth,
+          "Caller-Destination-Number" => dest
+        })
+      end
+
+      # 101 calls 103, nobody answers: greeting, tone, record.
+      from.("101-desk", "vm-1", "103")
+      assert %{app: "set"} = recv_sendmsg(fs, "vm-1")
+      assert %{app: "bridge", event_uuid: bridge} = recv_sendmsg(fs, "vm-1")
+      complete(fs, "vm-1", bridge, "NO_ANSWER")
+      assert %{app: "answer"} = recv_sendmsg(fs, "vm-1")
+      assert %{app: "sleep"} = recv_sendmsg(fs, "vm-1")
+      assert %{app: "playback", arg: greeting} = recv_sendmsg(fs, "vm-1")
+
+      assert greeting =~
+               "vm-person.wav!digits/1.wav!digits/0.wav!digits/3.wav!voicemail/vm-not_available.wav"
+
+      assert %{app: "playback", arg: "tone_stream://" <> _} = recv_sendmsg(fs, "vm-1")
+      assert %{app: "set", arg: "playback_terminators=#"} = recv_sendmsg(fs, "vm-1")
+      assert %{app: "record", arg: rec, event_uuid: rec_id} = recv_sendmsg(fs, "vm-1")
+      [path, "180", "200", "5"] = String.split(rec)
+      assert String.starts_with?(path, QPBX.Storage.temp_dir())
+
+      # FreeSWITCH wrote the recording; the caller pressed # after 4 seconds.
+      File.mkdir_p!(QPBX.Storage.temp_dir())
+      File.write!(path, "ID3" <> :binary.copy(<<1>>, 300))
+
+      event(fs, %{
+        "Event-Name" => "CHANNEL_EXECUTE_COMPLETE",
+        "Unique-ID" => "vm-1",
+        "Application" => "record",
+        "Application-UUID" => rec_id,
+        "variable_record_seconds" => "4"
+      })
+
+      assert %{app: "playback", arg: "voicemail/vm-goodbye.wav"} = recv_sendmsg(fs, "vm-1")
+      assert %{app: "hangup"} = recv_sendmsg(fs, "vm-1")
+      event(fs, %{"Event-Name" => "CHANNEL_HANGUP_COMPLETE", "Unique-ID" => "vm-1"})
+      eid = e103.id
+      assert_receive {:event, %QPBX.Events.VoicemailChanged{extension_id: ^eid, new: 1}}, 2_000
+      refute File.exists?(path), "the plain recording is removed once stored"
+      [{v, ^eid}] = QPBX.Telephony.list_voicemails(scope)
+      assert %{duration: 4, caller_number: "101", folder: "new"} = v
+
+      # 103 dials *97: wrong PIN, then the right one; hears the message and deletes it (7).
+      from.("103-desk", "vm-2", "*97")
+      assert %{app: "answer"} = recv_sendmsg(fs, "vm-2")
+      assert %{app: "sleep"} = recv_sendmsg(fs, "vm-2")
+      assert %{app: "play_and_get_digits", event_uuid: p1, arg: arg} = recv_sendmsg(fs, "vm-2")
+      assert arg =~ "qpbx_vm_pin1"
+
+      digits = fn id, var, value, app ->
+        event(fs, %{
+          "Event-Name" => "CHANNEL_EXECUTE_COMPLETE",
+          "Unique-ID" => "vm-2",
+          "Application" => app,
+          "Application-UUID" => id,
+          ("variable_" <> var) => value
+        })
+      end
+
+      digits.(p1, "qpbx_vm_pin1", "1111", "play_and_get_digits")
+      assert %{app: "playback", arg: "voicemail/vm-fail_auth.wav"} = recv_sendmsg(fs, "vm-2")
+      assert %{app: "play_and_get_digits", event_uuid: p2} = recv_sendmsg(fs, "vm-2")
+      digits.(p2, "qpbx_vm_pin2", "4831", "play_and_get_digits")
+      assert %{app: "playback", arg: "voicemail/vm-you_have.wav"} = recv_sendmsg(fs, "vm-2")
+      assert %{app: "say", arg: "en number pronounced 1"} = recv_sendmsg(fs, "vm-2")
+      assert %{app: "playback"} = recv_sendmsg(fs, "vm-2")
+      assert %{app: "playback", arg: plain} = recv_sendmsg(fs, "vm-2")
+      assert File.read!(plain) == "ID3" <> :binary.copy(<<1>>, 300)
+      assert %{app: "play_and_get_digits", event_uuid: k0} = recv_sendmsg(fs, "vm-2")
+      digits.(k0, "qpbx_vm_key0", "7", "play_and_get_digits")
+      assert %{app: "playback", arg: "voicemail/vm-deleted.wav"} = recv_sendmsg(fs, "vm-2")
+
+      assert %{app: "playback", arg: "voicemail/vm-no_more_messages.wav"} =
+               recv_sendmsg(fs, "vm-2")
+
+      refute File.exists?(plain), "the decrypted copy is removed after it played"
+
+      assert_receive {:event,
+                      %QPBX.Events.VoicemailChanged{extension_id: ^eid, new: 0, saved: 0}},
+                     2_000
+
+      assert QPBX.Telephony.list_voicemails(scope) == []
+    end
+
     test "call admission: a barred class is hung up; an allowed call is cut off when its minutes run out",
          %{fs: fs} do
       plan = plan_fixture(%{allowed_destination_classes: ["local"], minutes_local_per_hour: 5})

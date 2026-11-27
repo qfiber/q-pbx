@@ -6,6 +6,9 @@ defmodule QPBX.Telephony.Router do
     * `%{op: :dial, dial: dial_string, timeout: seconds, busy: action, no_answer: action, failed: action}`
       answered ends the call normally; otherwise the matching branch runs.
     * `%{op: :reject, cause: freeswitch_cause}`
+    * `%{op: :voicemail, ext_id, ext_number, reason: :busy | :unavailable, otherwise: action}`
+      the extension's mailbox takes a message (`otherwise` when it has none);
+    * `%{op: :voicemail_menu}` the caller's own mailbox (`*97`).
 
   Covered: phone to extension (all its devices ring), phone to an outside number (outbound
   route, trunks in failover order, caller ID per trunk), emergency numbers, carrier to a
@@ -17,6 +20,7 @@ defmodule QPBX.Telephony.Router do
   @max_hops 5
   # A diagnostic feature code ahead of phase 4's full set: answers, plays a prompt, echoes.
   @echo "*43"
+  @voicemail "*97"
   # Where FreeSWITCH reaches phones and carriers: always through Kamailio.
   @edge "sip:127.0.0.1:5060"
 
@@ -70,6 +74,7 @@ defmodule QPBX.Telephony.Router do
 
   # A destination inside a tenant: the echo test, an extension, or a number.
   defp plan_target(@echo, _caller, _ctx), do: echo()
+  defp plan_target(@voicemail, _caller, _ctx), do: %{op: :voicemail_menu}
 
   defp plan_target(target, caller, %{tenant: t} = ctx) do
     case extension(t, target) do
@@ -300,13 +305,12 @@ defmodule QPBX.Telephony.Router do
     end
   end
 
-  # Not answered: follow-me numbers, then forward-on-no-answer, then unavailable
-  # (voicemail arrives with 2-7).
+  # Not answered: follow-me numbers, then forward-on-no-answer, then voicemail.
   defp after_no_answer(ext, caller, ctx, hops) do
     final =
       if ext.forward_no_answer,
         do: forward(ext.forward_no_answer, caller, ctx, hops + 1, reject("NO_ANSWER")),
-        else: reject("NO_ANSWER")
+        else: voicemail(ext, :unavailable, reject("NO_ANSWER"))
 
     if ext.follow_me_enabled and ext.follow_me_numbers != [] do
       case follow_me_dial(ext, caller, ctx) do
@@ -332,7 +336,7 @@ defmodule QPBX.Telephony.Router do
   defp on_busy(ext, caller, ctx, hops) do
     if ext.forward_busy,
       do: forward(ext.forward_busy, caller, ctx, hops + 1, reject("USER_BUSY")),
-      else: reject("USER_BUSY")
+      else: voicemail(ext, :busy, reject("USER_BUSY"))
   end
 
   # A forwarding target: an extension (with its own features) or an outside number.
@@ -480,4 +484,13 @@ defmodule QPBX.Telephony.Router do
   end
 
   defp reject(cause), do: %{op: :reject, cause: cause}
+
+  defp voicemail(ext, reason, otherwise),
+    do: %{
+      op: :voicemail,
+      ext_id: ext.id,
+      ext_number: ext.number,
+      reason: reason,
+      otherwise: otherwise
+    }
 end

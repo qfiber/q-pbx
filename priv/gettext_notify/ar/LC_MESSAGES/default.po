@@ -30,3 +30,19 @@ msgstr "إعداد حسابك على Q-PBX"
 #, elixir-autogen, elixir-format
 msgid "The link works once and expires in 48 hours."
 msgstr "يعمل الرابط مرة واحدة وتنتهي صلاحيته خلال 48 ساعة."
+
+#: lib/qpbx/notify/voicemail_email.ex:33
+#, elixir-autogen, elixir-format
+msgid "Extension %{extension} has a new message from %{caller}, %{seconds} seconds long, left at %{at} (UTC)."
+msgstr "لدى التحويلة %{extension} رسالة جديدة من %{caller}، مدتها %{seconds} ثانية، تُركت في %{at} (بالتوقيت العالمي)."
+
+#: lib/qpbx/notify/voicemail_email.ex:44
+#, elixir-autogen, elixir-format
+msgid "New voicemail from %{caller}"
+msgstr "رسالة صوتية جديدة من %{caller}"
+
+#: lib/qpbx/notify/voicemail_email.ex:51
+#: lib/qpbx/notify/voicemail_email.ex:53
+#, elixir-autogen, elixir-format
+msgid "an unknown caller"
+msgstr "متصل غير معروف"

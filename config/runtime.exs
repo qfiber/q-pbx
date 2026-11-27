@@ -121,6 +121,13 @@ if config_env() == :prod do
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
+  # Encrypted files under the data folder; plain media only briefly in tmpfs shared with
+  # FreeSWITCH (/run/qpbx-media).
+  config :qpbx, QPBX.Storage,
+    backend: QPBX.Storage.Local,
+    root: System.get_env("QPBX_DATA_DIR", "/var/lib/qpbx"),
+    temp_dir: System.get_env("QPBX_MEDIA_TMP", "/run/qpbx-media")
+
   config :qpbx, QPBX.Repo,
     # ssl: true,
     url: database_url,

@@ -34,9 +34,10 @@ and lifts Kamailio bans of addresses that turned out to be allowed. Counters sta
 **Busy lamps, presence, voicemail lights (2-0b):** Kamailio's presence server (in memory)
 answers phones' SUBSCRIBE for `dialog`, `presence` and `message-summary` (digest auth, own
 tenant only) and their PUBLISH of their own presence. `QPBX.Edge.Presence` turns every
-`CallState` into a `pua_json` dialog update (POST to Kamailio's localhost `/presence`), and
-publishes "no messages" for every extension (until voicemail, 2-7) at start, on extension
-changes, every 5 minutes, and at once when Kamailio restarted (its start time moved).
+`CallState` into a `pua_json` dialog update (POST to Kamailio's localhost `/presence`), every
+`VoicemailChanged` into a message-summary update, and publishes every extension's counts
+(`QPBX.Telephony.voicemail_counts/1`) at start, on extension changes, every 5 minutes, and at
+once when Kamailio restarted (its start time moved).
 
 **Public API:** `get_settings/0`, `change_settings/2`, `update_settings/2` (audited, announces
 `ConfigChanged` "edge_settings"), `list_bans/0`, `lift_ban/2` (Kamailio, database and the
@@ -49,7 +50,7 @@ automatic firewall block; audited); `rpc/2` (any Kamailio JSON-RPC method), `rel
 `ConfigChanged` kind "trunks" (trunks, dispatcher, registrations) and "edge_settings"
 (settings), `FirewallChanged` (allow
 lists). Every minute: allow lists (entries expire) and registrations (a restarted Kamailio
-has none). `CallState` (busy lamps), `ConfigChanged` "extensions" (voicemail lights).
+has none). `CallState` (busy lamps), `ConfigChanged` "extensions" and `VoicemailChanged` (voicemail lights).
 **Events emitted:** `EdgeAlert`.
 
 **What Kamailio does with a new request:**

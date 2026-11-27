@@ -38,7 +38,12 @@ platform's and the DID index, loaded on first use and all dropped on `ConfigChan
 
 **Public API:** `dialplan_xml/1`, `connected?/0`, `active_calls/0`, `curl_password/0`;
 `fraud_settings/0`, `change_fraud_settings/2`, `update_fraud_settings/2`, `list_fraud_blocks/0`,
-`lift_fraud_block/2`;
+`lift_fraud_block/2`; voicemail for tenant admins (scope first): `mailbox/2`, `change_mailbox/2`,
+`save_mailbox/4`, `delete_mailbox/3` (rows and files; call it before deleting the extension),
+`list_voicemails/1` (`{message, extension_id}`), `voicemail_audio/2`, `save_voicemail/3`,
+`delete_voicemail/3`, `greetings/2`, `greeting_kinds/0`, `put_greeting/5` (MP3 or WAV by
+content, up to 5 MB), `delete_greeting/4`; `voicemail_counts/1` (`%{extension_id => {new,
+saved}}`, for the voicemail lights);
 `child_spec/1` (started by the application; the event socket only with `config :qpbx,
 QPBX.Telephony, esl: true`, i.e. production).
 
@@ -74,13 +79,30 @@ when a carrier call's bridge ends; day and month in the tenant's time zone.
 international and premium calls for `block_hours` (`fraud_blocks`). Lifting a block also
 clears the attempts that caused it. Settings and blocks: Platform > Fraud protection.
 
+**Voicemail (`Voicemail`, `VoicemailFlow`, 2-7):** one mailbox per extension (`mailboxes`:
+PIN hashed with Argon2, 4 to 10 digits, not all one digit or a run; optional email, audio
+attached or not), greetings (`greetings`: unavailable, busy, temporary; the temporary one wins
+while it exists) and messages (`voicemails`: caller, duration, folder new or saved); audio in
+`QPBX.Storage`, encrypted. An extension's unanswered or busy call ends in
+`%{op: :voicemail}` (unless forwarding applies); with an enabled mailbox the call process
+answers, plays the greeting (uploaded, or "the person at extension N is not available"), a
+tone, and records up to 180 s (MP3, # or 5 s of silence ends it) into `/run/qpbx-media`;
+then the recording is encrypted into storage and the plain file removed, also when the caller
+hangs up mid-message. Without a mailbox the call ends as before. `*97` from a phone: its own
+mailbox behind the PIN (3 tries), the count of new messages, then each message (new first)
+with 7 delete, 9 or # keep and next, 5 repeat; a played message becomes saved. Decrypted
+copies for playback live in the temporary folder only while they play. Each change of a
+mailbox's counts publishes `VoicemailChanged` (voicemail lights); a new message also
+`VoicemailReceived` and, with an email address, `QPBX.Notify.deliver_voicemail/1`. Prompts
+come from the `qpbx-sounds` package (FreeSWITCH's English "Callie" set, `sound_prefix`).
+
 **Busy lamps:** the call process publishes `CallState` for the calling extension (initiator:
 early, confirmed) and each extension rung (recipient: early, confirmed, terminated when not
 answered there); everything goes terminated when the call ends. The caller is named by
 extension number.
 
 **Events consumed:** `ConfigChanged`, `SipCredentialsChanged`, `TenantsChanged` (cache).
-**Emitted:** `CallState`, `LimitReached`, `FraudAlert`.
+**Emitted:** `CallState`, `LimitReached`, `FraudAlert`, `VoicemailReceived`, `VoicemailChanged`.
 
 **Gotchas:**
 - Without `continue_on_fail=true` FreeSWITCH hangs up the caller after a failed bridge, so
@@ -95,6 +117,8 @@ extension number.
   into `m=audio 0`). Calls FreeSWITCH places to phones are plain RTP for now.
 - Concurrency and velocity counts are per node (in memory); with two nodes (HA) only the
   active one carries calls.
-- Voicemail on no answer is 2-7.
+- FreeSWITCH runs the applications the call process sends in order; the voicemail flow waits
+  only for the last one of each batch (`play_and_get_digits` always ends a batch).
+- Lab check for voicemail: `lab/done-when/phase2-voicemail.py <vm-ip>`.
 - Lab check with real calls: `lab/done-when/phase2-calls.py <vm-ip>` (endpoints in
   `lab/tools/sipua_daemon.py`).

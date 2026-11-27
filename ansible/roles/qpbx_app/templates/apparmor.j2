@@ -22,6 +22,7 @@ profile qpbx-app /opt/qpbx/erts-*/bin/beam.smp flags=(complain) {
   {{ qpbx_data_dir }}/ r,
   {{ qpbx_data_dir }}/** rwk,
   /run/qpbx/** rwk,
+  /run/qpbx-media/** rwk,
   /run/qpbx-fwd/fwd.sock rw,
   /tmp/** rwk,
   @{PROC}/** r,
