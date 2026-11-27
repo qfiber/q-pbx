@@ -65,7 +65,21 @@ Each module folder has its own `CLAUDE.md`: purpose, public API, events emitted 
 
 ## Commands
 
-No code exists yet. This section is filled in by the first Phase 1 task (see `docs/STATUS.md`).
+Toolchain: see `.tool-versions` (Elixir 1.18.4 / OTP 28). Dev Postgres 16:
+`podman run -d --name qpbx-pg -e POSTGRES_PASSWORD=postgres -p 5432:5432 docker.io/library/postgres:16`.
+
+| Command | Does |
+| --- | --- |
+| `mix setup` | Deps, database, assets |
+| `mix phx.server` | Run the app on localhost:4000 |
+| `mix test` | Test suite |
+| `mix precommit` | Compile with warnings as errors, format, Credo strict, tests |
+| `mix dialyzer` | Dialyzer (PLT cached in `priv/plts/`) |
+| `scripts/check_boundary_enforced.sh` | Proves a cross-boundary reference fails the build |
+
+Each area's public API module lives inside its folder (`lib/qpbx/core/core.ex` defines
+`QPBX.Core`) and declares its boundary with `use Boundary, deps: [...], exports: [...]`.
+`QPBX.Repo` is its own boundary; each area queries only its own tables through it.
 
 ## Coding rules
 

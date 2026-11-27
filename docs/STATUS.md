@@ -42,14 +42,19 @@ Kamailio gets its real config.
 ## Done
 
 - Project memory files created: `CLAUDE.md`, `docs/STATUS.md`, `docs/DECISIONS.md`, `CHANGELOG.md`.
+- P1-01 Repo and Mix project: Phoenix 1.8 app (`QPBX`, binary ids), Oban (queue `notify`),
+  areas `core`, `events`, `firewall`, `notify`, `web` with boundaries; public API modules live
+  inside their folders (`lib/qpbx/core/core.ex`). `QPBX.Repo` is its own boundary. Credo
+  strict and Dialyzer pass. `scripts/check_boundary_enforced.sh` proves a forbidden reference
+  fails the build. AGPL-3.0 `LICENSE` added.
 
 ## In progress
 
-- P1-01 Repo and Mix project.
+- P1-02 Session hook and doc checks.
 
 ## Next
 
-- P1-02 Session hook and doc checks.
+- P1-03 Core: plans and tenants.
 
 ## Blockers / open questions for phase 1
 
