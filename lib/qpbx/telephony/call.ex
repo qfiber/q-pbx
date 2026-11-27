@@ -10,8 +10,12 @@ defmodule QPBX.Telephony.Call do
 
   @max_redirects 3
   require Logger
-  alias QPBX.Telephony.{Admission, Cache, Calls, Router, Usage, Voicemail, VoicemailFlow}
+  alias QPBX.Telephony.{Cache, Calls, Cdrs, Router, Voicemail, VoicemailFlow}
   alias QPBX.Telephony.ESL.Connection
+  import QPBX.Telephony.Call.Lamps, only: [lamp: 6, caller_lamp: 2, lamps_off: 1]
+
+  import QPBX.Telephony.Call.Limits,
+    only: [admit_call: 3, admit_outbound: 2, limit_duration: 2, stop_talking: 1, safe_tenant: 1]
 
   def start_link(event),
     do: GenServer.start_link(__MODULE__, event, name: Calls.via(event["Unique-ID"]))
@@ -65,6 +69,9 @@ defmodule QPBX.Telephony.Call do
     call = if caller_ext, do: %{call | caller: caller_ext.number}, else: call
     s = %{s | caller_ext: caller_ext, call: call}
 
+    for {app, arg} <- Cdrs.tags(call, tenant_id, call.caller),
+        do: Connection.execute(call.uuid, app, arg, Ecto.UUID.generate())
+
     s =
       if caller_ext,
         do: lamp(s, caller_ext.number, caller_ext.domain, call.destination, "initiator", "early"),
@@ -77,21 +84,6 @@ defmodule QPBX.Telephony.Call do
       :ok -> {:noreply, run(action, s)}
       {:reject, cause} -> {:noreply, run(%{op: :reject, cause: cause}, s)}
     end
-  end
-
-  defp admit_call(%{tenant_id: nil}, _direction, _ext_id), do: :ok
-
-  defp admit_call(s, direction, ext_id) do
-    case safe_tenant(s.tenant_id) do
-      nil -> :ok
-      snapshot -> Admission.admit_call(snapshot, direction, ext_id)
-    end
-  end
-
-  defp safe_tenant(tid) do
-    Cache.tenant(tid)
-  rescue
-    _ -> nil
   end
 
   @impl true
@@ -265,65 +257,17 @@ defmodule QPBX.Telephony.Call do
   # A dial to a carrier passes call admission first (once per destination number).
   defp run(%{op: :dial, trunk_call: %{} = meta} = action, s) do
     case admit_outbound(meta, s) do
-      {:ok, left, s} -> dial(limit_duration(action, left), s)
-      {:reject, cause, s} -> run(%{op: :reject, cause: cause}, s)
+      {:ok, left, s} ->
+        # The call goes out to a carrier: its CDR says outbound.
+        Connection.execute(s.call.uuid, "set", "qpbx_direction=outbound", Ecto.UUID.generate())
+        dial(limit_duration(action, left), s)
+
+      {:reject, cause, s} ->
+        run(%{op: :reject, cause: cause}, s)
     end
   end
 
   defp run(%{op: :dial} = action, s), do: dial(action, s)
-
-  defp admit_outbound(%{e164: number} = meta, s) do
-    case Map.fetch(s.admitted, number) do
-      # The next carrier for the same number (failover): admitted already; the outbound slot
-      # the failed attempt gave back is taken again.
-      {:ok, left} ->
-        unless meta.emergency, do: Admission.join({:out, s.tenant_id})
-        {:ok, left, s}
-
-      :error ->
-        snapshot = safe_tenant(s.tenant_id)
-        from = s.caller_ext && s.caller_ext.number
-
-        case snapshot && Admission.admit_outbound(snapshot, meta, from) do
-          {:ok, left} -> {:ok, left, %{s | admitted: Map.put(s.admitted, number, left)}}
-          {:reject, cause} -> {:reject, cause, s}
-          nil -> {:reject, "NORMAL_TEMPORARY_FAILURE", s}
-        end
-    end
-  end
-
-  # The tightest minute cap left: the carrier leg hangs up when it runs out.
-  defp limit_duration(action, nil), do: action
-
-  defp limit_duration(%{dial: dial} = action, left) do
-    var = "execute_on_answer='sched_hangup +#{max(left, 1)} ALLOTTED_TIMEOUT'"
-
-    dial =
-      case dial do
-        "{" <> rest -> "{" <> var <> "," <> rest
-        _ -> "{" <> var <> "}" <> dial
-      end
-
-    %{action | dial: dial}
-  end
-
-  # A carrier call ended (or this call did): its talk time goes to the usage, its slot is freed.
-  defp stop_talking(%{talking: {meta, since}} = s) do
-    Usage.add(s.tenant_id, meta.class, DateTime.diff(DateTime.utc_now(), since), since)
-    Admission.leave({:out, s.tenant_id})
-    %{s | talking: nil}
-  rescue
-    e ->
-      Logger.error("call #{s.call.uuid}: usage not recorded: #{Exception.message(e)}")
-      %{s | talking: nil}
-  end
-
-  defp stop_talking(%{action: %{trunk_call: %{}}} = s) do
-    Admission.leave({:out, s.tenant_id})
-    s
-  end
-
-  defp stop_talking(s), do: s
 
   defp mailbox(nil, _ext_id), do: nil
 
@@ -387,45 +331,6 @@ defmodule QPBX.Telephony.Call do
         else: s
 
     run(Map.fetch!(action, outcome), s)
-  end
-
-  ## Busy lamps (QPBX.Edge publishes CallState to Kamailio's presence server)
-
-  defp lamp(s, ext, domain, peer, direction, state) do
-    key = {ext, domain}
-
-    if s.lamps[key] == {direction, state} do
-      s
-    else
-      QPBX.Events.publish(%QPBX.Events.CallState{
-        tenant_id: s.call.tenant_id,
-        domain: domain,
-        extension: ext,
-        peer: peer,
-        call_id: "#{s.call.uuid}-#{ext}",
-        state: state,
-        direction: direction,
-        at: DateTime.utc_now()
-      })
-
-      lamps =
-        if state == "terminated",
-          do: Map.delete(s.lamps, key),
-          else: Map.put(s.lamps, key, {direction, state})
-
-      %{s | lamps: lamps}
-    end
-  end
-
-  defp caller_lamp(%{caller_ext: %{number: n, domain: d}} = s, state),
-    do: lamp(s, n, d, s.call.destination, "initiator", state)
-
-  defp caller_lamp(s, _state), do: s
-
-  defp lamps_off(s) do
-    Enum.reduce(s.lamps, s, fn {{ext, domain}, {direction, _}}, acc ->
-      lamp(acc, ext, domain, nil, direction, "terminated")
-    end)
   end
 
   @doc false

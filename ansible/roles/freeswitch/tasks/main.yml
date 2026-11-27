@@ -18,7 +18,7 @@
     owner: freeswitch
     group: freeswitch
     mode: "0750"
-  loop: [/var/lib/freeswitch, /var/lib/freeswitch/db, /var/lib/freeswitch/storage, /var/lib/freeswitch/cdr-spool, /var/log/freeswitch]
+  loop: [/var/lib/freeswitch, /var/lib/freeswitch/db, /var/lib/freeswitch/storage, /var/log/freeswitch]
 
 - name: Package cache folder
   ansible.builtin.file:

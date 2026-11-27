@@ -31,7 +31,8 @@
     owner: qpbx
     group: qpbx-media
     mode: "2770"
-  loop: [recordings, voicemail, faxes, prompts]
+  # cdr-spool: FreeSWITCH writes a JSON file per call leg, the app imports and deletes them.
+  loop: [recordings, voicemail, faxes, prompts, cdr-spool]
 
 - name: Media group can enter the data folder
   ansible.posix.acl:

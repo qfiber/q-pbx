@@ -38,7 +38,9 @@ platform's and the DID index, loaded on first use and all dropped on `ConfigChan
 
 **Public API:** `dialplan_xml/1`, `connected?/0`, `active_calls/0`, `curl_password/0`;
 `fraud_settings/0`, `change_fraud_settings/2`, `update_fraud_settings/2`, `list_fraud_blocks/0`,
-`lift_fraud_block/2`; voicemail for tenant admins (scope first): `mailbox/2`, `change_mailbox/2`,
+`lift_fraud_block/2`; call records for tenant admins: `search_cdrs/4` (filters `from`, `to`,
+`number`, `direction`, `disposition`, `leg`; `limit`, `offset`), `stream_cdrs/4` (all matches,
+oldest first, inside a transaction), `usage_daily/2`, `cdr_directions/0`; voicemail for tenant admins (scope first): `mailbox/2`, `change_mailbox/2`,
 `save_mailbox/4`, `delete_mailbox/3` (rows and files; call it before deleting the extension),
 `list_voicemails/1` (`{message, extension_id}`), `voicemail_audio/2`, `save_voicemail/3`,
 `delete_voicemail/3`, `greetings/2`, `greeting_kinds/0`, `put_greeting/5` (MP3 or WAV by
@@ -96,6 +98,20 @@ mailbox's counts publishes `VoicemailChanged` (voicemail lights); a new message 
 `VoicemailReceived` and, with an email address, `QPBX.Notify.deliver_voicemail/1`. Prompts
 come from the `qpbx-sounds` package (FreeSWITCH's English "Callie" set, `sound_prefix`).
 
+**Call records (`Cdrs`, `CdrImporter`, 2-8):** FreeSWITCH writes every leg as JSON into the
+spool (`mod_json_cdr`, `/var/lib/qpbx/cdr-spool`); `CdrImporter` (with the event socket, so
+production only) reads files at least 2 s old every 2 s, up to 500 a round, stores them in one
+batch (`cdrs`, one row per leg, unique by leg UUID, so a re-import is harmless) and deletes
+them. While the app or Postgres is down the files wait: the spool is the queue. Unreadable
+files move to `bad/`. Loopback legs (echo test) are skipped; a leg whose tenant no longer
+exists is kept without one. The call process tags the a-leg when routing starts (`export
+qpbx_tenant`, `qpbx_caller`, `qpbx_direction`; `set qpbx_destination`; `qpbx_direction=outbound`
+once a carrier is dialed); dial legs carry `qpbx_callee` (extension number or E.164) and,
+towards carriers, `qpbx_trunk_id`. A b-leg's call is its `originating_leg_uuid`. Outcome:
+answered, busy, no_answer, failed. New a-legs roll up into `usage_daily` (calls, answered,
+talk seconds per tenant, day in the tenant's time zone, direction). Portal: Calls (search,
+CSV export, the last 14 days).
+
 **Busy lamps:** the call process publishes `CallState` for the calling extension (initiator:
 early, confirmed) and each extension rung (recipient: early, confirmed, terminated when not
 answered there); everything goes terminated when the call ends. The caller is named by
@@ -119,6 +135,9 @@ extension number.
   active one carries calls.
 - FreeSWITCH runs the applications the call process sends in order; the voicemail flow waits
   only for the last one of each batch (`play_and_get_digits` always ends a batch).
+- The call process is split: `Call` (events and routing), `Call.Lamps` (busy lamps),
+  `Call.Limits` (admission, minute cap, usage).
+- Lab check for call records: `lab/done-when/phase2-cdrs.py <vm-ip>`.
 - Lab check for voicemail: `lab/done-when/phase2-voicemail.py <vm-ip>`.
 - Lab check with real calls: `lab/done-when/phase2-calls.py <vm-ip>` (endpoints in
   `lab/tools/sipua_daemon.py`).

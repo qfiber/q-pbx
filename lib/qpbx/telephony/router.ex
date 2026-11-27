@@ -172,7 +172,11 @@ defmodule QPBX.Telephony.Router do
     vars = %{
       "sip_h_X-QPBX-Trunk-Edge" => trunk.edge_id,
       "origination_caller_id_number" => shown,
-      "origination_caller_id_name" => shown
+      "origination_caller_id_name" => shown,
+      # For the CDR of this leg.
+      "qpbx_trunk_id" => trunk.id,
+      "qpbx_direction" => "outbound",
+      "qpbx_callee" => meta.e164
     }
 
     %{
@@ -406,7 +410,7 @@ defmodule QPBX.Telephony.Router do
     for d <- ext.devices,
         do:
           leg(
-            %{"sip_route_uri" => @edge},
+            %{"sip_route_uri" => @edge, "qpbx_callee" => ext.number},
             "sofia/qpbx/#{d.sip_credential.username}@#{t.tenant.sip_domain}"
           )
   end
@@ -422,7 +426,13 @@ defmodule QPBX.Telephony.Router do
 
       [
         leg(
-          %{"sip_h_X-QPBX-Trunk-Edge" => trunk.edge_id, "origination_caller_id_number" => cid},
+          %{
+            "sip_h_X-QPBX-Trunk-Edge" => trunk.edge_id,
+            "origination_caller_id_number" => cid,
+            "qpbx_trunk_id" => trunk.id,
+            "qpbx_direction" => "outbound",
+            "qpbx_callee" => number
+          },
           "sofia/qpbx/#{Numbers.carrier_number(route, number)}@127.0.0.1:5060"
         )
       ]

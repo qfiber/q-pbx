@@ -64,7 +64,9 @@ if config_env() == :prod do
     esl_host: System.get_env("QPBX_FS_ESL_HOST", "127.0.0.1"),
     esl_port: String.to_integer(System.get_env("QPBX_FS_ESL_PORT", "8021")),
     esl_password: System.fetch_env!("QPBX_FS_ESL_PASSWORD"),
-    curl_password: System.fetch_env!("QPBX_FS_CURL_PASSWORD")
+    curl_password: System.fetch_env!("QPBX_FS_CURL_PASSWORD"),
+    # FreeSWITCH's JSON CDR spool (mod_json_cdr), imported and emptied by CdrImporter.
+    cdr_spool: System.get_env("QPBX_CDR_SPOOL", "/var/lib/qpbx/cdr-spool")
 
   config :qpbx, :mail_from, {"Q-PBX", System.fetch_env!("QPBX_MAIL_FROM")}
 

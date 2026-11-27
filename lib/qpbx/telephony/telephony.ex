@@ -35,6 +35,16 @@ defmodule QPBX.Telephony do
   defdelegate delete_greeting(scope, ext_id, kind, actor), to: Voicemail
   defdelegate voicemail_counts(tenant_id \\ nil), to: Voicemail, as: :counts
 
+  ## Call records (tenant admins; see QPBX.Telephony.Cdrs)
+
+  defdelegate search_cdrs(scope, filters, timezone, opts \\ []),
+    to: QPBX.Telephony.Cdrs,
+    as: :search
+
+  defdelegate stream_cdrs(scope, filters, timezone, fun), to: QPBX.Telephony.Cdrs, as: :stream
+  defdelegate usage_daily(scope, days \\ 31), to: QPBX.Telephony.Cdrs
+  defdelegate cdr_directions(), to: QPBX.Telephony.Cdrs, as: :directions
+
   ## Fraud protection (platform admins)
 
   alias QPBX.Telephony.Fraud
@@ -64,7 +74,7 @@ defmodule QPBX.Telephony do
         QPBX.Telephony.Fraud,
         {DynamicSupervisor, name: QPBX.Telephony.CallSupervisor, strategy: :one_for_one},
         QPBX.Telephony.Cache
-      ] ++ if(esl?, do: [Connection], else: [])
+      ] ++ if(esl?, do: [Connection, QPBX.Telephony.CdrImporter], else: [])
 
     %{
       id: __MODULE__,

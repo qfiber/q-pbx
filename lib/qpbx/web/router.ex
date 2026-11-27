@@ -83,12 +83,14 @@ defmodule QPBX.Web.Router do
 
     # Decrypted audio, for tenant admins of the message's tenant (checked in the controller).
     get "/voicemail/:id/audio", QPBX.Web.VoicemailController, :audio, alias: false
+    get "/calls/export", QPBX.Web.CallsController, :export, alias: false
 
     live_session :tenant_admin, on_mount: {QPBX.Web.Auth, :tenant_admin} do
       live "/extensions", ExtensionsLive, :index
       live "/extensions/:id", ExtensionLive, :show
       live "/extensions/:id/voicemail", MailboxLive, :show
       live "/voicemail", VoicemailLive, :index
+      live "/calls", CallsLive, :index
       live "/numbers", NumbersLive, :index
       live "/routes", RoutesLive, :index
       live "/office-ips", OfficeIpsLive, :index

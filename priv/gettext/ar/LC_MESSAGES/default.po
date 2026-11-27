@@ -26,8 +26,8 @@ msgstr "الإجراءات"
 msgid "Allowed destination classes"
 msgstr "فئات الوجهات المسموح بها"
 
-#: lib/qpbx/web/components/layouts.ex:180
-#: lib/qpbx/web/components/layouts.ex:192
+#: lib/qpbx/web/components/layouts.ex:183
+#: lib/qpbx/web/components/layouts.ex:195
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
 msgstr "جارٍ محاولة إعادة الاتصال"
@@ -138,7 +138,7 @@ msgstr "محلي"
 msgid "Log in"
 msgstr "تسجيل الدخول"
 
-#: lib/qpbx/web/components/layouts.ex:116
+#: lib/qpbx/web/components/layouts.ex:119
 #, elixir-autogen, elixir-format
 msgid "Log out"
 msgstr "تسجيل الخروج"
@@ -341,7 +341,7 @@ msgstr "رابط الإعداد لـ %{email} (أُرسل بالبريد أيض�
 msgid "Signed in as %{name}"
 msgstr "مسجّل الدخول باسم %{name}"
 
-#: lib/qpbx/web/components/layouts.ex:187
+#: lib/qpbx/web/components/layouts.ex:190
 #, elixir-autogen, elixir-format
 msgid "Something went wrong!"
 msgstr "حدث خطأ ما!"
@@ -416,7 +416,7 @@ msgstr "غير محدود"
 msgid "Verify"
 msgstr "تحقّق"
 
-#: lib/qpbx/web/components/layouts.ex:175
+#: lib/qpbx/web/components/layouts.ex:178
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
 msgstr "تعذّر الاتصال بالإنترنت"
@@ -465,6 +465,8 @@ msgid "Address"
 msgstr "العنوان"
 
 #: lib/qpbx/web/live/platform/firewall_live.ex:142
+#: lib/qpbx/web/live/tenant/calls_live.ex:87
+#: lib/qpbx/web/live/tenant/calls_live.ex:94
 #, elixir-autogen, elixir-format
 msgid "All"
 msgstr "الكل"
@@ -571,7 +573,7 @@ msgstr "آخر نشاط"
 msgid "Session ended."
 msgstr "انتهت الجلسة."
 
-#: lib/qpbx/web/components/layouts.ex:107
+#: lib/qpbx/web/components/layouts.ex:110
 #, elixir-autogen, elixir-format
 msgid "Sessions"
 msgstr "الجلسات"
@@ -601,7 +603,7 @@ msgstr "تاريخ الدخول"
 msgid "Signed out of %{count} other sessions."
 msgstr "تم تسجيل الخروج من %{count} جلسات أخرى."
 
-#: lib/qpbx/web/components/layouts.ex:140
+#: lib/qpbx/web/components/layouts.ex:143
 #, elixir-autogen, elixir-format
 msgid "Stay signed in"
 msgstr "البقاء متصلًا"
@@ -611,7 +613,7 @@ msgstr "البقاء متصلًا"
 msgid "This browser"
 msgstr "هذا المتصفح"
 
-#: lib/qpbx/web/components/layouts.ex:139
+#: lib/qpbx/web/components/layouts.ex:142
 #, elixir-autogen, elixir-format
 msgid "You will be signed out soon because of inactivity."
 msgstr "سيتم تسجيل خروجك قريبًا بسبب عدم النشاط."
@@ -1168,7 +1170,7 @@ msgstr "الرقم"
 msgid "Number (e.g. 100)"
 msgstr "الرقم (مثلًا 100)"
 
-#: lib/qpbx/web/components/layouts.ex:86
+#: lib/qpbx/web/components/layouts.ex:89
 #: lib/qpbx/web/live/tenant/number_format_live.ex:8
 #: lib/qpbx/web/live/tenant/number_format_live.ex:64
 #, elixir-autogen, elixir-format
@@ -1188,7 +1190,7 @@ msgid "Numbering"
 msgstr "الترقيم"
 
 #: lib/qpbx/web/components/layouts.ex:57
-#: lib/qpbx/web/components/layouts.ex:77
+#: lib/qpbx/web/components/layouts.ex:80
 #: lib/qpbx/web/live/platform/dids_live.ex:14
 #: lib/qpbx/web/live/platform/dids_live.ex:84
 #: lib/qpbx/web/live/tenant/numbers_live.ex:15
@@ -1202,7 +1204,7 @@ msgstr "الأرقام"
 msgid "Numbers can be typed the local way, for example 02-123-4567."
 msgstr "يمكن كتابة الأرقام بالطريقة المحلية، مثلًا 02-123-4567."
 
-#: lib/qpbx/web/components/layouts.ex:83
+#: lib/qpbx/web/components/layouts.ex:86
 #: lib/qpbx/web/live/tenant/office_ips_live.ex:14
 #: lib/qpbx/web/live/tenant/office_ips_live.ex:74
 #, elixir-autogen, elixir-format
@@ -1219,7 +1221,7 @@ msgstr "مفعّل"
 msgid "Only tenant admins can open this page."
 msgstr "يمكن لمسؤولي المستأجر فقط فتح هذه الصفحة."
 
-#: lib/qpbx/web/components/layouts.ex:80
+#: lib/qpbx/web/components/layouts.ex:83
 #: lib/qpbx/web/live/tenant/routes_live.ex:17
 #: lib/qpbx/web/live/tenant/routes_live.ex:114
 #, elixir-autogen, elixir-format
@@ -1701,6 +1703,7 @@ msgstr "إرفاق التسجيل الصوتي بالبريد"
 msgid "Back to the extension"
 msgstr "العودة إلى التحويلة"
 
+#: lib/qpbx/web/live/tenant/calls_live.ex:152
 #: lib/qpbx/web/live/tenant/mailbox_live.ex:186
 #, elixir-autogen, elixir-format
 msgid "Busy"
@@ -1726,6 +1729,8 @@ msgstr "حذف هذه الرسالة؟"
 msgid "Email new messages to (optional)"
 msgstr "إرسال الرسائل الجديدة بالبريد إلى (اختياري)"
 
+#: lib/qpbx/web/live/tenant/calls_live.ex:80
+#: lib/qpbx/web/live/tenant/calls_live.ex:111
 #: lib/qpbx/web/live/tenant/voicemail_live.ex:69
 #, elixir-autogen, elixir-format
 msgid "From"
@@ -1865,6 +1870,7 @@ msgstr "البريد الصوتي للتحويلة %{number}"
 msgid "Voicemail on"
 msgstr "تشغيل البريد الصوتي"
 
+#: lib/qpbx/web/live/tenant/calls_live.ex:109
 #: lib/qpbx/web/live/tenant/voicemail_live.ex:75
 #, elixir-autogen, elixir-format
 msgid "When"
@@ -1874,3 +1880,132 @@ msgstr "الوقت"
 #, elixir-autogen, elixir-format
 msgid "Without a greeting callers hear a standard one with the extension number. A temporary greeting, while it exists, is played instead of the others."
 msgstr "بدون تحية يسمع المتصلون تحية قياسية برقم التحويلة. التحية المؤقتة، ما دامت موجودة، تُشغَّل بدلًا من غيرها."
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:140
+#: lib/qpbx/web/live/tenant/calls_live.ex:151
+#, elixir-autogen, elixir-format
+msgid "Answered"
+msgstr "تم الرد"
+
+#: lib/qpbx/web/components/layouts.ex:77
+#: lib/qpbx/web/live/tenant/calls_live.ex:15
+#: lib/qpbx/web/live/tenant/calls_live.ex:67
+#: lib/qpbx/web/live/tenant/calls_live.ex:139
+#, elixir-autogen, elixir-format
+msgid "Calls"
+msgstr "المكالمات"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:137
+#, elixir-autogen, elixir-format
+msgid "Day"
+msgstr "اليوم"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:86
+#: lib/qpbx/web/live/tenant/calls_live.ex:110
+#: lib/qpbx/web/live/tenant/calls_live.ex:138
+#, elixir-autogen, elixir-format
+msgid "Direction"
+msgstr "الاتجاه"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:69
+#, elixir-autogen, elixir-format
+msgid "Every call of your company. Times are in your company's time zone."
+msgstr "كل مكالمات شركتك. الأوقات بتوقيت شركتك."
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:101
+#, elixir-autogen, elixir-format
+msgid "Every leg"
+msgstr "كل الأطراف"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:73
+#, elixir-autogen, elixir-format
+msgid "Export CSV"
+msgstr "تصدير CSV"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:154
+#, elixir-autogen, elixir-format
+msgid "Failed"
+msgstr "فشلت"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:147
+#, elixir-autogen, elixir-format
+msgid "Inbound"
+msgstr "واردة"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:149
+#, elixir-autogen, elixir-format
+msgid "Internal"
+msgstr "داخلية"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:134
+#, elixir-autogen, elixir-format
+msgid "Last 14 days"
+msgstr "آخر 14 يومًا"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:122
+#, elixir-autogen, elixir-format
+msgid "Newer"
+msgstr "أحدث"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:107
+#, elixir-autogen, elixir-format
+msgid "No calls found."
+msgstr "لم يتم العثور على مكالمات."
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:135
+#, elixir-autogen, elixir-format
+msgid "No calls yet."
+msgstr "لا توجد مكالمات بعد."
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:153
+#, elixir-autogen, elixir-format
+msgid "Not answered"
+msgstr "لم يتم الرد"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:82
+#, elixir-autogen, elixir-format
+msgid "Number contains"
+msgstr "الرقم يحتوي على"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:130
+#, elixir-autogen, elixir-format
+msgid "Older"
+msgstr "أقدم"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:101
+#, elixir-autogen, elixir-format
+msgid "One row per call"
+msgstr "سطر واحد لكل مكالمة"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:148
+#, elixir-autogen, elixir-format
+msgid "Outbound"
+msgstr "صادرة"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:93
+#: lib/qpbx/web/live/tenant/calls_live.ex:113
+#, elixir-autogen, elixir-format
+msgid "Outcome"
+msgstr "النتيجة"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:104
+#, elixir-autogen, elixir-format
+msgid "Search"
+msgstr "بحث"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:100
+#, elixir-autogen, elixir-format
+msgid "Show"
+msgstr "عرض"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:114
+#: lib/qpbx/web/live/tenant/calls_live.ex:141
+#, elixir-autogen, elixir-format
+msgid "Talk time"
+msgstr "مدة المحادثة"
+
+#: lib/qpbx/web/live/tenant/calls_live.ex:81
+#: lib/qpbx/web/live/tenant/calls_live.ex:112
+#, elixir-autogen, elixir-format
+msgid "To"
+msgstr "إلى"

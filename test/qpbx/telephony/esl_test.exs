@@ -321,6 +321,16 @@ defmodule QPBX.Telephony.ESLTest do
       park(fs, "call-7", Map.put(device, "Caller-Destination-Number", "02-765-4321"))
       assert %{app: "set"} = recv_sendmsg(fs, "call-7")
       assert %{app: "bridge", arg: dial, event_uuid: id} = recv_sendmsg(fs, "call-7")
+
+      # Tagged for its CDR: tenant, caller extension, dialed number; outbound once a carrier is dialed.
+      tags = Process.get(:cdr_tags)
+      assert "export qpbx_tenant=#{t.id}" in tags and "export qpbx_caller=101" in tags
+
+      assert "set qpbx_destination=02-765-4321" in tags or
+               "set qpbx_destination=027654321" in tags
+
+      assert "export qpbx_direction=internal" in tags and "set qpbx_direction=outbound" in tags
+      assert dial =~ "qpbx_direction=outbound" and dial =~ "qpbx_trunk_id=#{trunk.id}"
       assert dial =~ "{execute_on_answer='sched_hangup +300 ALLOTTED_TIMEOUT'}"
       assert dial =~ "sofia/qpbx/+97227654321@127.0.0.1:5060"
 
@@ -435,13 +445,21 @@ defmodule QPBX.Telephony.ESLTest do
           into: %{},
           do: {String.downcase(k), v}
 
-    %{
+    msg = %{
       command: h["call-command"],
       app: h["execute-app-name"],
       arg: body,
       event_uuid: h["event-uuid"],
       cause: h["hangup-cause"]
     }
+
+    # CDR tags (qpbx_* variables) are kept aside for tests that check them.
+    if msg.app in ["set", "export"] and String.starts_with?(msg.arg || "", "qpbx_") do
+      Process.put(:cdr_tags, [msg.app <> " " <> msg.arg | Process.get(:cdr_tags, [])])
+      recv_sendmsg(fs, uuid)
+    else
+      msg
+    end
   end
 
   defp wait_until(fun, tries \\ 50) do

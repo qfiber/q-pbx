@@ -1,9 +1,9 @@
 <!-- {{ ansible_managed }} -->
-<!-- Backup CDR path: every call leg is also written as a JSON file, so no CDR is lost while
-     Elixir is down. Elixir imports and removes the files (phase 2). -->
+<!-- The CDR path: every call leg is written as a JSON file; the app (QPBX.Telephony.CdrImporter)
+     imports and removes them, so no CDR is lost while the app or the database is down. -->
 <configuration name="json_cdr.conf" description="JSON CDR spool">
   <settings>
-    <param name="log-dir" value="/var/lib/freeswitch/cdr-spool"/>
+    <param name="log-dir" value="{{ qpbx_data_dir }}/cdr-spool"/>
     <param name="log-b-leg" value="true"/>
     <param name="prefix-a-leg" value="false"/>
     <param name="encode-values" value="true"/>

@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 2 — Core calling and protection (in progress: 2-0 to 2-7 done, next 2-8)
+**Current phase:** 2 — Core calling and protection (in progress: 2-0 to 2-8 done, next 2-9)
 **Last updated:** 2026-11-27
 
 ## Phase 1 goal
@@ -40,6 +40,18 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 2-8 CDRs (done): one row per call leg from FreeSWITCH's JSON spool, imported in batches
+  every 2 s and removed after (the spool is the queue while the app or database is down;
+  re-imports are harmless); legs tagged by the call process with tenant, direction,
+  extension numbers and trunk; daily roll-up (`usage_daily`); portal Calls page with filters,
+  paging and the last 14 days; CSV export (streamed, spreadsheet formulas neutralised). The
+  call process is split into `Call`, `Call.Lamps` and `Call.Limits`. Lab:
+  `phase2-cdrs.py` 16/16 (internal answered and busy, outbound with its trunk and E.164 number,
+  inbound with its leg to the phone, spool emptied, a call made while the app was stopped
+  imported once it was back, daily totals); the lab's 798 older spooled legs imported in one
+  round. Found in the lab: a b-leg's `call_uuid` is its own, so legs did not group into their
+  call (now by `originating_leg_uuid`). 235 tests.
 
 - 2-7 Voicemail (done): new `QPBX.Storage` area (per-file AES-256-GCM, data key wrapped by
   the master key, local backend; plain media only in tmpfs `/run/qpbx-media`, shared with
@@ -289,7 +301,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 2-8 CDRs (next).
+- 2-9 Automated call tests (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next

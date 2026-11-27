@@ -94,6 +94,7 @@ uses two roles (`qpbx_owner` for migrations, `qpbx` for the app); development us
 | `node lab/done-when/phase1b.mjs <vm-ip>` | Phase 1b security checks in the lab (needs `qpbx_session_idle_timeout=60`) |
 | `node lab/done-when/phase2-config.mjs <vm-ip>` | 2-2 lab check: telephony pages end to end, device registration |
 | `lab/done-when/phase2-admission.py <vm-ip>` | 2-6 lab check: call admission and fraud protection with real calls |
+| `lab/done-when/phase2-cdrs.py <vm-ip>` | 2-8 lab check: call records of real calls, including one made while the app is stopped |
 | `lab/done-when/phase2-voicemail.py <vm-ip>` | 2-7 lab check: voicemail with real calls (message, encryption, email, lights, *97) |
 | `lab/done-when/phase2-calls.py <vm-ip>` | 2-5 lab check: real calls (extensions, features, outbound, failover, inbound, fallback) |
 | `lab/done-when/phase2-protect.py <vm-ip>` | 2-4 lab check: floods, scanners, failed logins, rate limits, office IPs |

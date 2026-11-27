@@ -2,6 +2,22 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Call records from the JSON spool only (2-8)
+
+- **The spool is the one source of CDRs.** The plan said "from event-socket events, written in
+  batches; import of the spool". Every leg is in the spool anyway, with every variable, and the
+  spool must be imported for the app-down case; reading the events as well would be a second
+  path doing the same thing, needing de-duplication. Batches come from the spool (up to 500
+  files a round); the cost is up to about 4 s before a call shows in the portal.
+- **The spool moved to `/var/lib/qpbx/cdr-spool`** (group `qpbx-media`), where FreeSWITCH writes
+  and the app may delete.
+- **Rows show what people know:** the call process tags legs with extension numbers, the
+  dialed destination, the tenant and the trunk, rather than device logins.
+- **One row per leg; the portal shows one per call** (a-legs) unless every leg is asked for.
+- **`usage_daily` is kept up to date at import** (no nightly job), in the tenant's time zone.
+- Platform-wide CDR search and the tenant export archive (spec: configuration, CDRs,
+  recordings, voicemail, faxes) come with the API work in phase 3.
+
 ## 2026-11-27: Voicemail and encrypted storage (2-7)
 
 - **Voicemail lives in Telephony** (tables `mailboxes`, `greetings`, `voicemails`), next to

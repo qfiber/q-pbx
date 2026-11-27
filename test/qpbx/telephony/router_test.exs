@@ -119,8 +119,13 @@ defmodule QPBX.Telephony.RouterTest do
       a = from_phone("102", ctx)
       assert %{op: :dial, timeout: 20, ext_id: "ext-102"} = a
       assert a.dial =~ "{origination_caller_id_name=Ext 101,origination_caller_id_number=101}"
-      assert a.dial =~ "[sip_route_uri=sip:127.0.0.1:5060]sofia/qpbx/102-desk@#{@domain},"
-      assert a.dial =~ "[sip_route_uri=sip:127.0.0.1:5060]sofia/qpbx/102-mobile@#{@domain}"
+
+      assert a.dial =~
+               "[qpbx_callee=102,sip_route_uri=sip:127.0.0.1:5060]sofia/qpbx/102-desk@#{@domain},"
+
+      assert a.dial =~
+               "[qpbx_callee=102,sip_route_uri=sip:127.0.0.1:5060]sofia/qpbx/102-mobile@#{@domain}"
+
       # Unanswered or busy: the mailbox takes a message (the call ends if there is none).
       assert %{
                op: :voicemail,
