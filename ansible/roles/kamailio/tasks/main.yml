@@ -1,10 +1,28 @@
 # Phase 1: Kamailio installed, listening on the service IPs (UDP/TCP 5060, TLS 5061) and
 # answering 503 to every request; JSON-RPC over HTTP on localhost for the health check.
 # Authentication, routing and bans arrive in phase 2.
+# Kamailio 6.0 from the Kamailio project (Debian 12 ships 5.6, no longer maintained upstream).
+# The key file (ASCII-armored, hence .asc) is pinned by checksum (Kamailio Package Team, E79ACECB...3E6508EA4C8).
+- name: Repository key
+  ansible.builtin.get_url:
+    url: https://deb.kamailio.org/kamailiodebkey.gpg
+    dest: /usr/share/keyrings/kamailio.asc
+    checksum: sha256:dcb0adf461359f37f51a0a36d026282fda51beac5f9a82a5b6ae30c8db7a65d5
+    mode: "0644"
+
+- name: Repository
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/kamailio.list
+    content: "deb [signed-by=/usr/share/keyrings/kamailio.asc] https://deb.kamailio.org/kamailio60 bookworm main\n"
+    mode: "0644"
+  register: kamailio_repo
+
 - name: Packages
   ansible.builtin.apt:
-    name: [kamailio, kamailio-tls-modules]
+    name: [kamailio, kamailio-tls-modules, kamailio-presence-modules, kamailio-json-modules, kamailio-postgres-modules]
     state: present
+    update_cache: "{{ kamailio_repo.changed }}"
+  notify: Restart kamailio
 
 - name: Kamailio can read the TLS certificate
   ansible.builtin.user:

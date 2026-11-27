@@ -2,6 +2,16 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: The busy-lamp trial in two steps (2-0)
+
+- **2-0a first:** Kamailio's presence server, with states published as JSON through
+  `pua_json` (by a script standing in for Elixir), checked with scripted subscribers for the
+  dialog, presence and message-summary packages. **2-0b once calls work:** Meow's own live
+  engine test, which needs a real call between two extensions to see ringing and on-call lamps.
+  Why: the Meow proof needs call control (2-5); the publishing design should not wait for it.
+- **Elixir publishes through `pua_json`** (JSON over Kamailio's local JSON-RPC), so Q-PBX needs
+  no SIP stack of its own to drive lamps. To confirm in 2-0a.
+
 ## 2026-11-27: Invoicing later; busy-lamp trial with Meow
 
 - **Billing and invoicing becomes phase 11** (after 1.0): rates, charges per client from CDRs
