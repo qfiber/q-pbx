@@ -23,8 +23,8 @@ Each task ends with tests passing and this file updated in the same commit.
 | --- | --- | --- | --- |
 | P1-01 | Repo and Mix project | `git init`; Phoenix app with LiveView, Ecto/Postgres, Oban; `boundary` configured; area folders `lib/qpbx/{core,events,firewall,notify,web}/` with `QPBX.<Area>` public API modules and a `CLAUDE.md` each; `mix format`, Credo strict, Dialyzer; Commands section of root `CLAUDE.md` filled in | A deliberate cross-boundary call fails `mix compile`; `mix test` green |
 | P1-02 | Session hook and doc checks | `.claude/settings.json` Stop hook: blocks finishing when code changed and `docs/STATUS.md` did not; CI script that flags a change to a module's public API module without a change to that module's `CLAUDE.md` | Script tests for both checks (changed / unchanged cases) |
-| P1-03 | Core: plans and tenants | `plans` (typed limit columns + JSONB `features`), `tenants` (`sip_domain`, `timezone`, `locale`, `plan_id`, `limit_overrides`); effective-limit resolution (plan + override); unique SIP domain under the platform wildcard; Postgres RLS safety net on tenant tables (`app.tenant_id` set per transaction) | Unit tests; RLS test proving a query without tenant scope sees no other tenant's rows |
-| P1-04 | Core: accounts, roles, audit log | `platform_admins`; `users` (one tenant each) with `user_roles` (tenant admin, tenant user); one-time setup links (minimal SMTP mailer in `QPBX.Notify` plus a CLI command); Argon2 hashing, session expiry, TOTP 2FA (required for platform admins), `audit_logs` written for every admin change | Unit tests: hashing, TOTP verify/replay, role checks, audit entry per change |
+| P1-03 | Core: plans and tenants | `plans` (typed limit columns + JSONB `features`), `tenants` (`sip_domain`, `timezone`, `locale`, `plan_id`, `limit_overrides`); effective-limit resolution (plan + override); unique SIP domain under the platform base domain | Unit tests |
+| P1-04 | Core: accounts, roles, audit log | `platform_admins`; `users` (one tenant each) with `user_roles` (tenant admin, tenant user); one-time setup links (minimal SMTP mailer in `QPBX.Notify` plus a CLI command); Postgres RLS safety net on tenant tables (moved here from P1-03: the first tenant-owned table is `users`), Argon2 hashing, session expiry, TOTP 2FA (required for platform admins), `audit_logs` written for every admin change | Unit tests: hashing, TOTP verify/replay, role checks, audit entry per change; RLS test proving a tenant-scoped query cannot see another tenant's rows |
 | P1-05 | Portal shell (EN/AR RTL) | LiveView layout with `dir="rtl"` for Arabic, gettext `en` and `ar`, locale switch; login and 2FA pages; platform admin: create plan, create tenant with plan, create tenant admin; tenant admin: landing page and 2FA enrolment | LiveView tests for the full Done-when flow in both locales |
 | P1-06 | Health endpoint | `GET /health` (200 `ok` / 503 `degraded`/`down`, no details); `GET /health/details` (token); checker runs every 10 s and caches. Phase 1 checks: PostgreSQL, disk space, Oban backlog, certificate expiry, FreeSWITCH event socket reachable, Kamailio JSON-RPC reachable. Trunk registrations report `not_configured` until phase 2 | Unit tests per check; endpoint tests for each status and for missing/bad token |
 | P1-07 | `qpbx-fwd` helper | Separate Go service on a local Unix socket, three commands only (add to set, remove from set, replace set); validates every address and set name against an allowed list; cannot touch rules or chains; writes current nftables state to disk after each change; systemd unit with only `CAP_NET_ADMIN` | Tests for command parsing and validation (rejects bad addresses, unknown sets, extra commands); integration test against real nftables in a Debian 12 VM |
@@ -53,18 +53,29 @@ Kamailio gets its real config.
   `docs/` changed and `docs/STATUS.md` did not). `scripts/check_module_docs.sh <base>` fails
   when `lib/qpbx/<area>/<area>.ex` changed without `lib/qpbx/<area>/CLAUDE.md`. Tests:
   `scripts/test/doc_checks_test.sh` (8 cases). Hooks need `jq` and `git`.
+- P1-03 Core: plans and tenants. `plans` with typed limit columns (nil = unlimited),
+  allowed destination classes and a `features` map; `tenants` with slug, `sip_domain`
+  (`<slug>.<sip_base_domain>`), IANA time zone (bundled `tz` data), locale (`en`/`ar`), plan
+  and `limit_overrides`; `QPBX.Core.effective_limits/1`. Dev/test DB user is the non-superuser
+  `qpbx`. 9 tests.
 
 ## In progress
 
-- P1-03 Core: plans and tenants.
+- P1-04 Core: accounts, roles, audit log.
 
 ## Next
 
-- P1-04 Core: accounts, roles, audit log.
+- P1-05 Portal shell.
 
 ## Blockers / open questions for phase 1
 
 None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
+
+## Open questions for later phases
+
+- **Phase 2, spend caps:** the spec asks for "spend or minute caps per hour, day and month",
+  but spend needs per-minute rates and rating is a v1 non-goal. Plans have minute caps per day
+  and month only. Where do rates come from, and are hourly caps needed?
 
 ## Known bugs
 

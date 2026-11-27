@@ -23,6 +23,12 @@ config :qpbx, QPBX.Web.Endpoint,
   pubsub_server: QPBX.PubSub,
   live_view: [signing_salt: "nn2gsyFt"]
 
+# Bundled IANA data (no network updates on the server); tenant time zones need it.
+config :elixir, :time_zone_database, Tz.TimeZoneDatabase
+
+# Tenant SIP domains are <slug>.<sip_base_domain>. Overridden at runtime in prod.
+config :qpbx, :sip_base_domain, "pbx.example.test"
+
 # Oban: one queue per area (spec: calls, fax, webhooks, notify, crm, provisioning).
 # Phase 1 only has work for notify; the others are added with their areas.
 config :qpbx, Oban,

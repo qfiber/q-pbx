@@ -23,6 +23,8 @@ end
 config :qpbx, QPBX.Web.Endpoint, http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 
 if config_env() == :prod do
+  config :qpbx, :sip_base_domain, System.fetch_env!("QPBX_SIP_BASE_DOMAIN")
+
   database_url =
     System.get_env("DATABASE_URL") ||
       raise """

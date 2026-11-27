@@ -2,8 +2,9 @@ import Config
 
 # Configure your database
 config :qpbx, QPBX.Repo,
-  username: "postgres",
-  password: "postgres",
+  # Not a superuser: superusers bypass row-level security.
+  username: "qpbx",
+  password: "qpbx",
   hostname: "localhost",
   database: "qpbx_dev",
   stacktrace: true,

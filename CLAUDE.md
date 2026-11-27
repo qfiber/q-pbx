@@ -66,7 +66,9 @@ Each module folder has its own `CLAUDE.md`: purpose, public API, events emitted 
 ## Commands
 
 Toolchain: see `.tool-versions` (Elixir 1.18.4 / OTP 28). Dev Postgres 16:
-`podman run -d --name qpbx-pg -e POSTGRES_PASSWORD=postgres -p 5432:5432 docker.io/library/postgres:16`.
+`podman run -d --name qpbx-pg -e POSTGRES_PASSWORD=postgres -p 5432:5432 docker.io/library/postgres:16`,
+then `podman exec qpbx-pg psql -U postgres -c "create role qpbx login password 'qpbx' createdb"`
+(the app's DB user must not be a superuser, or row-level security is bypassed).
 
 | Command | Does |
 | --- | --- |

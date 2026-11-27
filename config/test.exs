@@ -6,8 +6,9 @@ import Config
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :qpbx, QPBX.Repo,
-  username: "postgres",
-  password: "postgres",
+  # Not a superuser: superusers bypass row-level security.
+  username: "qpbx",
+  password: "qpbx",
   hostname: "localhost",
   database: "qpbx_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,

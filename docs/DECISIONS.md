@@ -2,6 +2,16 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Plans, tenants and the database role (P1-03)
+
+- **A nil plan limit means unlimited.** Tenant `limit_overrides` may set a limit to nil too.
+- **Only minute caps for now** (per day and per month). Spend caps wait for an answer on rates
+  (see STATUS.md, open questions). Rejected: guessing a rating model.
+- **The app's database user is not a superuser** in every environment, because superusers
+  bypass row-level security. Dev/test use role `qpbx`.
+- **Time zones use the `tz` package** with bundled IANA data. Rejected: `tzdata`, which
+  downloads updates at runtime, unwanted on a hardened server.
+
 ## 2026-11-27: Phase 1 clarifications
 
 - **`qpbx-fwd` is written in Go.** Why: one small static binary that is easy to audit and

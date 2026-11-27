@@ -72,6 +72,7 @@ defmodule QPBX.MixProject do
       {:nimble_totp, "~> 1.0"},
       {:eqrcode, "~> 0.2"},
       {:gen_smtp, "~> 1.2"},
+      {:tz, "~> 0.28"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
     ]
