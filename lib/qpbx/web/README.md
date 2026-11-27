@@ -22,6 +22,11 @@ running endpoint).
 turns numbers typed the local way into E.164 with the scope's number rule before Core sees
 them. A device's SIP password is shown once, after creation or reset.
 
+**Logo:** `priv/static/images/logo.svg` (source, brand teal `#174355`), `logo-dark.svg` (for
+dark backgrounds, used by the README), `logo-mark.svg` (the hexagon alone: the SVG favicon;
+`favicon.ico` is made from it). `QPBX.Web.Logo.logo/1` draws it inline from `logo.svg` (read
+at compile time) in the theme's colour (`.qpbx-logo` in `app.css`).
+
 **Auth (`QPBX.Web.Auth`):** the cookie holds `session_token` (checked in the database on every
 request, LiveView event and every 30 s) and `live_socket_id` (`sessions:<id>`);
 `QPBX.Web.SessionReaper` broadcasts "disconnect" there when Core announces revoked sessions.

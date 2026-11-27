@@ -41,6 +41,10 @@ Kamailio gets its real config.
 
 ## Done
 
+- Logo added (from the design file, cleaned of editor metadata; renders pixel-identical):
+  header of every page, larger on the login page, favicons (SVG and ICO), README (light and
+  dark variants). Colour follows the theme, including the system's dark mode.
+
 - 2-4 follow-up (done): protection thresholds moved from Ansible variables to the admin panel
   (Platform > SIP protection), applied by Kamailio within seconds with no restart (flood
   detection now counts per address in 2-second buckets instead of pike, whose threshold is
@@ -402,6 +406,9 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
   prefix list (see "Planned features").
 
 ## Known bugs
+
+- The login page's "Log in" button renders as plain text, not a filled button (seen on
+  2026-11-27; predates the logo). To check with the next portal work.
 
 - One unexplained test failure in a full `mix test` run on 2026-11-27 (2-4 follow-up); it did
   not come back in 13 further runs and its name was not captured. Watch CI for a repeat.
