@@ -11,10 +11,13 @@ User=qpbx
 Group=qpbx
 EnvironmentFile=/etc/qpbx/qpbx.env
 Environment=HOME={{ qpbx_data_dir }} RELEASE_TMP=/run/qpbx LANG=C.UTF-8
+# Temporary data (uploads, conversions) only in memory, readable by this service alone.
+Environment=TMPDIR=/run/qpbx/tmp PLUG_TMPDIR=/run/qpbx/tmp
 ExecStartPre=/opt/qpbx/bin/qpbx eval QPBX.Release.migrate
 ExecStart=/opt/qpbx/bin/qpbx start
 ExecStop=/opt/qpbx/bin/qpbx stop
-RuntimeDirectory=qpbx
+RuntimeDirectory=qpbx qpbx/tmp
+RuntimeDirectoryMode=0700
 Restart=on-failure
 RestartSec=5
 LimitNOFILE=65536

@@ -8,6 +8,7 @@ AmbientCapabilities=CAP_NET_BIND_SERVICE
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 # /run/nginx comes from tmpfiles.d (it must also exist for `nginx -t` outside the unit).
 PIDFile=/run/nginx/nginx.pid
+LimitNOFILE=65536
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true

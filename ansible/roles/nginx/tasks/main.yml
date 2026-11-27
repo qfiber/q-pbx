@@ -88,7 +88,10 @@
 - name: PID folder for the non-root master, created at every boot
   ansible.builtin.copy:
     dest: /etc/tmpfiles.d/qpbx-nginx.conf
-    content: "d /run/nginx 0755 www-data www-data -\n"
+    content: |
+      d /run/nginx 0755 www-data www-data -
+      d /run/nginx/body 0700 www-data www-data -
+      d /run/nginx/proxy 0700 www-data www-data -
     mode: "0644"
   register: nginx_tmpfiles
 

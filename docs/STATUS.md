@@ -135,7 +135,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 1b-7 Temporary data in memory.
+- 1b-8 Least privilege (Kamailio and PostgreSQL hardening, acme.sh without root).
 
 ## Next
 
@@ -182,6 +182,11 @@ Kamailio gets its real config.
   `changed=0`. Found and fixed on the way: a rewrite of `secrets.json` left it
   world-readable (0644) for a few minutes in the lab; it is now forced to 0600 every run.
   4 new tests (108).
+- 1b-7 Temporary data in memory (done): the app's `TMPDIR` and `PLUG_TMPDIR` are
+  `/run/qpbx/tmp` (tmpfs, 0700, app only); nginx buffers request bodies and proxied responses
+  in `/run/nginx/{body,proxy}` (tmpfs, 0700, www-data). Verified in the lab: a 3 MB request is
+  buffered under `/run/nginx/body`. Fixed on the way: nginx created those folders as `nobody`
+  (now named `www-data`), and its file-handle limit was 1024 (now 65536).
 - Done after the phase 1 review: nginx in front (non-root, real client IP, optional
   ModSecurity), FreeSWITCH modules added (G.729, Opus/MP3 recording, loopback, CDR spool; all
   load in the lab), languages moved to one config list, firewall and plan forms now clear

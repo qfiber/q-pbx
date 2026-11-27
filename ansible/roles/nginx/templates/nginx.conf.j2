@@ -1,5 +1,8 @@
 # {{ ansible_managed }}
 # Runs as www-data (no root master): see /etc/systemd/system/nginx.service.d/qpbx.conf.
+# Without root the master cannot switch users; naming www-data stops nginx from assuming
+# "nobody" for the temp folders it creates.
+user www-data;
 worker_processes auto;
 pid /run/nginx/nginx.pid;
 error_log /var/log/nginx/error.log warn;
@@ -16,7 +19,8 @@ http {
   tcp_nopush on;
   server_tokens off;
   access_log /var/log/nginx/access.log;
-  client_body_temp_path /var/lib/nginx/body;
-  proxy_temp_path /var/lib/nginx/proxy;
+  # Request bodies and proxied responses are buffered in memory (tmpfs), not on disk.
+  client_body_temp_path /run/nginx/body;
+  proxy_temp_path /run/nginx/proxy;
   include /etc/nginx/sites-enabled/*;
 }
