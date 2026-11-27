@@ -26,6 +26,10 @@ if config_env() == :prod do
   config :qpbx, :sip_base_domain, System.fetch_env!("QPBX_SIP_BASE_DOMAIN")
   config :qpbx, :token_secret, System.fetch_env!("SECRET_KEY_BASE")
 
+  config :qpbx, QPBX.Firewall,
+    helper: QPBX.Firewall.Helper.Socket,
+    socket: System.get_env("QPBX_FWD_SOCKET", "/run/qpbx-fwd/fwd.sock")
+
   config :qpbx, :health_token, System.get_env("QPBX_HEALTH_TOKEN")
 
   config :qpbx, QPBX.Web.Health,

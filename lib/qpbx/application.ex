@@ -3,7 +3,7 @@ defmodule QPBX.Application do
   # for more information on OTP Applications
   @moduledoc false
 
-  use Boundary, top_level?: true, deps: [QPBX.Repo, QPBX.Core, QPBX.Web]
+  use Boundary, top_level?: true, deps: [QPBX.Repo, QPBX.Core, QPBX.Firewall, QPBX.Web]
   use Application
 
   @impl true
@@ -17,6 +17,7 @@ defmodule QPBX.Application do
       # Start a worker by calling: QPBX.Worker.start_link(arg)
       # {QPBX.Worker, arg},
       # Start to serve requests, typically the last entry
+      QPBX.Firewall.Sync,
       QPBX.Web.Health,
       QPBX.Web.Endpoint
     ]

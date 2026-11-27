@@ -113,7 +113,7 @@ msgstr ""
 msgid "does not match"
 msgstr ""
 
-#: lib/qpbx/web/error_messages.ex:14
+#: lib/qpbx/web/error_messages.ex:17
 #, elixir-autogen, elixir-format
 msgid "is not a known time zone"
 msgstr ""
@@ -123,7 +123,37 @@ msgstr ""
 msgid "lowercase letters, digits and dashes, not starting or ending with a dash"
 msgstr ""
 
-#: lib/qpbx/web/error_messages.ex:13
+#: lib/qpbx/web/error_messages.ex:16
 #, elixir-autogen, elixir-format
 msgid "must be a valid email"
+msgstr ""
+
+#: lib/qpbx/web/error_messages.ex:18
+#, elixir-autogen, elixir-format
+msgid "is not a valid IP address or prefix"
+msgstr ""
+
+#: lib/qpbx/web/error_messages.ex:22
+#, elixir-autogen, elixir-format
+msgid "is too wide for a tenant entry (at most /%{min})"
+msgstr ""
+
+#: lib/qpbx/web/error_messages.ex:19
+#, elixir-autogen, elixir-format
+msgid "must be empty for platform entries"
+msgstr ""
+
+#: lib/qpbx/web/error_messages.ex:23
+#, elixir-autogen, elixir-format
+msgid "must be in the future"
+msgstr ""
+
+#: lib/qpbx/web/error_messages.ex:21
+#, elixir-autogen, elixir-format
+msgid "tenant entries are for SIP only"
+msgstr ""
+
+#: lib/qpbx/web/error_messages.ex:20
+#, elixir-autogen, elixir-format
+msgid "tenants can only add allow entries"
 msgstr ""

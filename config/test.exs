@@ -46,3 +46,9 @@ config :qpbx, Oban, testing: :manual
 # Checks run on demand in tests, not on a timer.
 config :qpbx, QPBX.Web.Health, interval: :timer.hours(24)
 config :qpbx, :health_token, "test-health-token-0123456789"
+
+# Firewall: a fake helper; no timer-driven reconcile during tests.
+config :qpbx, QPBX.Firewall,
+  helper: QPBX.FakeHelper,
+  reconcile_interval: :timer.hours(24),
+  reconcile_on_start: false

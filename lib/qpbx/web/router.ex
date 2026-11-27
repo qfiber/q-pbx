@@ -55,6 +55,7 @@ defmodule QPBX.Web.Router do
       live "/", TenantsLive, :index
       live "/tenants/new", TenantsLive, :new
       live "/plans", PlansLive, :index
+      live "/firewall", FirewallLive, :index
     end
   end
 

@@ -307,7 +307,7 @@ msgid "Set up two-factor authentication"
 msgstr "إعداد المصادقة الثنائية"
 
 #: lib/qpbx/web/controllers/auth_html.ex:94
-#: lib/qpbx/web/controllers/setup_controller.ex:36
+#: lib/qpbx/web/controllers/setup_controller.ex:32
 #, elixir-autogen, elixir-format
 msgid "Set up your account"
 msgstr "إعداد حسابك"
@@ -355,7 +355,7 @@ msgstr "المستأجرون"
 msgid "That code is not valid. Try the next one."
 msgstr "هذا الرمز غير صالح. جرّب الرمز التالي."
 
-#: lib/qpbx/web/controllers/setup_controller.ex:44
+#: lib/qpbx/web/controllers/setup_controller.ex:40
 #, elixir-autogen, elixir-format
 msgid "This setup link is invalid or has expired. Ask your administrator for a new one."
 msgstr "رابط الإعداد هذا غير صالح أو منتهي الصلاحية. اطلب رابطًا جديدًا من المسؤول."
@@ -411,3 +411,107 @@ msgstr "البريد الإلكتروني أو كلمة المرور غير صح
 #, elixir-autogen, elixir-format
 msgid "close"
 msgstr "إغلاق"
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:33
+#, elixir-autogen, elixir-format
+msgid "%{cidr} added. Every server applies it within seconds."
+msgstr "تمت إضافة %{cidr}. يطبّقه كل خادم خلال ثوانٍ."
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:47
+#, elixir-autogen, elixir-format
+msgid "%{cidr} removed."
+msgstr "تمت إزالة %{cidr}."
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:120
+#, elixir-autogen, elixir-format
+msgid "Add"
+msgstr "إضافة"
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:99
+#, elixir-autogen, elixir-format
+msgid "Add an entry"
+msgstr "إضافة إدخال"
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:82
+#, elixir-autogen, elixir-format
+msgid "Address"
+msgstr "العنوان"
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:128
+#, elixir-autogen, elixir-format
+msgid "All"
+msgstr "الكل"
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:126
+#, elixir-autogen, elixir-format
+msgid "Allow"
+msgstr "سماح"
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:71
+#, elixir-autogen, elixir-format
+msgid "Allowed addresses always win over blocks. SSH is open only to management IPs (allow, scope SSH or all)."
+msgstr "العناوين المسموح بها تتقدّم دائمًا على الحظر. لا يُفتح SSH إلا لعناوين الإدارة (سماح، بنطاق SSH أو الكل)."
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:127
+#, elixir-autogen, elixir-format
+msgid "Block"
+msgstr "حظر"
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:86
+#, elixir-autogen, elixir-format
+msgid "Expires"
+msgstr "ينتهي"
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:118
+#, elixir-autogen, elixir-format
+msgid "Expires (UTC, optional)"
+msgstr "ينتهي (بتوقيت UTC، اختياري)"
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:10
+#: lib/qpbx/web/live/platform/firewall_live.ex:69
+#, elixir-autogen, elixir-format
+msgid "Firewall"
+msgstr "جدار الحماية"
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:101
+#, elixir-autogen, elixir-format
+msgid "IP address or prefix"
+msgstr "عنوان IP أو نطاق"
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:83
+#: lib/qpbx/web/live/platform/firewall_live.ex:105
+#, elixir-autogen, elixir-format
+msgid "Kind"
+msgstr "النوع"
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:85
+#: lib/qpbx/web/live/platform/firewall_live.ex:114
+#, elixir-autogen, elixir-format
+msgid "Reason"
+msgstr "السبب"
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:94
+#, elixir-autogen, elixir-format
+msgid "Remove"
+msgstr "إزالة"
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:91
+#, elixir-autogen, elixir-format
+msgid "Remove %{cidr}?"
+msgstr "إزالة %{cidr}؟"
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:84
+#: lib/qpbx/web/live/platform/firewall_live.ex:111
+#, elixir-autogen, elixir-format
+msgid "Scope"
+msgstr "النطاق"
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:78
+#, elixir-autogen, elixir-format
+msgid "The last sync with nftables reported errors. Check the qpbx-fwd service."
+msgstr "أبلغت آخر مزامنة مع nftables عن أخطاء. افحص خدمة qpbx-fwd."
+
+#: lib/qpbx/web/live/platform/firewall_live.ex:54
+#, elixir-autogen, elixir-format
+msgid "This is the last management IP. Add another one first, so nobody is locked out."
+msgstr "هذا آخر عنوان إدارة. أضف عنوانًا آخر أولًا حتى لا يُحرم أحد من الوصول."

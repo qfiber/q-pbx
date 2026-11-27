@@ -7,7 +7,7 @@ defmodule QPBX.Release do
       bin/qpbx eval 'QPBX.Release.create_platform_admin("ops@example.com", "Ops")'
       bin/qpbx eval 'QPBX.Release.setup_link("user@example.com")'
   """
-  use Boundary, top_level?: true, deps: [QPBX.Repo, QPBX.Core, QPBX.Web]
+  use Boundary, top_level?: true, deps: [QPBX.Repo, QPBX.Core, QPBX.Firewall, QPBX.Web]
 
   @app :qpbx
   @actor {:system, "cli"}
@@ -27,6 +27,36 @@ defmodule QPBX.Release do
         {:error, cs} -> fail(inspect(cs.errors))
       end
     end)
+  end
+
+  @doc """
+  Adds management IPs (platform allow, scope all) if the database has none yet. Run by the
+  Ansible role after install with the inventory's management IPs, so the first sync never
+  removes the SSH access the base ruleset was seeded with.
+  """
+  def seed_management_ips(cidrs) when is_list(cidrs) do
+    with_db(fn ->
+      existing = QPBX.Firewall.list_entries(level: "platform")
+
+      if Enum.any?(existing, &QPBX.Firewall.Entry.management?/1),
+        do: IO.puts("management IPs already present; nothing to do"),
+        else: Enum.each(cidrs, &add_management_ip/1)
+    end)
+  end
+
+  defp add_management_ip(cidr) do
+    attrs = %{
+      level: "platform",
+      kind: "allow",
+      scope: "all",
+      cidr: cidr,
+      reason: "management IP from Ansible inventory"
+    }
+
+    case QPBX.Firewall.create_entry(attrs, {:system, "ansible"}) do
+      {:ok, e} -> IO.puts("added #{e.cidr}")
+      {:error, cs} -> fail("#{cidr}: #{inspect(cs.errors)}")
+    end
   end
 
   @doc "Prints a fresh setup link for an existing platform admin or tenant user (email)."

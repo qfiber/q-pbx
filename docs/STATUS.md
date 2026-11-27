@@ -90,17 +90,22 @@ Kamailio gets its real config.
   size limit), script generation, save/restore and tampered state; integration test against
   real nftables in a Debian 12 container (replace/add/remove, refusals leave rules unchanged,
   state restored after a simulated reboot): passing.
+- P1-08 Firewall module: `firewall_entries` (RLS, audited, unique per level/tenant/kind/
+  scope/cidr), 12 named sets, cluster-wide `FirewallChanged` event plus 60 s reconcile, expiry,
+  last-management-IP protection with row locks, lockout guard, tenant entries limited to SIP
+  allow and narrow prefixes; helper client over the Unix socket; platform page
+  `/platform/firewall` (EN/AR); `QPBX.Release.seed_management_ips/1`. 23 new tests (62 in total).
 
 - License: AGPL-3.0 kept, `CLA.md` and `CONTRIBUTING.md`
   added, copyright notice in `README.md`. Code pushed to `github.com/qfiber/q-pbx` (public).
 
 ## In progress
 
-- P1-08 Firewall module.
+- P1-09 Ansible roles and playbook.
 
 ## Next
 
-- P1-09 Ansible roles and playbook.
+- P1-10 Certificates.
 
 ## Blockers / open questions for phase 1
 
@@ -119,6 +124,8 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
 - Arabic portal texts were written by Claude; a native speaker should review the wording
   (for example "التحويلات الداخلية" for extensions).
 - No login rate limit or lockout yet; brute-force alerts are phase 3 (Argon2 slows guessing).
+- Tenant office IPs (tenant firewall entries) have an API but no tenant portal page yet;
+  platform admins add them today.
 - Sessions are signed cookies; they expire but cannot be revoked server-side before expiry.
 
 ## Done-when results (phase 1)

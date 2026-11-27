@@ -18,4 +18,14 @@ defmodule QPBX.ReleaseTest do
     out = capture_io(fn -> QPBX.Release.setup_link(user.email) end)
     assert out =~ "/setup/"
   end
+
+  test "seed_management_ips adds entries once" do
+    QPBX.FakeHelper.reset()
+    out = capture_io(fn -> QPBX.Release.seed_management_ips(["198.51.100.0/24"]) end)
+    assert out =~ "added 198.51.100.0/24"
+    _ = QPBX.Firewall.sync_status()
+    out = capture_io(fn -> QPBX.Release.seed_management_ips(["203.0.113.1"]) end)
+    assert out =~ "already present"
+    assert [%{cidr: "198.51.100.0/24", scope: "all"}] = QPBX.Firewall.list_entries()
+  end
 end

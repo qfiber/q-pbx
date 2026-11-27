@@ -14,7 +14,13 @@ defmodule QPBX.Web.ErrorMessages do
         "lowercase letters, digits and dashes, not starting or ending with a dash"
       ),
       dgettext_noop("errors", "must be a valid email"),
-      dgettext_noop("errors", "is not a known time zone")
+      dgettext_noop("errors", "is not a known time zone"),
+      dgettext_noop("errors", "is not a valid IP address or prefix"),
+      dgettext_noop("errors", "must be empty for platform entries"),
+      dgettext_noop("errors", "tenants can only add allow entries"),
+      dgettext_noop("errors", "tenant entries are for SIP only"),
+      dgettext_noop("errors", "is too wide for a tenant entry (at most /%{min})"),
+      dgettext_noop("errors", "must be in the future")
     ]
   end
 end

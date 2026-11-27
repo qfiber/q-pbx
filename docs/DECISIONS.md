@@ -2,6 +2,22 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Firewall design (P1-08)
+
+- **Twelve named sets** `<allow|block>_<ssh|sip|https>_<v4|v6>`; scope `all` fills all three
+  scopes. The allowlist wins through rule order in the base ruleset (allow accepted before
+  block dropped). Rejected: one set per kind (cannot express scope).
+- **Every sync replaces all sets in full** (atomic per set in `qpbx-fwd`), on each change and
+  every 60 s. Simpler than diffs and it repairs drift. Expiry is handled by the next sync
+  (within 60 s), not by nftables timeouts.
+- **Lockout guard:** an empty database never empties the SSH allow sets; Ansible seeds the
+  first management IPs into both the base ruleset and the database.
+- **Tenant entries** are SIP allow only and at most /24 (IPv4) or /48 (IPv6), because they
+  bypass SIP bans for everyone. The spec gives no width limit; this one is a safety default
+  that is easy to change.
+- **Tenant entries are allowed at the nftables level for all SIP traffic;** per-tenant
+  meaning (only that tenant's domain) is applied by Kamailio in phase 2.
+
 ## 2026-11-27: License: AGPL-3.0 plus a contributor agreement
 
 - **What:** Q-PBX stays AGPL-3.0, as the spec says. Outside contributors sign a CLA
