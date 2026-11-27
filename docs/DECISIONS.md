@@ -2,6 +2,20 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: How Kamailio reads credentials (2-1)
+
+- **Read-only views shaped for Kamailio's htable,** loaded into memory and reloaded on change
+  over JSON-RPC (`QPBX.Edge`), as the spec's "keeps routing data in shared memory" asks.
+  Kamailio keeps working from memory while PostgreSQL is down. Rejected: `auth_db` (a
+  database query per request).
+- **Only HA1 is stored,** never the password. HA1 is MD5 because SIP digest and the phones
+  require it, and it is password-equivalent for its realm, so only Kamailio's role reads it.
+  SHA-256 digest (RFC 8760) can be added later for clients that support it.
+- **The digest realm is the tenant's SIP domain;** tenant slugs are therefore fixed after
+  creation.
+- **The `kamailio` role in the playbook now runs after the app,** whose migrations create
+  the views Kamailio loads at start-up.
+
 ## 2026-11-27: The busy-lamp trial in two steps (2-0)
 
 - **2-0a first:** Kamailio's presence server, with states published as JSON through

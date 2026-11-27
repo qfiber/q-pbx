@@ -21,7 +21,11 @@ and writes an audit entry in the same transaction.
 - Login limits: `login_check/1`, `login_failed/2` (IP, optional account), `login_succeeded/1`
   (`QPBX.Core.LoginGuard`; never locks accounts).
 - Audit: `audit/4` (for changes made by other areas), `list_audit_logs/1`.
-- `with_tenant/2`: run a function with row-level security scoped to one tenant.
+- SIP credentials: `list_sip_credentials/1`, `create_sip_credential/3` (returns the password
+  once), `reset_sip_password/3`, `delete_sip_credential/3` (tenant scope); each announces
+  `SipCredentialsChanged`. Tenant creation and updates announce `TenantsChanged` (after commit).
+- `with_tenant/2`: run a function with row-level security scoped to one tenant; a function
+  returning `{:error, _}` rolls the transaction back and gets its error back.
 - Scopes: `scope_for/1` (`QPBX.Core.Scope`: `:platform` or `:tenant`); scoped reads
   `list_users/1` (tenant scope) or `list_users/2` (platform scope and a tenant), `my_tenant/1`,
   `list_my_sessions/1`.
@@ -29,7 +33,8 @@ and writes an audit entry in the same transaction.
 - `locales/0`: language codes offered by the installation (`config :qpbx, :locales`).
 - `sip_base_domain/0`: tenant SIP domains are `<slug>.<base>` (`QPBX_SIP_BASE_DOMAIN` in prod).
 
-**Events emitted:** `QPBX.Events.SessionsRevoked` (whenever sessions end). **Events consumed:** none.
+**Events emitted:** `QPBX.Events.SessionsRevoked` (whenever sessions end),
+`SipCredentialsChanged`, `TenantsChanged`. **Events consumed:** none.
 
 **Keys:** `QPBX.Core.KeyProvider` (`master_key/0`, `wrap/2`); the vault loads its key at start-up.
 

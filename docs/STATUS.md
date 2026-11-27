@@ -41,6 +41,19 @@ Kamailio gets its real config.
 
 ## Done
 
+- 2-1 Kamailio database view and phone login (done): `sip_credentials` (HA1 only; 24-character
+  passwords from the cryptographic generator, shown once; RLS; audited without hashes);
+  read-only views `kamailio.credentials` and `kamailio.domains` for the new `qpbx_kamailio`
+  role (no other rights); Kamailio loads them into memory (htable) and authenticates
+  REGISTER per tenant domain (digest realm = tenant domain; a credential registers only its
+  own user); new area `QPBX.Edge` reloads Kamailio's tables over JSON-RPC when Core announces
+  `SipCredentialsChanged` or `TenantsChanged` (after commit). Tenant slugs are locked after
+  creation. Verified in the lab: two tenants with the same extension 101 register separately;
+  wrong password, the other tenant's password, registering another user and an unknown domain
+  are refused; a password reset applies at once with no Kamailio restart; second playbook run
+  `changed=0`. Fixed on the way: a failed write inside a tenant scope crashed instead of
+  returning the error (rollback added). 10 new tests (123).
+
 - 2-0a Busy-lamp trial (done): Kamailio 6.0.8 from the Kamailio project's repository (key
   pinned by checksum, presence, `pua_json` and PostgreSQL modules). On the lab, with a spike
   config (`lab/spike/kamailio-presence.cfg`) and a scripted subscriber
@@ -147,7 +160,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 2-1 Kamailio database view (next), then 2-2 onwards. 2-0b (Meow end to end) waits for call control (2-5).
+- 2-2 Telephony data and portal pages (next). 2-0b (Meow end to end) waits for call control (2-5).
 
 ## Next
 

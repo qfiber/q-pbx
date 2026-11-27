@@ -54,7 +54,7 @@ its public API module or its events. No module touches another module's tables o
 | `qpbx_core` | `lib/qpbx/core/` | `QPBX.Core` | Tenants, users, plans, limits, extensions, routing objects, Ecto schemas |
 | `qpbx_events` | `lib/qpbx/events/` | `QPBX.Events` | Event bus: typed, versioned event structs on Phoenix.PubSub |
 | `qpbx_telephony` | `lib/qpbx/telephony/` | `QPBX.Telephony` | `mod_xml_curl` handler, event socket, call processes, call admission |
-| `qpbx_edge` | `lib/qpbx/edge/` | `QPBX.Edge` | Kamailio integration: domains, bans, push wake-up, NAT state |
+| `qpbx_edge` | `lib/qpbx/edge/` | `QPBX.Edge` | Kamailio integration: domains, credentials, bans, push wake-up, NAT state (started in phase 2) |
 | `qpbx_fax` | `lib/qpbx/fax/` | `QPBX.Fax` | Fax boxes, send/receive jobs, document conversion |
 | `qpbx_storage` | `lib/qpbx/storage/` | `QPBX.Storage` | `Storage` behaviour, local and S3 backends |
 | `qpbx_notify` | `lib/qpbx/notify/` | `QPBX.Notify` | Alerts, notifications, preferences, email, push |
@@ -92,6 +92,7 @@ uses two roles (`qpbx_owner` for migrations, `qpbx` for the app); development us
 | `cd ansible && ansible-playbook site.yml` | Install or update the server in the inventory (lab by default) |
 | `lab/acme/pebble.sh <vm-ip>` | Local test ACME server (Pebble) with DNS, to test the certificate modes |
 | `node lab/done-when/phase1b.mjs <vm-ip>` | Phase 1b security checks in the lab (needs `qpbx_session_idle_timeout=60`) |
+| `lab/tools/sip_register.py <ip> <user> <domain> <password>` | Test a SIP registration against the lab |
 | `cd ansible && ansible-lint` | Lint the playbook and roles |
 | `scripts/check_module_docs.sh <base>` | Fails if an area's public API module changed without its `README.md` |
 | `mix sobelow --config` | Security scan (CI fails on any finding) |
