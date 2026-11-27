@@ -168,8 +168,9 @@ Kamailio gets its real config.
   pass; every failure needs the `*43` echo service (feature codes, phase 4): echo, audio levels,
   call statistics, hold, conference, recording, and redirect and transfers aimed at `*43`.
   Found and fixed: FreeSWITCH refused optional SRTP (`a=crypto` on RTP/AVP, 488) until
-  `rtp_allow_crypto_in_avp`. Not yet verified: audio itself (no Meow check plays sound without
-  `*43`), following a 302, transfers. Grandstream check when a phone is available.
+  `rtp_allow_crypto_in_avp`. Since then (2-5b and later): 302s and transfers are covered by the
+  lab checks; real two-way audio confirmed by hand on 2026-11-27 (Meow on a desktop,
+  registered to Demo Company as 101-meow, `*43` echo: his own voice back). Grandstream: Phase D.
 
 - 2-5 Call control (done): new area `QPBX.Telephony`. FreeSWITCH asks the app for a dialplan
   (`mod_xml_curl`, loopback and a password; nginx refuses `/internal/`) and parks every call;
@@ -589,6 +590,9 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
 - Sessions are signed cookies; they expire but cannot be revoked server-side before expiry.
 
 ## Done-when results (phase 2)
+
+Real audio, checked by hand (2026-11-27): Meow on a desktop registered to the demo tenant
+(`demo.pbx.lab.test`, device `101-meow`) and called `*43`; the echo came back clearly.
 
 Run on 2026-11-27 against the lab VM (`lab/done-when/phase2.py 192.168.10.25 192.168.10.236`
 with the Meow client's live test), 15 minutes in all; CI runs the SIPp suite on every push.
