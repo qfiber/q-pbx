@@ -19,7 +19,17 @@ defmodule QPBX.Core do
       SessionSweeper,
       Scope,
       KeyProvider,
-      SipCredential
+      SipCredential,
+      Extension,
+      Device,
+      Trunk,
+      TrunkAddress,
+      Did,
+      OutboundRoute,
+      EmergencyRoute,
+      NumberRule,
+      NumberClass,
+      Numbers
     ]
 
   import Ecto.Query
@@ -204,6 +214,73 @@ defmodule QPBX.Core do
     as: :reset_password
 
   defdelegate delete_sip_credential(scope, id, actor), to: QPBX.Core.SipCredentials, as: :delete
+
+  ## Telephony configuration (every write announces ConfigChanged after its commit)
+
+  alias QPBX.Core.{Dids, Extensions, Numbering, Routes, Trunks}
+
+  defdelegate list_extensions(scope), to: Extensions, as: :list
+  defdelegate get_extension!(scope, id), to: Extensions, as: :get!
+
+  defdelegate change_extension(ext \\ %QPBX.Core.Extension{}, attrs \\ %{}),
+    to: Extensions,
+    as: :change
+
+  defdelegate create_extension(scope, attrs, actor), to: Extensions, as: :create
+  defdelegate update_extension(scope, ext, attrs, actor), to: Extensions, as: :update
+  defdelegate delete_extension(scope, ext, actor), to: Extensions, as: :delete
+  defdelegate change_device(attrs \\ %{}), to: Extensions
+  defdelegate add_device(scope, ext, attrs, actor), to: Extensions
+  defdelegate delete_device(scope, device_id, actor), to: Extensions
+  defdelegate reset_device_password(scope, device_id, actor), to: Extensions
+
+  defdelegate list_trunks(scope), to: Trunks, as: :list
+  defdelegate trunk_choices(scope), to: Trunks, as: :choices
+  defdelegate get_trunk!(scope, id), to: Trunks, as: :get!
+
+  defdelegate change_trunk(trunk \\ %QPBX.Core.Trunk{addresses: []}, attrs \\ %{}),
+    to: Trunks,
+    as: :change
+
+  defdelegate create_trunk(scope, attrs, actor), to: Trunks, as: :create
+  defdelegate update_trunk(scope, trunk, attrs, actor), to: Trunks, as: :update
+  defdelegate delete_trunk(scope, trunk, actor), to: Trunks, as: :delete
+
+  defdelegate list_dids(scope), to: Dids, as: :list
+  defdelegate get_did!(scope, id), to: Dids, as: :get!
+  defdelegate change_did(did \\ %QPBX.Core.Did{}, attrs \\ %{}), to: Dids, as: :change
+  defdelegate change_did_destination(did, attrs \\ %{}), to: Dids, as: :change_destination
+  defdelegate create_did(scope, attrs, actor), to: Dids, as: :create
+  defdelegate update_did(scope, did, attrs, actor), to: Dids, as: :update
+  defdelegate delete_did(scope, did, actor), to: Dids, as: :delete
+  defdelegate set_did_destination(scope, did, attrs, actor), to: Dids, as: :set_destination
+
+  defdelegate list_routes(scope), to: Routes, as: :list
+  defdelegate get_route!(scope, id), to: Routes, as: :get!
+
+  defdelegate change_route(route \\ %QPBX.Core.OutboundRoute{}, attrs \\ %{}),
+    to: Routes,
+    as: :change
+
+  defdelegate create_route(scope, attrs, actor), to: Routes, as: :create
+  defdelegate update_route(scope, route, attrs, actor), to: Routes, as: :update
+  defdelegate delete_route(scope, route, actor), to: Routes, as: :delete
+
+  defdelegate number_rule(scope), to: Numbering, as: :rule
+  defdelegate change_number_rule(rule, attrs \\ %{}), to: Numbering, as: :change_rule
+  defdelegate put_number_rule(scope, attrs, actor), to: Numbering, as: :put_rule
+  defdelegate reset_number_rule(scope, actor), to: Numbering, as: :reset_rule
+  defdelegate list_number_classes(), to: Numbering, as: :list_classes
+  defdelegate change_number_class(attrs \\ %{}), to: Numbering, as: :change_class
+  defdelegate create_number_class(scope, attrs, actor), to: Numbering, as: :create_class
+  defdelegate delete_number_class(scope, id, actor), to: Numbering, as: :delete_class
+  defdelegate list_emergency_routes(), to: Numbering, as: :list_emergency
+  defdelegate change_emergency_route(attrs \\ %{}), to: Numbering, as: :change_emergency
+  defdelegate create_emergency_route(scope, attrs, actor), to: Numbering, as: :create_emergency
+  defdelegate delete_emergency_route(scope, id, actor), to: Numbering, as: :delete_emergency
+
+  @doc "What a user typed (local formats allowed) as E.164, with the scope's number rule."
+  def to_e164(scope, input), do: QPBX.Core.Numbers.to_e164(input, number_rule(scope))
 
   ## Tenant scope
 

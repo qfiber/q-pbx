@@ -1,8 +1,11 @@
 # Core (`QPBX.Core`)
 
-**Purpose:** tenants, plans, limits, users, roles, audit log. Later: extensions and routing objects.
+**Purpose:** tenants, plans, limits, users, roles, audit log, and the telephony configuration
+(extensions, devices, trunks, DIDs, routes, number rules and classes).
 
-**Public API** (`QPBX.Core`; exported `Plan`, `Tenant`, `PlatformAdmin`, `User`, `AuditLog`, `Vault`).
+**Public API** (`QPBX.Core`; exported schemas `Plan`, `Tenant`, `PlatformAdmin`, `User`, `AuditLog`,
+`SipCredential`, `Extension`, `Device`, `Trunk`, `TrunkAddress`, `Did`, `OutboundRoute`,
+`EmergencyRoute`, `NumberRule`, `NumberClass`; `Vault`, `Scope`, `KeyProvider`; and `Numbers`).
 Every changing function takes an `actor` (`%PlatformAdmin{}`, `%User{}` or `{:system, name}`)
 and writes an audit entry in the same transaction.
 - Plans: `list_plans/0`, `get_plan!/1`, `change_plan/2`, `create_plan/2`, `update_plan/3`.
@@ -24,6 +27,31 @@ and writes an audit entry in the same transaction.
 - SIP credentials: `list_sip_credentials/1`, `create_sip_credential/3` (returns the password
   once), `reset_sip_password/3`, `delete_sip_credential/3` (tenant scope); each announces
   `SipCredentialsChanged`. Tenant creation and updates announce `TenantsChanged` (after commit).
+- Extensions (tenant scope): `list_extensions/1`, `get_extension!/2`, `change_extension/2`,
+  `create_extension/3` (checks `max_extensions` under a lock on the tenant row),
+  `update_extension/4`, `delete_extension/3` (removes its devices and their SIP logins).
+- Devices: `change_device/1`, `add_device/4` (own SIP login `<extension>-<label>`; returns the
+  password once), `delete_device/3`, `reset_device_password/3`.
+- Trunks (platform scope: shared carriers; tenant scope: its own): `list_trunks/1`,
+  `trunk_choices/1` (own and platform trunks for a tenant's routes), `get_trunk!/2`,
+  `change_trunk/2`, `create_trunk/3`, `update_trunk/4`, `delete_trunk/3` (refused while a
+  route or emergency route uses it). Addresses are nested (`addresses: [...]`); an address of
+  an IP-authenticated trunk may belong to one IP trunk only, across tenants. Passwords are
+  encrypted.
+- DIDs: platform `create_did/3`, `update_did/4` (moving tenants clears the destination; backup
+  numbers move along), `delete_did/3`; tenant `set_did_destination/4` (own extension or an
+  external number; not on backup numbers); `list_dids/1`, `get_did!/2`, `change_did/2`,
+  `change_did_destination/2`.
+- Outbound routes (tenant scope): `list_routes/1`, `get_route!/2`, `change_route/2`,
+  `create_route/3`, `update_route/4`, `delete_route/3`; `trunk_ids` is the failover order.
+- Numbering: `number_rule/1` (tenant override, else platform default, else Israel),
+  `change_number_rule/2`, `put_number_rule/3`, `reset_number_rule/2`, `to_e164/2`; platform
+  `list_number_classes/0`, `change_number_class/1`, `create_number_class/3`,
+  `delete_number_class/3` (high-cost prefixes are class `premium`), `list_emergency_routes/0`,
+  `change_emergency_route/1`, `create_emergency_route/3` (platform trunk only),
+  `delete_emergency_route/3`.
+- `QPBX.Core.Numbers` (pure): `to_e164/2`, `display/2`, `classify/3`, `select_route/2`,
+  `carrier_number/2`.
 - `with_tenant/2`: run a function with row-level security scoped to one tenant; a function
   returning `{:error, _}` rolls the transaction back and gets its error back.
 - Scopes: `scope_for/1` (`QPBX.Core.Scope`: `:platform` or `:tenant`); scoped reads
@@ -34,7 +62,8 @@ and writes an audit entry in the same transaction.
 - `sip_base_domain/0`: tenant SIP domains are `<slug>.<base>` (`QPBX_SIP_BASE_DOMAIN` in prod).
 
 **Events emitted:** `QPBX.Events.SessionsRevoked` (whenever sessions end),
-`SipCredentialsChanged`, `TenantsChanged`. **Events consumed:** none.
+`SipCredentialsChanged`, `TenantsChanged`, `ConfigChanged` (every telephony configuration
+write, after its commit). **Events consumed:** none.
 
 **Keys:** `QPBX.Core.KeyProvider` (`master_key/0`, `wrap/2`); the vault loads its key at start-up.
 
@@ -43,6 +72,9 @@ and writes an audit entry in the same transaction.
   function takes a `Scope` and runs through `Scope.run/2` (keep the explicit tenant filter too).
 - The DB user must not be a superuser, or RLS is silently bypassed. In production the app's
   role has no schema rights and cannot change `audit_logs` rows; migrations run as `qpbx_owner`.
-- Audit entries drop `password`, `hashed_password` and `totp_secret`; add new secret fields to
+- `Scope.run/2` runs in a transaction for both scope kinds; `{:error, _}` from the function
+  rolls back. Platform rows (`tenant_id` NULL: shared trunks, unassigned DIDs, the default
+  number rule) are invisible inside a tenant scope, so reads of them happen outside it.
+- Audit entries drop `password`, `hashed_password`, `totp_secret`, `ha1` and `push_token`; add new secret fields to
   `@secret_fields` in `audit.ex`.
 - Plan limit names are `QPBX.Core.Plan.limits/0`; overrides are validated against it. every non-platform table carries `tenant_id`; queries are tenant-scoped.

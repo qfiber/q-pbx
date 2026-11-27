@@ -5,7 +5,13 @@ defmodule QPBX.Events do
   """
   use Boundary,
     deps: [],
-    exports: [FirewallChanged, SessionsRevoked, SipCredentialsChanged, TenantsChanged]
+    exports: [
+      ConfigChanged,
+      FirewallChanged,
+      SessionsRevoked,
+      SipCredentialsChanged,
+      TenantsChanged
+    ]
 
   @pubsub QPBX.PubSub
 

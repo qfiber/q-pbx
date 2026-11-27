@@ -16,11 +16,25 @@ defmodule QPBX.Core.Scope do
   def for_account(%User{tenant_id: id} = user),
     do: %__MODULE__{kind: :tenant, tenant_id: id, account: user}
 
-  @doc "Runs `fun` with this scope's database restrictions; returns its result."
-  def run(%__MODULE__{kind: :platform}, fun), do: fun.()
+  @doc """
+  Runs `fun` in a transaction with this scope's database restrictions and returns its result.
+  If `fun` returns `{:error, _}`, the transaction is rolled back and that error returned.
+  """
+  def run(%__MODULE__{kind: :platform}, fun) do
+    QPBX.Repo.transaction(fn ->
+      case fun.() do
+        {:error, _} = error -> QPBX.Repo.rollback(error)
+        result -> result
+      end
+    end)
+    |> unwrap()
+  end
 
-  def run(%__MODULE__{kind: :tenant, tenant_id: id}, fun) when is_binary(id) do
-    case QPBX.Core.with_tenant(id, fun) do
+  def run(%__MODULE__{kind: :tenant, tenant_id: id}, fun) when is_binary(id),
+    do: id |> QPBX.Core.with_tenant(fun) |> unwrap()
+
+  defp unwrap(result) do
+    case result do
       {:ok, result} -> result
       # The function's own {:error, _}, after the rollback.
       {:error, {:error, _} = error} -> error

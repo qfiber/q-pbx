@@ -160,7 +160,9 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 2-2 Telephony data and portal pages (next). 2-0b (Meow end to end) waits for call control (2-5).
+- 2-2 Telephony data and portal pages: 2-2a data and Core functions and 2-2b number handling
+  done (31 new tests, 144); next 2-2c tenant pages, 2-2d platform pages, 2-2e lab check. 2-0b
+  (Meow end to end) waits for call control (2-5).
 
 ## Next
 

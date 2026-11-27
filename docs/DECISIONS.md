@@ -2,6 +2,25 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Telephony data model (2-2)
+
+- **One SIP login per device** (`<extension>-<label>`), not per extension: a lost phone is cut
+  off alone, and the extension rings all its devices.
+- **Platform trunks are the carriers;** no separate `carriers` table, which would hold only a
+  name. Tenant trunks are bring-your-own-carrier.
+- **An IP trunk's address belongs to one IP trunk across all tenants,** because Kamailio
+  finds the trunk (and tenant) of an incoming call by its source address. Registration trunks
+  may share a host (two tenants on the same carrier).
+- **Trunk passwords are encrypted with Cloak** (Kamailio needs them in clear to register;
+  they will reach it over JSON-RPC, not through a database view).
+- **DID destinations are `destination_type` with `destination_id`,** plus `destination_number`
+  for an external number. Phase 2 has extension and external; more types come with their
+  features.
+- **Number rules: platform default, tenant override, Israel built in** when neither exists.
+  Country-specific short forms (Israeli 1-800, star numbers) are not handled yet.
+- **Every telephony write announces `ConfigChanged` after its commit;** call control (2-5)
+  drops its cache on it.
+
 ## 2026-11-27: How Kamailio reads credentials (2-1)
 
 - **Read-only views shaped for Kamailio's htable,** loaded into memory and reloaded on change

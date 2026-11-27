@@ -4,7 +4,7 @@ defmodule QPBX.Core.Audit do
   alias QPBX.Core.{AuditLog, PlatformAdmin, User}
 
   # Never written to the audit log, even as changed values.
-  @secret_fields ~w(hashed_password password totp_secret)a
+  @secret_fields ~w(hashed_password password totp_secret ha1 push_token)a
 
   @type actor :: %PlatformAdmin{} | %User{} | {:system, String.t()}
 
