@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 2 — Core calling and protection: **done** (2026-11-27). Next: phase 3 (breakdown to propose)
+**Current phase:** 3 — API, webhooks and notifications: breakdown proposed (2026-11-27), waiting for approval. Phase 2 done.
 **Last updated:** 2026-11-27
 
 ## Phase 1 goal
@@ -369,7 +369,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- Phase 3 breakdown (next): to be proposed for approval.
+- Phase 3 breakdown proposed (below); waiting for approval before 3-1 starts.
   (Meow end to end) waits for call control (2-5).
 
 ## Next
@@ -446,6 +446,36 @@ Kamailio gets its real config.
   ModSecurity), FreeSWITCH modules added (G.729, Opus/MP3 recording, loopback, CDR spool; all
   load in the lab), languages moved to one config list, firewall and plan forms now clear
   after a save (live validation added).
+
+## Phase 3 task breakdown (proposed 2026-11-27, waiting for approval)
+
+From `docs/SPEC.md`, phase 3: `/v1` REST with OpenAPI, API keys, event bus, signed webhooks
+with retries and outbound request safety, WebSocket event stream, click-to-call; notification
+service (email, generic alert webhook, in-portal; push joins in phase 4), preferences and
+throttling; usage threshold, security and health alerts.
+
+**Done when:** every resource so far is manageable through the API, `call.*` webhooks arrive
+signed within 1 second, a tenant crossing 80% of its minutes gets the email and the alert
+webhook with minutes remaining, and a webhook aimed at an internal address is refused.
+
+| # | Task | Scope | Proof |
+| --- | --- | --- | --- |
+| 3-1 | API foundation | API keys per tenant and for the platform (scopes read, write, calls, fax, admin; expiry; hashed, shown once; portal pages to create and revoke); `/v1` pipeline: key auth, per-key rate limit (the plan's `api_rate_limit_per_minute`), one error format, cursor pagination, idempotency keys on POST; OpenAPI 3 document generated from the code, with an explorer served by the app itself (no outside scripts, CSP intact) | Unit and request tests: scopes, expiry, rate limit, idempotent replays, another tenant's key gets nothing |
+| 3-2 | API resources | Everything built so far, through the same Core and Telephony functions the portal uses: tenants, plans, trunks, numbers (DIDs), number classes, emergency routes, number format (platform); users, extensions, devices, routes, office IPs, mailboxes, greetings, voicemails (audio by a signed short-lived URL), CDRs (and CSV), daily usage, audit log (tenant) | A request test per resource and action; a check that every portal action has an API route |
+| 3-3 | Call events | The call process publishes `call.started`, `call.ringing`, `call.answered`, `call.ended`, `call.missed`, `call.transferred` (typed, versioned); Kamailio reports registrations so `extension.registered` and `extension.unregistered` exist; with the existing `voicemail.received` and `limit.reached` | ESL fake-FreeSWITCH tests; lab: events for real calls in order |
+| 3-4 | Outbound request safety | One HTTP client for every address a tenant chooses: HTTPS only by default, no private, loopback, link-local or mapped addresses (checked after DNS resolution, the connection pinned to the checked address, and again on every redirect), size and time limits | Tests against local servers, DNS names pointing inside, redirect chains, IPv6 and IPv4-mapped tricks |
+| 3-5 | Webhooks | Endpoints per tenant (URL, event types, secret shown once); delivery through Oban at once: HMAC-SHA256 signature with timestamp and event ID, exponential backoff for 24 hours, then dead-letter; delivery log with request, response and retries, and resend, in the portal and the API | Signature verification test vectors; retry and dead-letter tests; lab: delivery time measured |
+| 3-6 | WebSocket event stream | Phoenix channel authenticated by API key, tenant-scoped, filtered by event type | Channel tests: own tenant's events only |
+| 3-7 | Click-to-call and call control | Originate (ring the user's extension, then dial the target; call admission applies), hang up, blind transfer, through the API and a Call button in the portal; hold, park, recording and barge come with their features (phases 4 and 6) | ESL tests; lab: click-to-call with a real phone answering |
+| 3-8 | Notification service | `alerts` with state (open, acknowledged, resolved), deduplication and grouping ("37 more since 14:02"), per-recipient rate caps; rules with default subscriptions per role, mandatory alerts set by platform admins, preferences per user (channels per category), shared recipients, quiet hours that critical alerts bypass; channels: email (English and Arabic templates), alert webhooks (signed like 3-5; a platform-level one compatible with Alertmanager-style receivers), in-portal bell with unread count; acknowledge by email link, portal or API; "back to normal" when resolved; delivery log with resend | Unit tests for rules, dedup, throttling and quiet hours; LiveView tests for the bell |
+| 3-9 | Alert sources | Security: SIP attacks (edge alerts), brute force on extensions and portal accounts, failed 2FA and logins from a new IP, fraud alerts and blocks. Health: FreeSWITCH and Kamailio heartbeat lost, process crash loops, trunk down or registration failed, disk, backup failed, certificate expiring. Usage: thresholds per plan (50/80/90/100%) with tenant overrides, once per period, with minutes used and remaining, period end and projected run-out; limit reached; monthly summary. Operations: phone or trunk offline longer than a set time, webhook dead-lettered. Personal: missed call, voicemail | A test per alert; lab: real trunk down, a stopped FreeSWITCH, a threshold crossed by real calls |
+| 3-10 | Call tests in CI | The SIPp suite extended: call webhooks delivered and signed, an API-driven change applied, a threshold alert | CI green |
+| 3-11 | Leftovers | Whatever phase 3 turns up | — |
+| 3-12 | Done-when verification | The four conditions in the lab, with the webhook latency measured | Results recorded here |
+
+Not in phase 3 (spec): OAuth 2 for CRM apps, chat formats, digests and escalation (phase 8),
+mobile push (phase 4, with Meow), call quality alerts from RTCP (with recording in phase 4 if
+cheap, else Phase D), queue alerts (phase 6), failover alerts (phase 9).
 
 ## Phase D: deferred fixes (scheduled later, added 2026-11-27)
 
