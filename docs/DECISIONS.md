@@ -2,6 +2,13 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-27: Fraud caps without rating
+
+- Phase 2 caps minutes per destination class per hour, day and month, and treats a
+  platform-managed list of high-cost prefixes as premium (blocked unless allowed). Why: real
+  money caps need a per-prefix rate table, close to the rating the spec excludes; class caps
+  plus the high-cost list stop toll fraud without it. Rejected for now: money-based caps.
+
 ## 2026-11-27: Visual call-flow editor in 1.0
 
 - Phase 4 adds a drag-and-drop editor for each DID's routing (time conditions, IVRs, ring

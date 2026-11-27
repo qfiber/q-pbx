@@ -199,13 +199,11 @@ proof of work as the default challenge; full-disk encryption later.
 | Backup (alias) numbers for incoming calls, and per-DID guidance on carrier-side forwarding | 2 | Part of DIDs |
 | Visual drag-and-drop call-flow editor for IVRs, time conditions and ring groups | 4 | Approved for 1.0; needs those objects |
 
-**Spend caps (approved on 2026-11-27; to confirm at phase 2 start whether
-that means money-based caps from the start or the recommendation below):** phase 2 uses minute caps per
-destination class (local, mobile, international, premium) per hour, day and month, which
-need no prices; plus a platform-managed list of high-cost prefixes (satellite, premium-rate,
-known fraud ranges) that count as "premium", blocked unless a plan allows them; plus the
-velocity alerts. Money-based spend caps need a rate table (cost per minute per prefix); add
-it later only if operators ask, and the same table could then feed the usage export.
+**Spend caps (approved 2026-11-27):** phase 2 uses minute caps per destination
+class (local, mobile, international, premium) per hour, day and month, which need no prices;
+plus a platform-managed list of high-cost prefixes (satellite, premium-rate, known fraud
+ranges) that count as "premium", blocked unless a plan allows them; plus the velocity alerts.
+Money-based caps (with a rate table per prefix) only later, if operators ask.
 
 ## Blockers / open questions for phase 1
 
@@ -213,9 +211,8 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
 
 ## Open questions for later phases
 
-- **Phase 2, spend caps:** the spec asks for "spend or minute caps per hour, day and month",
-  but spend needs per-minute rates and rating is a v1 non-goal. Plans have minute caps per day
-  and month only. Where do rates come from, and are hourly caps needed?
+- ~~Phase 2, spend caps~~ Answered: minute caps per destination class plus a high-cost
+  prefix list (see "Planned features").
 
 ## Known bugs
 

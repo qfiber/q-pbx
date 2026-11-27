@@ -516,7 +516,7 @@ Toll fraud is the biggest financial risk for a hosted PBX, so spend limits and d
 
 - Destination class check against the tenant's allowed classes (local, mobile, international, premium).
 - Per-extension and per-tenant concurrent call caps.
-- Spend or minute caps per hour, day and month, with a hard block and a `limit.reached` webhook.
+- Minute caps per destination class (local, mobile, international, premium) per hour, day and month, with a hard block and a `limit.reached` webhook; a platform-managed list of high-cost prefixes counts as premium and is blocked unless the plan allows it. Money-based spend caps (with a rate table) only later, if operators need them.
 - Velocity rules: sudden spikes in international calls or calls at unusual hours alert the tenant and platform admins, and can auto-block.
 - Emergency routes skip spend limits but are still logged.
 
