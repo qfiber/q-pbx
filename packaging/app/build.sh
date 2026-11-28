@@ -47,5 +47,6 @@ CTL
 dpkg-deb --build --root-owner-group $fstage /out/qpbx-fwd_${version}_amd64.deb >/dev/null
 
 # Voice prompts (a separate package: they change rarely).
-bash /src/packaging/sounds/build.sh
+# The prompts change only with their pinned version: skipped when out/ already has it.
+[[ ${QPBX_SKIP_SOUNDS:-0} == 1 ]] || bash /src/packaging/sounds/build.sh
 ls -1 /out/*.deb

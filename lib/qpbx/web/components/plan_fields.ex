@@ -3,11 +3,12 @@ defmodule QPBX.Web.PlanFields do
   The limits of a plan (or a tenant's overrides) in groups people think in: accounts, calls
   at the same time, outbound minutes, minutes per destination class (a grid: class by
   period), storage, API. `limits/1` renders them with the page's own input attributes;
-  `section/1` is a titled block inside a form card.
+  the sections and groups are `QPBX.Web.UI`'s.
   """
   use Phoenix.Component
   use Gettext, backend: QPBX.Web.Gettext
-  import QPBX.Web.CoreComponents, only: [input: 1, icon: 1]
+  import QPBX.Web.CoreComponents, only: [input: 1]
+  import QPBX.Web.UI, only: [section: 1, field_group: 1]
   alias QPBX.Core.Plan
   alias QPBX.Web.Platform.PlansLive
 
@@ -33,48 +34,6 @@ defmodule QPBX.Web.PlanFields do
   defp title(:storage), do: gettext("Storage")
   defp title(:api), do: gettext("API")
 
-  attr :title, :string, required: true
-  attr :icon, :string, required: true
-  attr :hint, :string, default: nil
-  attr :class, :any, default: nil
-  slot :inner_block, required: true
-
-  @doc "A titled block in a form card: icon tile and title on one line, the hint under the title."
-  def section(assigns) do
-    ~H"""
-    <section class={["py-5 first:pt-0 last:pb-0", @class]}>
-      <div class="mb-4">
-        <div class="flex items-center gap-3">
-          <div class="size-8 shrink-0 rounded-[8px] bg-accent-pale text-secondary grid place-items-center">
-            <.icon name={@icon} class="size-4" />
-          </div>
-          <h2 class="font-semibold">{@title}</h2>
-        </div>
-        <p :if={@hint} class="mt-1 ps-11 text-sm text-muted">{@hint}</p>
-      </div>
-      {render_slot(@inner_block)}
-    </section>
-    """
-  end
-
-  attr :title, :string, required: true
-  attr :icon, :string, required: true
-  attr :hint, :string, default: nil
-  slot :inner_block, required: true
-
-  @doc "A group inside a section: a small icon and title, no tile."
-  def group(assigns) do
-    ~H"""
-    <div class="pt-4 first:pt-0">
-      <h3 class="flex items-center gap-2 mb-2 text-sm font-semibold text-secondary">
-        <.icon name={@icon} class="size-4" />{@title}
-      </h3>
-      <p :if={@hint} class="-mt-1 mb-2 text-xs text-muted">{@hint}</p>
-      {render_slot(@inner_block)}
-    </div>
-    """
-  end
-
   attr :input, :any, required: true, doc: "limit -> input attributes (field, or name/value/...)"
   attr :hint, :string, default: nil
 
@@ -85,7 +44,7 @@ defmodule QPBX.Web.PlanFields do
     ~H"""
     <.section title={gettext("Limits")} icon="hero-adjustments-horizontal" hint={@hint}>
       <div class="space-y-1">
-        <.group :for={{key, icon, ls} <- @groups} title={title(key)} icon={icon}>
+        <.field_group :for={{key, icon, ls} <- @groups} title={title(key)} icon={icon}>
           <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-4">
             <.input
               :for={l <- ls}
@@ -95,8 +54,8 @@ defmodule QPBX.Web.PlanFields do
               {@input.(l)}
             />
           </div>
-        </.group>
-        <.group
+        </.field_group>
+        <.field_group
           title={gettext("Minutes by destination")}
           icon="hero-globe-alt"
           hint={gettext("Outbound minutes for each kind of number, per hour, day and month.")}
@@ -128,7 +87,7 @@ defmodule QPBX.Web.PlanFields do
               </tbody>
             </table>
           </div>
-        </.group>
+        </.field_group>
       </div>
     </.section>
     """

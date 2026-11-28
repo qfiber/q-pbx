@@ -41,6 +41,18 @@ Kamailio gets its real config.
 
 ## Done
 
+- Shared portal components (2026-11-29): `QPBX.Web.UI` (avatar, chip, section, field group,
+  form actions, setup link, alert and call tones) and `QPBX.Web.PagedTable` (search, pages of
+  25, empty box, opening on a just-saved row) used by every list page: tenants, plans,
+  numbers, numbering, trunks (with each trunk's live status), platform admins, firewall, SIP
+  protection, fraud, users, extensions (phones online), routes, office IPs, webhooks and their
+  deliveries, voicemail, API keys, sessions, alerts, notifications; forms in titled sections
+  (extension, my extension, mailbox, trunk, routes, protection, fraud, notification settings);
+  call records and the audit log keep their server paging, restyled. Plans: a New plan button;
+  new and edit forms on their own pages. Local package builds reuse the voice prompts package
+  already in `out/` (its version is pinned). 2 new tests (369 in all). Lab: screenshots
+  reviewed, phase 1 check and 2-2 portal check passed.
+
 - Tenants and plans pages restyled (2026-11-28): the tenant list with search, a tile, the
   domain and plan per row; the new-tenant form in two sections (company, first admin); a
   tenant's page with its settings in sections (details, usage alerts, limits grouped as

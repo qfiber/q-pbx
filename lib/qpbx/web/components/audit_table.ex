@@ -13,17 +13,26 @@ defmodule QPBX.Web.AuditTable do
 
   def audit_table(assigns) do
     ~H"""
-    <p :if={@entries == []} id={"#{@id}-empty"}>{gettext("Nothing recorded yet.")}</p>
+    <div
+      :if={@entries == []}
+      id={"#{@id}-empty"}
+      class="rounded-[12px] border border-dashed border-hairline bg-base-100/60 px-6 py-10 text-center text-sm text-muted"
+    >
+      <.icon name="hero-document-text" class="size-6 mx-auto mb-2 opacity-60" />
+      {gettext("Nothing recorded yet.")}
+    </div>
     <.table :if={@entries != []} id={@id} rows={@entries}>
       <:col :let={a} label={gettext("When")}>
-        <span dir="ltr">{local(a.inserted_at, @timezone)}</span>
+        <span class="text-sm tabular-nums" dir="ltr">{local(a.inserted_at, @timezone)}</span>
       </:col>
       <:col :let={a} :if={@tenants} label={gettext("Tenant")}>{@tenants[a.tenant_id] || "—"}</:col>
       <:col :let={a} label={gettext("Who")}><span dir="ltr">{actor(a, @emails)}</span></:col>
-      <:col :let={a} label={gettext("Action")}><code>{a.action}</code></:col>
+      <:col :let={a} label={gettext("Action")}>
+        <.chip tone={:plain}><code>{a.action}</code></.chip>
+      </:col>
       <:col :let={a} label={gettext("On")}>{a.target_type}</:col>
       <:col :let={a} label={gettext("Change")}>
-        <code class="text-xs break-all" dir="ltr">{changes(a.changes)}</code>
+        <code class="text-xs text-muted break-all" dir="ltr">{changes(a.changes)}</code>
       </:col>
     </.table>
     """

@@ -229,6 +229,7 @@ defmodule QPBX.Web.Router do
       live "/admins", AdminsLive, :index
       live "/audit", AuditLive, :index
       live "/plans", PlansLive, :index
+      live "/plans/new", PlansLive, :new
       live "/plans/:id", PlansLive, :edit
       live "/firewall", FirewallLive, :index
       live "/trunks", TrunksLive, :index

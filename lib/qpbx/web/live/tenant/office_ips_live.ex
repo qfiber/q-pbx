@@ -77,24 +77,47 @@ defmodule QPBX.Web.Tenant.OfficeIpsLive do
           {gettext("Your offices' public IP addresses. Phones there are never blocked automatically.")}
         </:subtitle>
       </.header>
-      <.table id="office-ips" rows={@entries}>
-        <:col :let={e} label={gettext("Address")}><span dir="ltr">{e.cidr}</span></:col>
+      <.live_component
+        module={PagedTable}
+        id="office-ips"
+        rows={@entries}
+        search={&"#{&1.cidr} #{&1.reason}"}
+        placeholder={gettext("Search by address or description")}
+        empty={gettext("No office addresses yet.")}
+      >
+        <:col :let={e} label={gettext("Address")}>
+          <span class="font-semibold tabular-nums" dir="ltr">{e.cidr}</span>
+        </:col>
         <:col :let={e} label={gettext("Description")}>{e.reason}</:col>
         <:action :let={e}>
           <.link
             phx-click="delete"
             phx-value-id={e.id}
             id={"delete-#{e.id}"}
+            class="btn btn-ghost btn-xs text-error"
             data-confirm={gettext("Remove %{cidr}?", cidr: e.cidr)}
           >
-            {gettext("Remove")}
+            <.icon name="hero-trash" class="size-4" /> {gettext("Remove")}
           </.link>
         </:action>
-      </.table>
-      <.form for={@form} id="office-ip-form" phx-change="validate" phx-submit="save" class="mt-4">
-        <.input field={@form[:cidr]} label={gettext("IP address or small prefix")} dir="ltr" required />
-        <.input field={@form[:reason]} label={gettext("Description (e.g. Tel Aviv office)")} required />
-        <.button variant="primary">{gettext("Add")}</.button>
+      </.live_component>
+      <.form for={@form} id="office-ip-form" phx-change="validate" phx-submit="save">
+        <.section title={gettext("Add an office")} icon="hero-building-office">
+          <div class="grid sm:grid-cols-[1fr_2fr_auto] gap-x-4 items-end">
+            <.input
+              field={@form[:cidr]}
+              label={gettext("IP address or small prefix")}
+              dir="ltr"
+              required
+            />
+            <.input
+              field={@form[:reason]}
+              label={gettext("Description (e.g. Tel Aviv office)")}
+              required
+            />
+            <.button variant="primary" class="mb-2">{gettext("Add")}</.button>
+          </div>
+        </.section>
       </.form>
     </Layouts.app>
     """

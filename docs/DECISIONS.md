@@ -2,6 +2,15 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-29: Shared portal components
+
+- **One list component for every list** (`PagedTable`, a LiveComponent): search and paging
+  live in it, so pages hand it rows and columns and no page has its own paging code. Rejected:
+  the page number in the URL for these lists (each page would need its own params handling);
+  server-paged lists (call records, audit log) keep theirs.
+- **Pages compose `QPBX.Web.UI`** (chips, avatars, sections, the Save bar) instead of styling
+  each one by hand, so a change to a piece changes every page.
+
 ## 2026-11-28: Portal design (3-13)
 
 - **Meow's web palette and rules** (brand teal for actions, cyan for links and icons, amber

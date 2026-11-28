@@ -86,11 +86,30 @@ defmodule QPBX.Web.Tenant.NumbersLive do
         </:subtitle>
       </.header>
 
-      <p :if={@dids == []} id="no-numbers">{gettext("No numbers yet.")}</p>
+      <div
+        :if={@dids == []}
+        id="no-numbers"
+        class="rounded-[12px] border border-dashed border-hairline bg-base-100/60 px-6 py-10 text-center text-sm text-muted"
+      >
+        <.icon name="hero-hashtag" class="size-6 mx-auto mb-2 opacity-60" />
+        {gettext("No numbers yet.")}
+      </div>
 
-      <div :for={did <- @dids} class="card bg-base-200 p-4" id={"number-#{did.id}"}>
-        <p class="font-semibold"><span dir="ltr">{Numbers.display(did.number, @rule)}</span></p>
-        <p :if={did.alias_of_id} class="text-sm">
+      <div
+        :for={did <- @dids}
+        class="rounded-[12px] border border-hairline bg-base-100 shadow-card p-5 space-y-3"
+        id={"number-#{did.id}"}
+      >
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="size-9 shrink-0 rounded-[8px] grid place-items-center bg-accent-pale text-secondary">
+            <.icon name="hero-phone-arrow-down-left" class="size-5" />
+          </span>
+          <span class="text-lg font-semibold tabular-nums" dir="ltr">
+            {Numbers.display(did.number, @rule)}
+          </span>
+          <.chip :if={did.alias_of_id} tone={:warm}>{gettext("Backup number")}</.chip>
+        </div>
+        <p :if={did.alias_of_id} class="text-sm text-muted">
           {gettext(
             "Backup number: calls to it go where its main number goes. Ask the main number's carrier to forward to it when this PBX does not answer."
           )}
@@ -102,7 +121,7 @@ defmodule QPBX.Web.Tenant.NumbersLive do
           phx-value-id={did.id}
           id={"did-form-#{did.id}"}
         >
-          <div class="grid sm:grid-cols-3 gap-2 items-end">
+          <div class="grid sm:grid-cols-[1fr_1fr_1fr_auto] gap-x-4 items-end">
             <.input
               field={@forms[did.id][:destination_type]}
               type="select"
@@ -124,8 +143,8 @@ defmodule QPBX.Web.Tenant.NumbersLive do
               label={gettext("Outside number")}
               dir="ltr"
             />
+            <.button variant="primary" class="mb-2">{gettext("Save")}</.button>
           </div>
-          <.button variant="primary">{gettext("Save")}</.button>
         </.form>
       </div>
     </Layouts.app>

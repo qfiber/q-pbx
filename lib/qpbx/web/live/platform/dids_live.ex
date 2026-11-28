@@ -84,16 +84,25 @@ defmodule QPBX.Web.Platform.DidsLive do
       <.header>
         {gettext("Numbers")}
         <:subtitle>
-          {gettext(
-            "Phone numbers held at carriers. A backup number routes like its main number and belongs to the same tenant."
-          )}
+          {gettext("Phone numbers held at carriers, and the tenant each one rings.")}
         </:subtitle>
       </.header>
-      <.table id="dids" rows={@dids}>
-        <:col :let={d} label={gettext("Number")}><span dir="ltr">{d.number}</span></:col>
-        <:col :let={d} label={gettext("Trunk")}>{name(@trunks, d.trunk_id)}</:col>
-        <:col :let={d} label={gettext("Backup of")}>
-          <span dir="ltr">{if d.alias_of_id, do: number(@dids, d.alias_of_id), else: "—"}</span>
+      <.live_component
+        module={PagedTable}
+        id="dids"
+        rows={@dids}
+        search={&"#{&1.number} #{name(@tenants, &1.tenant_id)} #{name(@trunks, &1.trunk_id)}"}
+        placeholder={gettext("Search by number, tenant or trunk")}
+        empty={gettext("No numbers yet. Add the first one below.")}
+      >
+        <:col :let={d} label={gettext("Number")}>
+          <span class="font-semibold tabular-nums" dir="ltr">{d.number}</span>
+          <span :if={d.alias_of_id} class="block text-xs text-muted">
+            {gettext("Backup of %{number}", number: number(@dids, d.alias_of_id))}
+          </span>
+        </:col>
+        <:col :let={d} label={gettext("Trunk")}>
+          <.chip>{name(@trunks, d.trunk_id)}</.chip>
         </:col>
         <:col :let={d} label={gettext("Tenant")}>
           <span :if={d.alias_of_id}>{name(@tenants, d.tenant_id)}</span>
@@ -111,38 +120,48 @@ defmodule QPBX.Web.Platform.DidsLive do
             phx-click="delete"
             phx-value-id={d.id}
             id={"delete-#{d.id}"}
+            class="btn btn-ghost btn-xs text-error"
             data-confirm={gettext("Remove %{number}?", number: d.number)}
           >
-            {gettext("Remove")}
+            <.icon name="hero-trash" class="size-4" /> {gettext("Remove")}
           </.link>
         </:action>
-      </.table>
+      </.live_component>
 
-      <h2 class="text-lg font-semibold mt-8">{gettext("Add a number")}</h2>
       <.form for={@form} id="did-form" phx-change="validate" phx-submit="save">
-        <.input field={@form[:number]} label={gettext("Number")} dir="ltr" required />
-        <.input
-          field={@form[:trunk_id]}
-          type="select"
-          label={gettext("Carrier trunk")}
-          prompt={gettext("Choose")}
-          options={Enum.map(@trunks, &{&1.name, &1.id})}
-        />
-        <.input
-          field={@form[:tenant_id]}
-          type="select"
-          label={gettext("Tenant")}
-          prompt={gettext("Not assigned")}
-          options={Enum.map(@tenants, &{&1.name, &1.id})}
-        />
-        <.input
-          field={@form[:alias_of_id]}
-          type="select"
-          label={gettext("Backup of (optional)")}
-          prompt="—"
-          options={for d <- @dids, is_nil(d.alias_of_id), do: {d.number, d.id}}
-        />
-        <.button variant="primary">{gettext("Add")}</.button>
+        <.section
+          title={gettext("Add a number")}
+          icon="hero-plus"
+          hint={
+            gettext("A backup number routes like its main number and belongs to the same tenant.")
+          }
+        >
+          <div class="grid sm:grid-cols-2 gap-x-4">
+            <.input field={@form[:number]} label={gettext("Number")} dir="ltr" required />
+            <.input
+              field={@form[:trunk_id]}
+              type="select"
+              label={gettext("Carrier trunk")}
+              prompt={gettext("Choose")}
+              options={Enum.map(@trunks, &{&1.name, &1.id})}
+            />
+            <.input
+              field={@form[:tenant_id]}
+              type="select"
+              label={gettext("Tenant")}
+              prompt={gettext("Not assigned")}
+              options={Enum.map(@tenants, &{&1.name, &1.id})}
+            />
+            <.input
+              field={@form[:alias_of_id]}
+              type="select"
+              label={gettext("Backup of (optional)")}
+              prompt="—"
+              options={for d <- @dids, is_nil(d.alias_of_id), do: {d.number, d.id}}
+            />
+          </div>
+        </.section>
+        <.form_actions><.button variant="primary">{gettext("Add")}</.button></.form_actions>
       </.form>
     </Layouts.app>
     """

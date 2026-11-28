@@ -51,25 +51,38 @@ defmodule QPBX.Web.Account.SessionsLive do
           </.button>
         </:actions>
       </.header>
-      <.table id="sessions" rows={@sessions}>
-        <:col :let={s} label={gettext("Signed in")}>{s.inserted_at}</:col>
-        <:col :let={s} label={gettext("Last active")}>{s.last_seen_at}</:col>
-        <:col :let={s} label={gettext("Address")}><span dir="ltr">{s.ip}</span></:col>
+      <.live_component module={PagedTable} id="sessions" rows={@sessions}>
         <:col :let={s} label={gettext("Browser")}>
-          <span dir="ltr" class="text-xs">{s.user_agent}</span>
+          <div class="flex items-center gap-3">
+            <span class="size-8 shrink-0 rounded-[8px] grid place-items-center bg-accent-pale text-secondary">
+              <.icon name="hero-computer-desktop" class="size-4" />
+            </span>
+            <div class="min-w-0">
+              <span dir="ltr" class="block text-xs truncate max-w-md">{s.user_agent}</span>
+              <span class="text-xs text-muted" dir="ltr">{s.ip}</span>
+            </div>
+          </div>
+        </:col>
+        <:col :let={s} label={gettext("Signed in")}>
+          <span class="text-sm">{s.inserted_at}</span>
+        </:col>
+        <:col :let={s} label={gettext("Last active")}>
+          <span class="text-sm">{s.last_seen_at}</span>
         </:col>
         <:action :let={s}>
-          <span :if={s.id == @current_session.id} class="badge">{gettext("This browser")}</span>
+          <.chip :if={s.id == @current_session.id} tone={:ok}>{gettext("This browser")}</.chip>
           <.link
             :if={s.id != @current_session.id}
             phx-click="revoke"
             phx-value-id={s.id}
             id={"revoke-#{s.id}"}
+            class="btn btn-ghost btn-xs text-error"
           >
+            <.icon name="hero-arrow-right-start-on-rectangle" class="size-4 rtl:rotate-180" />
             {gettext("Sign out")}
           </.link>
         </:action>
-      </.table>
+      </.live_component>
     </Layouts.app>
     """
   end

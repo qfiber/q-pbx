@@ -104,13 +104,28 @@ defmodule QPBX.Web.AdminPagesTest do
       assert Pager.numbers(%{page: 5, pages: 20}) == [1, :gap, 3, 4, 5, 6, 7, :gap, 20]
     end
 
-    test "the tenant list shows 25 a page", %{conn: conn} do
+    test "the tenant list shows 25 a page; the next page by its button", %{conn: conn} do
       for i <- 1..27, do: tenant_fixture(%{name: "Pg #{String.pad_leading("#{i}", 2, "0")}"})
       {:ok, view, html} = live(conn, ~p"/platform/tenants")
       assert html =~ "1–25 of"
-      assert has_element?(view, "#tenants-pages a", "2")
-      {:ok, _view, html} = live(conn, ~p"/platform/tenants?page=2")
+      html = view |> element("#tenants-pages button", "2") |> render_click()
       assert html =~ "26–"
+    end
+
+    test "plans: the list with a New plan button; the form on its own page", %{conn: conn} do
+      {:ok, view, _} = live(conn, ~p"/platform/plans")
+      refute has_element?(view, "#plan-form")
+      view |> element("#new-plan") |> render_click()
+      assert_patch(view, ~p"/platform/plans/new")
+      assert has_element?(view, "#plan-form")
+      refute has_element?(view, "#plans")
+    end
+
+    test "an empty list shows its empty box, and nothing else", %{conn: conn} do
+      {:ok, view, html} = live(conn, ~p"/platform/trunks")
+      assert has_element?(view, "#trunks-empty", "No trunks yet.")
+      refute has_element?(view, "#trunks-search")
+      refute html =~ ~r/>\s*false\s*</
     end
 
     test "the tenant list: search by name or domain", %{conn: conn} do
@@ -118,7 +133,7 @@ defmodule QPBX.Web.AdminPagesTest do
       b = tenant_fixture(%{name: "Beta Law"})
       {:ok, view, _} = live(conn, ~p"/platform/tenants")
       assert has_element?(view, "#tenant-#{a.id}") and has_element?(view, "#tenant-#{b.id}")
-      view |> form("#tenant-search", q: "alpha") |> render_change()
+      view |> form("#tenants-search", q: "alpha") |> render_change()
       assert has_element?(view, "#tenant-#{a.id}")
       refute has_element?(view, "#tenant-#{b.id}")
     end

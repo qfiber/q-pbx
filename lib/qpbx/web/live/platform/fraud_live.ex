@@ -56,60 +56,86 @@ defmodule QPBX.Web.Platform.FraudLive do
       </.header>
 
       <.form for={@form} id="fraud-form" phx-submit="save">
-        <div class="grid sm:grid-cols-2 gap-2">
-          <.input
-            field={@form[:international_spike_calls]}
-            type="number"
-            min="1"
-            label={gettext("International calls in 10 minutes that count as a spike")}
-          />
-          <.input
-            field={@form[:block_hours]}
-            type="number"
-            min="1"
-            label={gettext("Block length (hours)")}
-          />
-          <.input
-            field={@form[:quiet_start_hour]}
-            type="number"
-            min="0"
-            max="23"
-            label={gettext("Quiet hours start (tenant's time zone, 0-23)")}
-          />
-          <.input
-            field={@form[:quiet_end_hour]}
-            type="number"
-            min="0"
-            max="23"
-            label={gettext("Quiet hours end (0-23)")}
-          />
+        <div class="divide-y divide-base-300">
+          <.section title={gettext("Spikes")} icon="hero-arrow-trending-up">
+            <div class="grid sm:grid-cols-2 gap-x-4">
+              <.input
+                field={@form[:international_spike_calls]}
+                type="number"
+                min="1"
+                label={gettext("International calls in 10 minutes that count as a spike")}
+              />
+              <.input
+                field={@form[:block_hours]}
+                type="number"
+                min="1"
+                label={gettext("Block length (hours)")}
+              />
+            </div>
+            <.input
+              field={@form[:block_on_spike]}
+              type="checkbox"
+              label={gettext("Block on a spike")}
+            />
+          </.section>
+          <.section title={gettext("Quiet hours")} icon="hero-moon">
+            <div class="grid sm:grid-cols-2 gap-x-4">
+              <.input
+                field={@form[:quiet_start_hour]}
+                type="number"
+                min="0"
+                max="23"
+                label={gettext("Quiet hours start (tenant's time zone, 0-23)")}
+              />
+              <.input
+                field={@form[:quiet_end_hour]}
+                type="number"
+                min="0"
+                max="23"
+                label={gettext("Quiet hours end (0-23)")}
+              />
+            </div>
+            <.input
+              field={@form[:block_in_quiet_hours]}
+              type="checkbox"
+              label={gettext("Block international calls in quiet hours")}
+            />
+          </.section>
         </div>
-        <.input field={@form[:block_on_spike]} type="checkbox" label={gettext("Block on a spike")} />
-        <.input
-          field={@form[:block_in_quiet_hours]}
-          type="checkbox"
-          label={gettext("Block international calls in quiet hours")}
-        />
-        <.button variant="primary">{gettext("Save")}</.button>
+        <.form_actions><.button variant="primary">{gettext("Save")}</.button></.form_actions>
       </.form>
 
-      <h2 class="text-lg font-semibold mt-8">{gettext("Blocked tenants")}</h2>
-      <p :if={@blocks == []} id="no-fraud-blocks">{gettext("No tenant is blocked.")}</p>
-      <.table :if={@blocks != []} id="fraud-blocks" rows={@blocks}>
-        <:col :let={b} label={gettext("Tenant")}>{@names[b.tenant_id] || b.tenant_id}</:col>
-        <:col :let={b} label={gettext("Reason")}>{rule_label(b.reason)}</:col>
-        <:col :let={b} label={gettext("Until (UTC)")}>{b.until}</:col>
-        <:action :let={b}>
-          <.link
-            phx-click="lift"
-            phx-value-id={b.id}
-            id={"lift-#{b.id}"}
-            data-confirm={gettext("Lift the block of %{tenant}?", tenant: @names[b.tenant_id] || "")}
-          >
-            {gettext("Lift")}
-          </.link>
-        </:action>
-      </.table>
+      <.section title={gettext("Blocked tenants")} icon="hero-shield-exclamation">
+        <.live_component
+          module={PagedTable}
+          id="fraud-blocks"
+          rows={@blocks}
+          empty={gettext("No tenant is blocked.")}
+        >
+          <:col :let={b} label={gettext("Tenant")}>
+            <span class="font-medium">{@names[b.tenant_id] || b.tenant_id}</span>
+          </:col>
+          <:col :let={b} label={gettext("Reason")}>
+            <.chip tone={:danger}>{rule_label(b.reason)}</.chip>
+          </:col>
+          <:col :let={b} label={gettext("Until (UTC)")}>
+            <span class="text-muted">{b.until}</span>
+          </:col>
+          <:action :let={b}>
+            <.link
+              phx-click="lift"
+              phx-value-id={b.id}
+              id={"lift-#{b.id}"}
+              class="btn btn-ghost btn-xs"
+              data-confirm={
+                gettext("Lift the block of %{tenant}?", tenant: @names[b.tenant_id] || "")
+              }
+            >
+              <.icon name="hero-lock-open" class="size-4" /> {gettext("Lift")}
+            </.link>
+          </:action>
+        </.live_component>
+      </.section>
     </Layouts.app>
     """
   end

@@ -71,66 +71,98 @@ defmodule QPBX.Web.Platform.ProtectionLive do
       </.header>
 
       <.form for={@form} id="protection-form" phx-change="validate" phx-submit="save">
-        <div class="grid sm:grid-cols-2 gap-2">
-          <.input
-            field={@form[:flood_requests]}
-            type="number"
-            label={gettext("Flood: requests per address in 2 seconds")}
-          />
-          <.input field={@form[:ban_seconds]} type="number" label={gettext("Ban length (seconds)")} />
-          <.input
-            field={@form[:register_per_minute]}
-            type="number"
-            label={gettext("REGISTER per phone per minute")}
-          />
-          <.input
-            field={@form[:invite_per_minute]}
-            type="number"
-            label={gettext("INVITE per phone per minute")}
-          />
-          <.input
-            field={@form[:auth_failures_port]}
-            type="number"
-            label={gettext("Failed logins in 15 minutes to ban one phone (address and port)")}
-          />
-          <.input
-            field={@form[:auth_failures_ip]}
-            type="number"
-            label={gettext("Failed logins in 15 minutes to ban the whole address")}
-          />
+        <div class="divide-y divide-base-300">
+          <.section title={gettext("Floods and rates")} icon="hero-bolt">
+            <div class="grid sm:grid-cols-2 gap-x-4">
+              <.input
+                field={@form[:flood_requests]}
+                type="number"
+                label={gettext("Flood: requests per address in 2 seconds")}
+              />
+              <.input
+                field={@form[:ban_seconds]}
+                type="number"
+                label={gettext("Ban length (seconds)")}
+              />
+              <.input
+                field={@form[:register_per_minute]}
+                type="number"
+                label={gettext("REGISTER per phone per minute")}
+              />
+              <.input
+                field={@form[:invite_per_minute]}
+                type="number"
+                label={gettext("INVITE per phone per minute")}
+              />
+            </div>
+          </.section>
+          <.section title={gettext("Failed logins")} icon="hero-lock-closed">
+            <div class="grid sm:grid-cols-2 gap-x-4">
+              <.input
+                field={@form[:auth_failures_port]}
+                type="number"
+                label={gettext("Failed logins in 15 minutes to ban one phone (address and port)")}
+              />
+              <.input
+                field={@form[:auth_failures_ip]}
+                type="number"
+                label={gettext("Failed logins in 15 minutes to ban the whole address")}
+              />
+            </div>
+          </.section>
+          <.section title={gettext("Scanners")} icon="hero-eye-slash">
+            <.input
+              field={@form[:scanner_agents]}
+              type="textarea"
+              dir="ltr"
+              label={gettext("Scanner user agents (names separated by |): dropped and banned")}
+            />
+          </.section>
         </div>
-        <.input
-          field={@form[:scanner_agents]}
-          type="textarea"
-          dir="ltr"
-          label={gettext("Scanner user agents (names separated by |): dropped and banned")}
-        />
-        <.button variant="primary">{gettext("Save")}</.button>
+        <.form_actions><.button variant="primary">{gettext("Save")}</.button></.form_actions>
       </.form>
 
-      <h2 class="text-lg font-semibold mt-8">{gettext("Active bans")}</h2>
-      <p class="text-sm opacity-70">
-        {gettext(
-          "Kept on disk: a restarted SIP edge loads them back. Whole-address bans are also in the firewall until they expire."
-        )}
-      </p>
-      <p :if={@bans == []} id="no-bans">{gettext("No active bans.")}</p>
-      <.table :if={@bans != []} id="bans" rows={@bans}>
-        <:col :let={b} label={gettext("Address")}><span dir="ltr">{b.ip}</span></:col>
-        <:col :let={b} label={gettext("Port")}>{b.port || gettext("all")}</:col>
-        <:col :let={b} label={gettext("Reason")}>{reason_label(b.reason)}</:col>
-        <:col :let={b} label={gettext("Until (UTC)")}>{b.expires_at}</:col>
-        <:action :let={b}>
-          <.link
-            phx-click="lift"
-            phx-value-key={b.key}
-            id={"lift-" <> String.replace(b.key, ~r/[^A-Za-z0-9]/, "-")}
-            data-confirm={gettext("Lift the ban of %{address}?", address: b.key)}
-          >
-            {gettext("Lift")}
-          </.link>
-        </:action>
-      </.table>
+      <.section
+        title={gettext("Active bans")}
+        icon="hero-no-symbol"
+        hint={
+          gettext(
+            "Kept on disk: a restarted SIP edge loads them back. Whole-address bans are also in the firewall until they expire."
+          )
+        }
+      >
+        <.live_component
+          module={PagedTable}
+          id="bans"
+          rows={@bans}
+          row_id={&"ban-#{String.replace(&1.key, ~r/[^A-Za-z0-9]/, "-")}"}
+          search={&"#{&1.ip} #{&1.reason}"}
+          placeholder={gettext("Search by address")}
+          empty={gettext("No active bans.")}
+        >
+          <:col :let={b} label={gettext("Address")}>
+            <span class="font-semibold tabular-nums" dir="ltr">{b.ip}</span>
+          </:col>
+          <:col :let={b} label={gettext("Port")}>{b.port || gettext("all")}</:col>
+          <:col :let={b} label={gettext("Reason")}>
+            <.chip tone={:warm}>{reason_label(b.reason)}</.chip>
+          </:col>
+          <:col :let={b} label={gettext("Until (UTC)")}>
+            <span class="text-muted">{b.expires_at}</span>
+          </:col>
+          <:action :let={b}>
+            <.link
+              phx-click="lift"
+              phx-value-key={b.key}
+              id={"lift-" <> String.replace(b.key, ~r/[^A-Za-z0-9]/, "-")}
+              class="btn btn-ghost btn-xs"
+              data-confirm={gettext("Lift the ban of %{address}?", address: b.key)}
+            >
+              <.icon name="hero-lock-open" class="size-4" /> {gettext("Lift")}
+            </.link>
+          </:action>
+        </.live_component>
+      </.section>
     </Layouts.app>
     """
   end

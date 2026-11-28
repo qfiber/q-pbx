@@ -73,7 +73,7 @@ try {
   await shot(anon, "login-ar", "desktop", "light");
 
   const admin = await signIn(adminLink);
-  for (const path of ["/platform", "/platform/health", "/platform/tenants", "/platform/tenants/new", `/platform/tenants/${S.tenant}`, "/platform/trunks", "/platform/plans"]) {
+  for (const path of ["/platform", "/platform/health", "/platform/tenants", "/platform/tenants/new", `/platform/tenants/${S.tenant}`, "/platform/numbers", "/platform/numbering", "/platform/trunks", "/platform/plans", "/platform/admins", "/platform/protection", "/platform/alerts"]) {
     await admin.goto(base + path, { waitUntil: "networkidle0" });
     const name = "platform" + path.replace("/platform", "").replace(S.tenant, "one").replace(/\//g, "-");
     await shot(admin, name, "desktop", "light");
@@ -81,7 +81,7 @@ try {
   await shot(admin, "platform-plans", "desktop", "dark");
 
   const user = await signIn(userLink);
-  for (const path of ["/app", "/app/extensions", "/app/users", "/app/me"]) {
+  for (const path of ["/app", "/app/extensions", "/app/users", "/app/me", "/app/routes", "/app/calls", "/app/api-keys"]) {
     await user.goto(base + path, { waitUntil: "networkidle0" });
     const name = "tenant" + path.replace("/app", "").replace(/\//g, "-");
     await shot(user, name, "desktop", "light");

@@ -133,9 +133,7 @@ defmodule QPBX.Web.Platform.TenantLive do
     >
       <header class="flex flex-wrap items-center justify-between gap-3 pb-2">
         <div class="flex items-center gap-3 min-w-0">
-          <div class="size-12 shrink-0 rounded-[12px] bg-brand-pale text-primary grid place-items-center text-xl font-semibold">
-            {@tenant.name |> String.first() |> String.upcase()}
-          </div>
+          <.avatar name={@tenant.name} size={:lg} />
           <div class="min-w-0">
             <h1 class="text-2xl font-semibold leading-tight tracking-tight truncate">
               {@tenant.name}
@@ -154,11 +152,11 @@ defmodule QPBX.Web.Platform.TenantLive do
         </.link>
       </header>
 
-      <QPBX.Web.Platform.TenantsLive.setup_link_notice link={@setup_link} />
+      <.setup_link link={@setup_link} />
 
       <.form for={@form} id="tenant-form" phx-submit="save">
         <div class="divide-y divide-base-300">
-          <PlanFields.section title={gettext("Details")} icon="hero-building-office-2">
+          <.section title={gettext("Details")} icon="hero-building-office-2">
             <div class="grid sm:grid-cols-2 gap-x-4">
               <.input field={@form[:name]} label={gettext("Company name")} required />
               <.input
@@ -175,9 +173,9 @@ defmodule QPBX.Web.Platform.TenantLive do
                 options={Enum.map(Application.fetch_env!(:qpbx, :locales), &{&1.name, &1.code})}
               />
             </div>
-          </PlanFields.section>
+          </.section>
 
-          <PlanFields.section
+          <.section
             title={gettext("Usage alerts")}
             icon="hero-bell-alert"
             hint={gettext("Percentages of the monthly outbound minutes. Empty: the plan's.")}
@@ -195,7 +193,7 @@ defmodule QPBX.Web.Platform.TenantLive do
                 errors={Enum.map(@form[:usage_thresholds].errors, &translate_error/1)}
               />
             </div>
-          </PlanFields.section>
+          </.section>
 
           <p
             :for={{_k, msg} <- Keyword.take(@form.errors, [:limit_overrides])}
@@ -221,9 +219,9 @@ defmodule QPBX.Web.Platform.TenantLive do
             }
           />
         </div>
-        <div class="pt-5 mt-2 border-t border-base-300">
+        <.form_actions>
           <.button variant="primary">{gettext("Save")}</.button>
-        </div>
+        </.form_actions>
       </.form>
 
       <h2>{gettext("Users")}</h2>
@@ -233,15 +231,9 @@ defmodule QPBX.Web.Platform.TenantLive do
           <span class="block text-xs text-muted" dir="ltr">{u.email}</span>
         </:col>
         <:col :let={u} label={gettext("Role")}>
-          <span class={[
-            "rounded-[6px] px-2 py-0.5 text-xs font-medium",
-            if(User.role(u) == "tenant_admin",
-              do: "bg-brand-pale text-primary",
-              else: "bg-base-200 text-muted"
-            )
-          ]}>
+          <.chip tone={if User.role(u) == "tenant_admin", do: :brand, else: :plain}>
             {role_label(User.role(u))}
-          </span>
+          </.chip>
         </:col>
         <:action :let={u}>
           <.link
@@ -274,7 +266,7 @@ defmodule QPBX.Web.Platform.TenantLive do
       </.table>
 
       <.form for={@admin_form} id="tenant-admin-form" phx-submit="add_admin">
-        <PlanFields.section
+        <.section
           title={gettext("Add a tenant admin")}
           icon="hero-user-plus"
           hint={gettext("They get an email with a link to choose a password and set up 2FA.")}
@@ -290,7 +282,7 @@ defmodule QPBX.Web.Platform.TenantLive do
             />
             <.button variant="primary" class="mb-2">{gettext("Add")}</.button>
           </div>
-        </PlanFields.section>
+        </.section>
       </.form>
     </Layouts.app>
     """

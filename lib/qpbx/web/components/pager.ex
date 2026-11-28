@@ -1,7 +1,7 @@
 defmodule QPBX.Web.Pager do
   @moduledoc """
   Pages of a list already in memory (tenants, plans): `paginate/3` cuts the page, `pager/1`
-  draws "1–25 of 74" and the page links (patches, so the page number is in the URL).
+  draws "1–25 of 74" and the page buttons. Used through `QPBX.Web.PagedTable`.
   """
   use Phoenix.Component
   use Gettext, backend: QPBX.Web.Gettext
@@ -45,8 +45,9 @@ defmodule QPBX.Web.Pager do
 
   attr :id, :string, required: true
   attr :page, :map, required: true, doc: "from paginate/3"
-  attr :to, :any, required: true, doc: "page number -> path"
+  attr :target, :any, required: true, doc: "the component that handles \"page\""
 
+  @doc ~s[The count ("1–25 of 74") and the page buttons; they send "page" with the number to `target`.]
   def pager(assigns) do
     p = assigns.page
     first = if p.total == 0, do: 0, else: (p.page - 1) * p.per + 1
@@ -65,31 +66,42 @@ defmodule QPBX.Web.Pager do
         {gettext("%{first}–%{last} of %{total}", first: @first, last: @last, total: @page.total)}
       </span>
       <div :if={@page.pages > 1} class="join">
-        <.link
-          patch={@to.(max(@page.page - 1, 1))}
-          class={["join-item btn btn-sm", @page.page == 1 && "btn-disabled"]}
+        <button
+          type="button"
+          phx-click="page"
+          phx-value-page={@page.page - 1}
+          phx-target={@target}
+          disabled={@page.page == 1}
+          class="join-item btn btn-sm"
           aria-label={gettext("Previous page")}
         >
           <.icon name="hero-chevron-left" class="size-4 rtl:rotate-180" />
-        </.link>
+        </button>
         <%= for n <- @numbers do %>
           <span :if={n == :gap} class="join-item btn btn-sm btn-disabled">…</span>
-          <.link
+          <button
             :if={n != :gap}
-            patch={@to.(n)}
+            type="button"
+            phx-click="page"
+            phx-value-page={n}
+            phx-target={@target}
             class={["join-item btn btn-sm", n == @page.page && "btn-primary"]}
             aria-current={n == @page.page && "page"}
           >
             {n}
-          </.link>
+          </button>
         <% end %>
-        <.link
-          patch={@to.(min(@page.page + 1, @page.pages))}
-          class={["join-item btn btn-sm", @page.page == @page.pages && "btn-disabled"]}
+        <button
+          type="button"
+          phx-click="page"
+          phx-value-page={@page.page + 1}
+          phx-target={@target}
+          disabled={@page.page == @page.pages}
+          class="join-item btn btn-sm"
           aria-label={gettext("Next page")}
         >
           <.icon name="hero-chevron-right" class="size-4 rtl:rotate-180" />
-        </.link>
+        </button>
       </div>
     </nav>
     """

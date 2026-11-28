@@ -120,7 +120,7 @@ defmodule QPBX.Web.PortalTest do
     )
     |> render_submit()
 
-    assert_patch(view, ~p"/platform/plans?page=1")
+    assert_patch(view, ~p"/platform/plans")
     plan = Core.get_plan!(plan.id)
     assert %{name: "Edited", max_extensions: 9, allowed_destination_classes: ["local"]} = plan
     assert plan.features["crm"] == true and plan.features["fax"] == false
@@ -138,7 +138,7 @@ defmodule QPBX.Web.PortalTest do
         {conn, _admin} = log_in_platform(conn)
 
         # Create a plan.
-        {:ok, view, _} = live(conn, ~p"/platform/plans")
+        {:ok, view, _} = live(conn, ~p"/platform/plans/new")
 
         view
         |> form("#plan-form", plan: %{name: "Basic #{locale}", max_extensions: "20"})

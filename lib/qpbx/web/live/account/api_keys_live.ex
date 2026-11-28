@@ -95,23 +95,45 @@ defmodule QPBX.Web.Account.ApiKeysLive do
         </:subtitle>
       </.header>
 
-      <div :if={@new_token} id="new-token" class="alert alert-warning my-4 flex-col items-start">
-        <p>{gettext("Copy this key now. It is not shown again.")}</p>
-        <code dir="ltr" class="break-all select-all font-mono" id="new-token-value">
+      <div
+        :if={@new_token}
+        id="new-token"
+        class="rounded-[12px] border border-warning/50 bg-warm-pale p-4 space-y-2"
+      >
+        <p class="flex items-center gap-2 text-sm font-medium text-warm-ink">
+          <.icon name="hero-key" class="size-5" />
+          {gettext("Copy this key now. It is not shown again.")}
+        </p>
+        <code
+          dir="ltr"
+          class="block break-all select-all font-mono rounded-[8px] bg-base-100 border border-hairline p-2 text-sm"
+          id="new-token-value"
+        >
           {@new_token}
         </code>
         <.button phx-click="dismiss" variant="ghost">{gettext("Done")}</.button>
       </div>
 
-      <.table id="api-keys" rows={@keys}>
-        <:col :let={k} label={gettext("Name")}>{k.name}</:col>
-        <:col :let={k} label={gettext("Key")}><code dir="ltr">{k.prefix}…</code></:col>
+      <.live_component
+        module={PagedTable}
+        id="api-keys"
+        rows={@keys}
+        search={& &1.name}
+        placeholder={gettext("Search keys")}
+        empty={gettext("No keys yet.")}
+      >
+        <:col :let={k} label={gettext("Name")}>
+          <span class="font-medium">{k.name}</span>
+          <code class="block text-xs text-muted" dir="ltr">{k.prefix}…</code>
+        </:col>
         <:col :let={k} label={gettext("Scopes")}>
-          {Enum.map_join(k.scopes, ", ", &scope_label/1)}
+          <div class="flex flex-wrap gap-1">
+            <.chip :for={sc <- k.scopes}>{scope_label(sc)}</.chip>
+          </div>
         </:col>
         <:col :let={k} label={gettext("Expires")}>
           <span dir="ltr">{when_text(k.expires_at, gettext("Never"))}</span>
-          <span :if={ApiKey.expired?(k)} class="badge badge-error ms-1">{gettext("Expired")}</span>
+          <.chip :if={ApiKey.expired?(k)} tone={:danger} class="ms-1">{gettext("Expired")}</.chip>
         </:col>
         <:col :let={k} label={gettext("Last used")}>
           <span dir="ltr">{when_text(k.last_used_at, gettext("Not yet"))}</span>
@@ -121,45 +143,52 @@ defmodule QPBX.Web.Account.ApiKeysLive do
             phx-click="revoke"
             phx-value-id={k.id}
             id={"revoke-#{k.id}"}
+            class="btn btn-ghost btn-xs text-error"
             data-confirm={
               gettext("Revoke %{name}? Programs using it stop working at once.", name: k.name)
             }
           >
-            {gettext("Revoke")}
+            <.icon name="hero-no-symbol" class="size-4" /> {gettext("Revoke")}
           </.link>
         </:action>
-      </.table>
+      </.live_component>
 
-      <.form for={@form} id="api-key-form" phx-change="validate" phx-submit="save" class="mt-6">
-        <.input field={@form[:name]} label={gettext("Name (what uses this key)")} required />
-        <fieldset class="fieldset mb-2">
-          <legend class="fieldset-legend">{gettext("Scopes")}</legend>
-          <input type="hidden" name="api_key[scopes][]" value="" />
-          <label :for={s <- ApiKey.scopes()} class="label">
-            <input
-              type="checkbox"
-              class="checkbox checkbox-sm"
-              name="api_key[scopes][]"
-              value={s}
-              id={"scope-#{s}"}
-              checked={s in (@form[:scopes].value || [])}
+      <.form for={@form} id="api-key-form" phx-change="validate" phx-submit="save">
+        <.section title={gettext("New key")} icon="hero-key">
+          <div class="grid sm:grid-cols-2 gap-x-4">
+            <.input field={@form[:name]} label={gettext("Name (what uses this key)")} required />
+            <.input
+              field={@form[:expires_in]}
+              type="select"
+              label={gettext("Expires after")}
+              options={expiry_options()}
             />
-            {scope_label(s)}
-          </label>
-          <p
-            :for={msg <- Enum.map(@form[:scopes].errors, &translate_error/1)}
-            class="text-error text-sm"
-          >
-            {msg}
-          </p>
-        </fieldset>
-        <.input
-          field={@form[:expires_in]}
-          type="select"
-          label={gettext("Expires after")}
-          options={expiry_options()}
-        />
-        <.button variant="primary">{gettext("Create key")}</.button>
+          </div>
+          <fieldset class="fieldset mb-2">
+            <legend class="fieldset-legend">{gettext("Scopes")}</legend>
+            <input type="hidden" name="api_key[scopes][]" value="" />
+            <label :for={s <- ApiKey.scopes()} class="label">
+              <input
+                type="checkbox"
+                class="checkbox checkbox-sm"
+                name="api_key[scopes][]"
+                value={s}
+                id={"scope-#{s}"}
+                checked={s in (@form[:scopes].value || [])}
+              />
+              {scope_label(s)}
+            </label>
+            <p
+              :for={msg <- Enum.map(@form[:scopes].errors, &translate_error/1)}
+              class="text-error text-sm"
+            >
+              {msg}
+            </p>
+          </fieldset>
+        </.section>
+        <.form_actions>
+          <.button variant="primary">{gettext("Create key")}</.button>
+        </.form_actions>
       </.form>
     </Layouts.app>
     """

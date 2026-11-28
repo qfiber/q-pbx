@@ -76,28 +76,36 @@ defmodule QPBX.Web.Tenant.WebhooksLive do
 
       <.webhook_secret :if={@secret} secret={@secret} />
 
-      <.table id="webhooks" rows={@endpoints} row_click={&JS.navigate(~p"/app/webhooks/#{&1.id}")}>
+      <.live_component
+        module={PagedTable}
+        id="webhooks"
+        rows={@endpoints}
+        search={& &1.url}
+        placeholder={gettext("Search by address")}
+        empty={gettext("No webhooks yet. Add your first endpoint below.")}
+        row_click={&JS.navigate(~p"/app/webhooks/#{&1.id}")}
+      >
         <:col :let={e} label={gettext("Address")}>
-          <span dir="ltr" class="break-all">{e.url}</span>
+          <span dir="ltr" class="font-medium break-all">{e.url}</span>
         </:col>
         <:col :let={e} label={gettext("Events")}>
-          <span dir="ltr">{Enum.join(e.event_types, ", ")}</span>
+          <div class="flex flex-wrap gap-1" dir="ltr">
+            <.chip :for={t <- e.event_types} tone={:plain}>{t}</.chip>
+          </div>
         </:col>
         <:col :let={e} label={gettext("Status")}>
-          {if e.enabled, do: gettext("On"), else: gettext("Off")}
+          <.chip :if={e.enabled} tone={:ok}>{gettext("On")}</.chip>
+          <.chip :if={!e.enabled} tone={:plain}>{gettext("Off")}</.chip>
         </:col>
-      </.table>
+      </.live_component>
 
-      <.form
-        for={@form}
-        as={:endpoint}
-        id="webhook-form"
-        phx-change="validate"
-        phx-submit="save"
-        class="mt-6"
-      >
-        <.webhook_fields form={@form} />
-        <.button variant="primary">{gettext("Add webhook")}</.button>
+      <.form for={@form} as={:endpoint} id="webhook-form" phx-change="validate" phx-submit="save">
+        <.section title={gettext("Add a webhook")} icon="hero-bolt">
+          <.webhook_fields form={@form} />
+        </.section>
+        <.form_actions>
+          <.button variant="primary">{gettext("Add webhook")}</.button>
+        </.form_actions>
       </.form>
     </Layouts.app>
     """

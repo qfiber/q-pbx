@@ -52,7 +52,7 @@ try {
   await completeSetup(ap, ssh(`sudo /usr/local/sbin/qpbx eval 'QPBX.Release.create_platform_admin("ops2-${run}@${domain}", "Ops")'`).trim().split("\n").pop());
   check("platform admin signed in", new URL(ap.url()).pathname === "/platform", ap.url());
 
-  await ap.goto(`${base}/platform/plans`, { waitUntil: "networkidle0" });
+  await ap.goto(`${base}/platform/plans/new`, { waitUntil: "networkidle0" });
   await fill(ap, { "plan[name]": `P2 ${run}`, "plan[max_extensions]": "5" });
   await ap.click("#plan-form button");
   await waitText(ap, "#plans", `P2 ${run}`);

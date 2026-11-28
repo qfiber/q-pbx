@@ -80,26 +80,35 @@ defmodule QPBX.Web.Platform.AdminsLive do
         </:subtitle>
       </.header>
 
-      <div :if={@setup_link} class="alert alert-info flex-col items-start" id="setup-link">
-        <p>
-          {gettext("Setup link for %{email} (also emailed). It works once and expires in 48 hours:",
-            email: @setup_link.email
-          )}
-        </p>
-        <code class="break-all" dir="ltr">{@setup_link.url}</code>
-      </div>
+      <.setup_link link={@setup_link} />
 
-      <.table id="admins" rows={@admins} row_id={&"admin-#{&1.id}"}>
-        <:col :let={a} label={gettext("Name")}>{a.name}</:col>
-        <:col :let={a} label={gettext("Email")}><span dir="ltr">{a.email}</span></:col>
+      <.live_component
+        module={PagedTable}
+        id="admins"
+        rows={@admins}
+        row_id={&"admin-#{&1.id}"}
+        search={&"#{&1.name} #{&1.email}"}
+        placeholder={gettext("Search by name or email")}
+      >
+        <:col :let={a} label={gettext("Name")}>
+          <div class="flex items-center gap-3">
+            <.avatar name={a.name} size={:sm} />
+            <div>
+              <span class="font-medium">{a.name}</span>
+              <span class="block text-xs text-muted" dir="ltr">{a.email}</span>
+            </div>
+          </div>
+        </:col>
         <:col :let={a} label={gettext("Two-factor")}>
-          {if Core.totp_enabled?(a), do: gettext("On"), else: gettext("Not set up yet")}
+          <.chip :if={Core.totp_enabled?(a)} tone={:ok}>{gettext("On")}</.chip>
+          <.chip :if={!Core.totp_enabled?(a)} tone={:warm}>{gettext("Not set up yet")}</.chip>
         </:col>
         <:action :let={a}>
           <.link
             phx-click="setup_link"
             phx-value-id={a.id}
             id={"setup-link-#{a.id}"}
+            class="btn btn-ghost btn-xs"
             data-confirm={
               gettext(
                 "Send %{email} a new setup link? It lets them choose a new password and authenticator.",
@@ -107,7 +116,7 @@ defmodule QPBX.Web.Platform.AdminsLive do
               )
             }
           >
-            {gettext("New setup link")}
+            <.icon name="hero-envelope" class="size-4" /> {gettext("New setup link")}
           </.link>
         </:action>
         <:action :let={a}>
@@ -115,20 +124,27 @@ defmodule QPBX.Web.Platform.AdminsLive do
             phx-click="sign_out"
             phx-value-id={a.id}
             id={"sign-out-#{a.id}"}
+            class="btn btn-ghost btn-xs text-error"
             data-confirm={gettext("Sign %{email} out everywhere?", email: a.email)}
           >
+            <.icon name="hero-arrow-right-start-on-rectangle" class="size-4 rtl:rotate-180" />
             {gettext("Sign out everywhere")}
           </.link>
         </:action>
-      </.table>
+      </.live_component>
 
-      <h2 class="text-lg font-semibold mt-8">{gettext("Add a platform admin")}</h2>
       <.form for={@form} id="admin-form" phx-submit="add">
-        <div class="grid sm:grid-cols-2 gap-x-4">
-          <.input field={@form[:name]} label={gettext("Name")} required />
-          <.input field={@form[:email]} type="email" label={gettext("Email")} dir="ltr" required />
-        </div>
-        <.button variant="primary">{gettext("Add")}</.button>
+        <.section
+          title={gettext("Add a platform admin")}
+          icon="hero-user-plus"
+          hint={gettext("They get an email with a link to choose a password and set up 2FA.")}
+        >
+          <div class="grid sm:grid-cols-[1fr_1fr_auto] gap-x-4 items-end">
+            <.input field={@form[:name]} label={gettext("Name")} required />
+            <.input field={@form[:email]} type="email" label={gettext("Email")} dir="ltr" required />
+            <.button variant="primary" class="mb-2">{gettext("Add")}</.button>
+          </div>
+        </.section>
       </.form>
     </Layouts.app>
     """

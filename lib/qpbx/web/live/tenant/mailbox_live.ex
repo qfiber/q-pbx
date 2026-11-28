@@ -98,87 +98,107 @@ defmodule QPBX.Web.Tenant.MailboxLive do
         </:subtitle>
         <:actions>
           <.link navigate={~p"/app/extensions/#{@ext.id}"} class="btn btn-ghost btn-sm">
+            <.icon name="hero-arrow-left" class="size-4 rtl:rotate-180" />
             {gettext("Back to the extension")}
           </.link>
         </:actions>
       </.header>
 
       <.form for={@form} id="mailbox-form" phx-submit="save">
-        <.input field={@form[:enabled]} type="checkbox" label={gettext("Voicemail on")} />
-        <.input
-          field={@form[:pin]}
-          type="password"
-          inputmode="numeric"
-          autocomplete="new-password"
-          dir="ltr"
-          label={
-            if @mailbox.id,
-              do: gettext("New PIN (leave empty to keep it)"),
-              else: gettext("PIN (4 to 10 digits)")
-          }
-        />
-        <.input
-          field={@form[:email]}
-          type="email"
-          dir="ltr"
-          label={gettext("Email new messages to (optional)")}
-        />
-        <.input
-          field={@form[:attach_audio]}
-          type="checkbox"
-          label={gettext("Attach the audio to the email")}
-        />
-        <.button variant="primary">{gettext("Save")}</.button>
+        <div class="divide-y divide-base-300">
+          <.section title={gettext("Mailbox")} icon="hero-inbox">
+            <.input field={@form[:enabled]} type="checkbox" label={gettext("Voicemail on")} />
+            <div class="max-w-md">
+              <.input
+                field={@form[:pin]}
+                type="password"
+                inputmode="numeric"
+                autocomplete="new-password"
+                dir="ltr"
+                label={
+                  if @mailbox.id,
+                    do: gettext("New PIN (leave empty to keep it)"),
+                    else: gettext("PIN (4 to 10 digits)")
+                }
+              />
+            </div>
+          </.section>
+          <.section title={gettext("Email")} icon="hero-envelope">
+            <div class="max-w-md">
+              <.input
+                field={@form[:email]}
+                type="email"
+                dir="ltr"
+                label={gettext("Email new messages to (optional)")}
+              />
+              <.input
+                field={@form[:attach_audio]}
+                type="checkbox"
+                label={gettext("Attach the audio to the email")}
+              />
+            </div>
+          </.section>
+        </div>
+        <.form_actions><.button variant="primary">{gettext("Save")}</.button></.form_actions>
       </.form>
 
-      <div :if={@mailbox.id}>
-        <h2 class="text-lg font-semibold mt-8">{gettext("Greetings")}</h2>
-        <p class="text-sm opacity-70">
-          {gettext(
+      <.section
+        :if={@mailbox.id}
+        title={gettext("Greetings")}
+        icon="hero-musical-note"
+        hint={
+          gettext(
             "Without a greeting callers hear a standard one with the extension number. A temporary greeting, while it exists, is played instead of the others."
-          )}
-        </p>
-        <ul id="greetings" class="my-2">
-          <li
-            :for={kind <- Telephony.greeting_kinds()}
-            :if={kind in @greetings}
-            id={"greeting-#{kind}"}
-          >
-            {kind_label(kind)}
-            <.link
-              phx-click="delete_greeting"
-              phx-value-kind={kind}
-              id={"delete-greeting-#{kind}"}
-              class="link ms-2"
+          )
+        }
+      >
+        <div class="space-y-4">
+          <ul id="greetings" class="flex flex-wrap gap-2">
+            <li
+              :for={kind <- Telephony.greeting_kinds()}
+              :if={kind in @greetings}
+              id={"greeting-#{kind}"}
+              class="flex items-center gap-2 rounded-[8px] border border-hairline bg-base-100 ps-3 pe-1 py-1"
             >
-              {gettext("Remove")}
-            </.link>
-          </li>
-        </ul>
-        <.form
-          for={@greeting_form}
-          id="greeting-form"
-          phx-change="validate_greeting"
-          phx-submit="upload_greeting"
-        >
-          <.input
-            field={@greeting_form[:kind]}
-            type="select"
-            label={gettext("Greeting")}
-            options={Enum.map(Telephony.greeting_kinds(), &{kind_label(&1), &1})}
-          />
-          <.live_file_input upload={@uploads.greeting} class="file-input my-2" />
-          <p
-            :for={
-              err <- Enum.flat_map(@uploads.greeting.entries, &upload_errors(@uploads.greeting, &1))
-            }
-            class="text-error"
+              <.icon name="hero-musical-note" class="size-4 text-secondary" />
+              {kind_label(kind)}
+              <.link
+                phx-click="delete_greeting"
+                phx-value-kind={kind}
+                id={"delete-greeting-#{kind}"}
+                class="btn btn-ghost btn-xs text-error"
+              >
+                {gettext("Remove")}
+              </.link>
+            </li>
+          </ul>
+          <.form
+            for={@greeting_form}
+            id="greeting-form"
+            phx-change="validate_greeting"
+            phx-submit="upload_greeting"
           >
-            {upload_error(err)}
-          </p>
-          <.button variant="primary">{gettext("Upload greeting")}</.button>
-        </.form>
-      </div>
+            <.input
+              field={@greeting_form[:kind]}
+              type="select"
+              label={gettext("Greeting")}
+              options={Enum.map(Telephony.greeting_kinds(), &{kind_label(&1), &1})}
+            />
+            <.live_file_input upload={@uploads.greeting} class="file-input my-2" />
+            <p
+              :for={
+                err <- Enum.flat_map(@uploads.greeting.entries, &upload_errors(@uploads.greeting, &1))
+              }
+              class="text-error"
+            >
+              {upload_error(err)}
+            </p>
+            <.button variant="primary">
+              <.icon name="hero-arrow-up-tray" class="size-4" /> {gettext("Upload greeting")}
+            </.button>
+          </.form>
+        </div>
+      </.section>
     </Layouts.app>
     """
   end

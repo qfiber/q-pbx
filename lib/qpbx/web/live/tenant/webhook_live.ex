@@ -129,7 +129,14 @@ defmodule QPBX.Web.Tenant.WebhookLive do
     >
       <.header>
         <span dir="ltr" class="break-all">{@endpoint.url}</span>
-        <:subtitle>{if @endpoint.enabled, do: gettext("On"), else: gettext("Off")}</:subtitle>
+        <:subtitle>
+          <.chip tone={if @endpoint.enabled, do: :ok, else: :plain}>
+            {if @endpoint.enabled, do: gettext("On"), else: gettext("Off")}
+          </.chip>
+          <.link navigate={~p"/app/webhooks"} class="ms-2 text-secondary hover:underline">
+            {gettext("All webhooks")}
+          </.link>
+        </:subtitle>
         <:actions>
           <.button phx-click="toggle" id="toggle">
             {if @endpoint.enabled, do: gettext("Turn off"), else: gettext("Turn on")}
@@ -144,6 +151,7 @@ defmodule QPBX.Web.Tenant.WebhookLive do
           <.button
             phx-click="delete"
             id="delete"
+            class="btn text-error"
             data-confirm={gettext("Remove this webhook and its delivery log?")}
           >
             {gettext("Remove")}
@@ -153,58 +161,85 @@ defmodule QPBX.Web.Tenant.WebhookLive do
 
       <.webhook_secret :if={@secret} secret={@secret} />
 
-      <.form
-        for={@form}
-        as={:endpoint}
-        id="webhook-form"
-        phx-change="validate"
-        phx-submit="save"
-        class="mt-4"
-      >
-        <.webhook_fields form={@form} />
-        <.button variant="primary">{gettext("Save")}</.button>
+      <.form for={@form} as={:endpoint} id="webhook-form" phx-change="validate" phx-submit="save">
+        <.section title={gettext("Settings")} icon="hero-cog-6-tooth">
+          <.webhook_fields form={@form} />
+        </.section>
+        <.form_actions><.button variant="primary">{gettext("Save")}</.button></.form_actions>
       </.form>
 
-      <h2 class="text-lg font-semibold mt-8 flex items-center gap-2">
-        {gettext("Deliveries")}
-        <.button phx-click="refresh" variant="ghost" id="refresh">{gettext("Refresh")}</.button>
-      </h2>
-      <.table id="deliveries" rows={@deliveries}>
-        <:col :let={d} label={gettext("Time")}><span dir="ltr">{time(d.inserted_at)}</span></:col>
-        <:col :let={d} label={gettext("Event")}><span dir="ltr">{d.event_type}</span></:col>
-        <:col :let={d} label={gettext("Status")}>{status_label(d.status)}</:col>
-        <:col :let={d} label={gettext("Attempts")}>{length(d.attempts)}</:col>
-        <:col :let={d} label={gettext("Last answer")}>
-          <span dir="ltr">{d.attempts |> List.last() |> then(&(&1 && attempt_result(&1)))}</span>
-        </:col>
-        <:action :let={d}>
-          <.link phx-click="open" phx-value-id={d.id} id={"open-#{d.id}"}>{gettext("Details")}</.link>
-        </:action>
-        <:action :let={d}>
-          <.link phx-click="resend" phx-value-id={d.id} id={"resend-#{d.id}"}>
-            {gettext("Send again")}
-          </.link>
-        </:action>
-      </.table>
-
-      <div
-        :for={d <- @deliveries}
-        :if={@open == d.id}
-        id={"delivery-#{d.id}"}
-        class="mt-4 space-y-2"
-        dir="ltr"
+      <.section
+        title={gettext("Deliveries")}
+        icon="hero-paper-airplane"
+        hint={gettext("Every event sent here, its answer and its retries.")}
       >
-        <h3 class="font-semibold">{gettext("Request body")}</h3>
-        <pre class="bg-base-200 p-2 text-xs overflow-auto">{d.payload}</pre>
-        <h3 class="font-semibold">{gettext("Attempts")}</h3>
-        <div :for={a <- d.attempts} class="text-xs border-b border-base-300 py-1">
-          <span>{a["at"]}</span>
-          · <span>{attempt_result(a)}</span>
-          · <span>{a["duration_ms"]} ms</span>
-          <pre :if={a["response"]} class="bg-base-200 p-2 overflow-auto">{a["response"]}</pre>
+        <div class="space-y-3">
+          <.button phx-click="refresh" variant="ghost" id="refresh">
+            <.icon name="hero-arrow-path" class="size-4" /> {gettext("Refresh")}
+          </.button>
+          <.live_component
+            module={PagedTable}
+            id="deliveries"
+            rows={@deliveries}
+            search={& &1.event_type}
+            placeholder={gettext("Search by event")}
+            empty={gettext("Nothing sent yet.")}
+          >
+            <:col :let={d} label={gettext("Time")}><span dir="ltr">{time(d.inserted_at)}</span></:col>
+            <:col :let={d} label={gettext("Event")}><span dir="ltr">{d.event_type}</span></:col>
+            <:col :let={d} label={gettext("Status")}>
+              <.chip tone={delivery_tone(d.status)}>{status_label(d.status)}</.chip>
+            </:col>
+            <:col :let={d} label={gettext("Attempts")}>{length(d.attempts)}</:col>
+            <:col :let={d} label={gettext("Last answer")}>
+              <span dir="ltr">{d.attempts |> List.last() |> then(&(&1 && attempt_result(&1)))}</span>
+            </:col>
+            <:action :let={d}>
+              <.link
+                phx-click="open"
+                phx-value-id={d.id}
+                id={"open-#{d.id}"}
+                class="btn btn-ghost btn-xs"
+              >
+                {gettext("Details")}
+              </.link>
+            </:action>
+            <:action :let={d}>
+              <.link
+                phx-click="resend"
+                phx-value-id={d.id}
+                id={"resend-#{d.id}"}
+                class="btn btn-ghost btn-xs"
+              >
+                <.icon name="hero-arrow-path" class="size-4" /> {gettext("Send again")}
+              </.link>
+            </:action>
+          </.live_component>
+
+          <div
+            :for={d <- @deliveries}
+            :if={@open == d.id}
+            id={"delivery-#{d.id}"}
+            class="rounded-[12px] border border-hairline bg-base-100 shadow-card p-4 space-y-2"
+            dir="ltr"
+          >
+            <h3 class="font-semibold">{gettext("Request body")}</h3>
+            <pre class="bg-base-200 p-2 text-xs overflow-auto">{d.payload}</pre>
+            <h3 class="font-semibold">{gettext("Attempts")}</h3>
+            <div :for={a <- d.attempts} class="text-xs border-b border-base-300 py-1">
+              <span>{a["at"]}</span>
+              · <span>{attempt_result(a)}</span>
+              · <span>{a["duration_ms"]} ms</span>
+              <pre :if={a["response"]} class="bg-base-200 p-2 overflow-auto">{a["response"]}</pre>
+            </div>
+          </div>
         </div>
-      </div>
+      </.section>
     </Layouts.app>
     """
   end
+
+  defp delivery_tone("delivered"), do: :ok
+  defp delivery_tone("dead"), do: :danger
+  defp delivery_tone(_), do: :warm
 end

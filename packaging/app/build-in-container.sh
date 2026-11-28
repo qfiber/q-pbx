@@ -14,5 +14,9 @@ excludes=(--exclude _build --exclude deps --exclude out --exclude .git --exclude
 [[ -f $root/.git/info/exclude ]] && excludes+=(--exclude-from "$root/.git/info/exclude")
 rsync -a "${excludes[@]}" "$root/" "$src/"
 engine=$(command -v podman || command -v docker)
-"$engine" run --rm -v "$src:/src:ro,Z" -v "$dst:/out:Z" "$image" bash /src/packaging/app/build.sh
+sounds=$(sed -n 's/^VERSION=//p' "$root/packaging/sounds/build.sh")
+skip_sounds=0
+[[ -f $out/qpbx-sounds_${sounds}_all.deb ]] && skip_sounds=1
+"$engine" run --rm -e QPBX_SKIP_SOUNDS=$skip_sounds -v "$src:/src:ro,Z" -v "$dst:/out:Z" "$image" \
+  bash /src/packaging/app/build.sh
 cp "$dst"/*.deb "$out/"

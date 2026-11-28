@@ -209,7 +209,7 @@ defmodule QPBX.Web.Account.AlertsLive do
         <:subtitle>{gettext("Problems and notices, who was told, and how.")}</:subtitle>
       </.header>
 
-      <form id="alert-filter" phx-change="filter" class="flex flex-wrap gap-2 my-2">
+      <form id="alert-filter" phx-change="filter" class="flex flex-wrap gap-2">
         <select name="f[state]" class="select select-sm">
           <option value="">{gettext("Any state")}</option>
           <option
@@ -234,17 +234,45 @@ defmodule QPBX.Web.Account.AlertsLive do
         </select>
       </form>
 
-      <.table id="alerts" rows={@alerts} row_id={&"a-#{&1.id}"}>
-        <:col :let={a} label={gettext("Raised")}>
-          <span dir="ltr">{Calendar.strftime(a.inserted_at, "%Y-%m-%d %H:%M")}</span>
-        </:col>
-        <:col :let={a} label={gettext("Severity")}>{severity_label(a.severity)}</:col>
+      <.live_component
+        module={PagedTable}
+        id="alerts"
+        rows={@alerts}
+        row_id={&"a-#{&1.id}"}
+        search={& &1.title}
+        placeholder={gettext("Search alerts")}
+        empty={gettext("No alerts. All clear.")}
+      >
         <:col :let={a} label={gettext("Alert")}>
-          {a.title} <span :if={a.count > 1} class="text-sm opacity-70">×{a.count}</span>
+          <div class="flex items-center gap-3">
+            <span class={[
+              "size-2.5 shrink-0 rounded-full",
+              case a.severity do
+                "critical" -> "bg-error"
+                "warning" -> "bg-warning"
+                _ -> "bg-secondary"
+              end
+            ]}>
+            </span>
+            <div class="min-w-0">
+              <span class="font-medium">{a.title}</span>
+              <.chip :if={a.count > 1} tone={:plain} class="ms-1">×{a.count}</.chip>
+              <span class="block text-xs text-muted" dir="ltr">
+                {Calendar.strftime(a.inserted_at, "%Y-%m-%d %H:%M")}
+              </span>
+            </div>
+          </div>
         </:col>
-        <:col :let={a} label={gettext("State")}>{state_label(a.state)}</:col>
+        <:col :let={a} label={gettext("Severity")}>
+          <.chip tone={severity_tone(a.severity)}>{severity_label(a.severity)}</.chip>
+        </:col>
+        <:col :let={a} label={gettext("State")}>
+          <.chip tone={state_tone(a.state)}>{state_label(a.state)}</.chip>
+        </:col>
         <:action :let={a}>
-          <.link phx-click="open" phx-value-id={a.id} id={"open-#{a.id}"}>{gettext("Details")}</.link>
+          <.link phx-click="open" phx-value-id={a.id} id={"open-#{a.id}"} class="btn btn-ghost btn-xs">
+            {gettext("Details")}
+          </.link>
         </:action>
         <:action :let={a}>
           <.link
@@ -252,6 +280,7 @@ defmodule QPBX.Web.Account.AlertsLive do
             phx-click="acknowledge"
             phx-value-id={a.id}
             id={"ack-#{a.id}"}
+            class="btn btn-ghost btn-xs"
           >
             {gettext("Acknowledge")}
           </.link>
@@ -262,13 +291,14 @@ defmodule QPBX.Web.Account.AlertsLive do
             phx-click="resolve"
             phx-value-id={a.id}
             id={"resolve-#{a.id}"}
+            class="btn btn-ghost btn-xs text-success"
           >
             {gettext("Resolve")}
           </.link>
         </:action>
-      </.table>
+      </.live_component>
 
-      <div :if={@open} id="deliveries" class="mt-4">
+      <div :if={@open} id="deliveries" class="space-y-2">
         <h3 class="font-semibold">{gettext("Who was told")}</h3>
         <.table id="delivery-log" rows={@deliveries} row_id={&"d-#{&1.id}"}>
           <:col :let={d} label={gettext("Time")}>
@@ -279,8 +309,10 @@ defmodule QPBX.Web.Account.AlertsLive do
             <span dir="ltr" class="break-all">{d.address || d.account_type}</span>
           </:col>
           <:col :let={d} label={gettext("Status")}>
-            {status_label(d.status)}
-            <span :if={d.reason} class="text-sm opacity-70">({d.reason})</span>
+            <.chip tone={if d.status in ~w(sent delivered), do: :ok, else: :plain}>
+              {status_label(d.status)}
+            </.chip>
+            <span :if={d.reason} class="text-xs text-muted">({d.reason})</span>
           </:col>
           <:col :let={d} label={gettext("Last answer")}>
             <span dir="ltr" class="text-xs">
@@ -302,7 +334,11 @@ defmodule QPBX.Web.Account.AlertsLive do
         </.table>
       </div>
 
-      <form id="test-form" phx-submit="test" class="flex items-end gap-2 mt-6">
+      <form
+        id="test-form"
+        phx-submit="test"
+        class="flex flex-wrap items-end gap-2 rounded-[12px] border border-dashed border-hairline p-4"
+      >
         <label class="block">
           <span class="text-sm">{gettext("Send a test notification for")}</span>
           <select name="test[category]" class="select select-sm">
@@ -312,112 +348,156 @@ defmodule QPBX.Web.Account.AlertsLive do
         <.button id="send-test">{gettext("Send test")}</.button>
       </form>
 
-      <h2 class="text-lg font-semibold mt-8">{gettext("Shared recipients and alert webhooks")}</h2>
-      <p class="text-sm opacity-70">
-        {gettext(
-          "Addresses that get alerts besides the people (for example it@ or billing@), and HTTPS endpoints that receive them signed, like webhooks."
-        )}
-      </p>
-
-      <div :if={@secret} id="channel-secret" class="alert alert-warning my-4 flex-col items-start">
-        <p>{gettext("Copy this signing secret now. It is not shown again.")}</p>
-        <code dir="ltr" class="break-all select-all font-mono" id="channel-secret-value">
-          {@secret}
-        </code>
-        <.button phx-click="dismiss" variant="ghost">{gettext("Done")}</.button>
-      </div>
-
-      <.table id="alert-channels" rows={@channels} row_id={&"c-#{&1.id}"}>
-        <:col :let={c} label={gettext("Kind")}>
-          {if c.kind == "email", do: gettext("Email"), else: gettext("Webhook")}
-        </:col>
-        <:col :let={c} label={gettext("Address")}>
-          <span dir="ltr" class="break-all">{c.address}</span>
-        </:col>
-        <:col :let={c} label={gettext("Categories")}>
-          {Enum.map_join(c.categories, ", ", &category_label/1)}
-        </:col>
-        <:col :let={c} label={gettext("From severity")}>{severity_label(c.min_severity)}</:col>
-        <:col :let={c} label={gettext("Status")}>
-          {if c.enabled, do: gettext("On"), else: gettext("Off")}
-        </:col>
-        <:action :let={c}>
-          <.link phx-click="toggle_channel" phx-value-id={c.id} id={"toggle-#{c.id}"}>
-            {if c.enabled, do: gettext("Turn off"), else: gettext("Turn on")}
-          </.link>
-        </:action>
-        <:action :let={c}>
-          <.link
-            phx-click="delete_channel"
-            phx-value-id={c.id}
-            id={"delete-#{c.id}"}
-            data-confirm={gettext("Remove %{address}?", address: c.address)}
-          >
-            {gettext("Remove")}
-          </.link>
-        </:action>
-      </.table>
-
-      <.form
-        for={@form}
-        as={:channel}
-        id="channel-form"
-        phx-change="validate_channel"
-        phx-submit="add_channel"
-        class="mt-4"
+      <.section
+        title={gettext("Shared recipients and alert webhooks")}
+        icon="hero-megaphone"
+        hint={
+          gettext(
+            "Addresses that get alerts besides the people (for example it@ or billing@), and HTTPS endpoints that receive them signed, like webhooks."
+          )
+        }
       >
-        <.input
-          field={@form[:kind]}
-          type="select"
-          label={gettext("Kind")}
-          options={[{gettext("Email"), "email"}, {gettext("Webhook"), "webhook"}]}
-        />
-        <.input
-          field={@form[:address]}
-          label={gettext("Email address or HTTPS URL")}
-          dir="ltr"
-          required
-        />
-        <fieldset class="fieldset mb-2">
-          <legend class="fieldset-legend">{gettext("Categories")}</legend>
-          <input type="hidden" name="channel[categories][]" value="" />
-          <label :for={c <- Catalogue.categories()} class="label">
-            <input
-              type="checkbox"
-              class="checkbox checkbox-sm"
-              name="channel[categories][]"
-              value={c}
-              id={"cat-#{c}"}
-              checked={c in (@form[:categories].value || [])}
-            />
-            {category_label(c)}
-          </label>
-          <p
-            :for={msg <- Enum.map(@form[:categories].errors, &translate_error/1)}
-            class="text-error text-sm"
+        <div class="space-y-4">
+          <div
+            :if={@secret}
+            id="channel-secret"
+            class="rounded-[12px] border border-warning/50 bg-warm-pale p-4 space-y-2"
           >
-            {msg}
-          </p>
-        </fieldset>
-        <.input
-          field={@form[:min_severity]}
-          type="select"
-          label={gettext("From severity")}
-          options={Enum.map(Catalogue.severities(), &{severity_label(&1), &1})}
-        />
-        <.input
-          field={@form[:format]}
-          type="select"
-          label={gettext("Webhook format")}
-          options={[{gettext("Generic JSON"), "generic"}, {gettext("Alertmanager"), "alertmanager"}]}
-        />
-        <.button variant="primary" id="add-channel">{gettext("Add")}</.button>
-      </.form>
+            <p class="text-sm font-medium text-warm-ink">
+              {gettext("Copy this signing secret now. It is not shown again.")}
+            </p>
+            <code
+              dir="ltr"
+              class="block break-all select-all font-mono rounded-[8px] bg-base-100 border border-hairline p-2 text-sm"
+              id="channel-secret-value"
+            >
+              {@secret}
+            </code>
+            <.button phx-click="dismiss" variant="ghost">{gettext("Done")}</.button>
+          </div>
 
-      <div :if={@current_scope.kind == :platform} class="mt-8">
-        <h2 class="text-lg font-semibold">{gettext("Mandatory categories")}</h2>
-        <p class="text-sm opacity-70">{gettext("People cannot switch these off.")}</p>
-        <form id="mandatory-form" phx-submit="mandatory" class="mt-2">
+          <.live_component
+            module={PagedTable}
+            id="alert-channels"
+            rows={@channels}
+            row_id={&"c-#{&1.id}"}
+            empty={gettext("No shared recipients or alert webhooks yet.")}
+          >
+            <:col :let={c} label={gettext("Kind")}>
+              <.chip tone={:plain}>
+                {if c.kind == "email", do: gettext("Email"), else: gettext("Webhook")}
+              </.chip>
+            </:col>
+            <:col :let={c} label={gettext("Address")}>
+              <span dir="ltr" class="break-all">{c.address}</span>
+            </:col>
+            <:col :let={c} label={gettext("Categories")}>
+              <div class="flex flex-wrap gap-1">
+                <.chip :for={cat <- c.categories}>{category_label(cat)}</.chip>
+              </div>
+            </:col>
+            <:col :let={c} label={gettext("From severity")}>{severity_label(c.min_severity)}</:col>
+            <:col :let={c} label={gettext("Status")}>
+              <.chip tone={if c.enabled, do: :ok, else: :plain}>
+                {if c.enabled, do: gettext("On"), else: gettext("Off")}
+              </.chip>
+            </:col>
+            <:action :let={c}>
+              <.link
+                phx-click="toggle_channel"
+                phx-value-id={c.id}
+                id={"toggle-#{c.id}"}
+                class="btn btn-ghost btn-xs"
+              >
+                {if c.enabled, do: gettext("Turn off"), else: gettext("Turn on")}
+              </.link>
+            </:action>
+            <:action :let={c}>
+              <.link
+                phx-click="delete_channel"
+                phx-value-id={c.id}
+                id={"delete-#{c.id}"}
+                class="btn btn-ghost btn-xs text-error"
+                data-confirm={gettext("Remove %{address}?", address: c.address)}
+              >
+                <.icon name="hero-trash" class="size-4" /> {gettext("Remove")}
+              </.link>
+            </:action>
+          </.live_component>
+
+          <.form
+            for={@form}
+            as={:channel}
+            id="channel-form"
+            phx-change="validate_channel"
+            phx-submit="add_channel"
+          >
+            <div class="grid sm:grid-cols-2 gap-x-4">
+              <.input
+                field={@form[:kind]}
+                type="select"
+                label={gettext("Kind")}
+                options={[{gettext("Email"), "email"}, {gettext("Webhook"), "webhook"}]}
+              />
+              <.input
+                field={@form[:address]}
+                label={gettext("Email address or HTTPS URL")}
+                dir="ltr"
+                required
+              />
+            </div>
+            <fieldset class="fieldset mb-2">
+              <legend class="fieldset-legend">{gettext("Categories")}</legend>
+              <input type="hidden" name="channel[categories][]" value="" />
+              <label :for={c <- Catalogue.categories()} class="label">
+                <input
+                  type="checkbox"
+                  class="checkbox checkbox-sm"
+                  name="channel[categories][]"
+                  value={c}
+                  id={"cat-#{c}"}
+                  checked={c in (@form[:categories].value || [])}
+                />
+                {category_label(c)}
+              </label>
+              <p
+                :for={msg <- Enum.map(@form[:categories].errors, &translate_error/1)}
+                class="text-error text-sm"
+              >
+                {msg}
+              </p>
+            </fieldset>
+            <div class="grid sm:grid-cols-2 gap-x-4">
+              <.input
+                field={@form[:min_severity]}
+                type="select"
+                label={gettext("From severity")}
+                options={Enum.map(Catalogue.severities(), &{severity_label(&1), &1})}
+              />
+              <.input
+                field={@form[:format]}
+                type="select"
+                label={gettext("Webhook format")}
+                options={[
+                  {gettext("Generic JSON"), "generic"},
+                  {gettext("Alertmanager"), "alertmanager"}
+                ]}
+              />
+            </div>
+            <.form_actions>
+              <.button variant="primary" id="add-channel">{gettext("Add")}</.button>
+            </.form_actions>
+          </.form>
+        </div>
+      </.section>
+
+      <.section
+        :if={@current_scope.kind == :platform}
+        title={gettext("Mandatory categories")}
+        icon="hero-lock-closed"
+        hint={gettext("People cannot switch these off.")}
+      >
+        <form id="mandatory-form" phx-submit="mandatory">
           <input type="hidden" name="m[categories][]" value="" />
           <label :for={c <- Catalogue.categories()} class="label">
             <input
@@ -430,9 +510,11 @@ defmodule QPBX.Web.Account.AlertsLive do
             />
             {category_label(c)}
           </label>
-          <.button id="save-mandatory">{gettext("Save")}</.button>
+          <.form_actions>
+            <.button id="save-mandatory" variant="primary">{gettext("Save")}</.button>
+          </.form_actions>
         </form>
-      </div>
+      </.section>
     </Layouts.app>
     """
   end

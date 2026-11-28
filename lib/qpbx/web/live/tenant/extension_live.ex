@@ -129,140 +129,214 @@ defmodule QPBX.Web.Tenant.ExtensionLive do
       unread={assigns[:unread]}
       idle_timeout={@idle_timeout}
     >
-      <.header>
-        {gettext("Extension %{number}", number: @ext.number)}
-        <:subtitle>{@ext.name}</:subtitle>
-        <:actions>
+      <header class="flex flex-wrap items-center justify-between gap-3 pb-2">
+        <div class="flex items-center gap-3 min-w-0">
+          <span class="size-12 shrink-0 rounded-[12px] bg-accent-pale text-secondary grid place-items-center text-lg font-semibold tabular-nums">
+            {@ext.number}
+          </span>
+          <div class="min-w-0">
+            <h1 class="text-2xl font-semibold leading-tight tracking-tight truncate">{@ext.name}</h1>
+            <p class="mt-1 text-sm text-muted">
+              {gettext("Extension %{number}", number: @ext.number)} · {ngettext(
+                "1 device",
+                "%{count} devices",
+                length(@ext.devices)
+              )}
+            </p>
+          </div>
+        </div>
+        <div class="flex gap-2">
           <.link
             navigate={~p"/app/extensions/#{@ext.id}/voicemail"}
             class="btn btn-ghost btn-sm"
             id="ext-voicemail"
           >
-            {gettext("Voicemail")}
+            <.icon name="hero-inbox" class="size-4" /> {gettext("Voicemail")}
           </.link>
           <.link navigate={~p"/app/extensions"} class="btn btn-ghost btn-sm">
+            <.icon name="hero-arrow-left" class="size-4 rtl:rotate-180" />
             {gettext("All extensions")}
           </.link>
-        </:actions>
-      </.header>
-
-      <div :if={@secret} class="alert alert-warning" id="device-secret" role="alert">
-        <div>
-          <p class="font-semibold">{gettext("Copy this password now. It is shown only once.")}</p>
-          <p>{gettext("SIP user")}: <code dir="ltr" id="secret-username">{@secret.username}</code></p>
-          <p>{gettext("Password")}: <code dir="ltr" id="secret-password">{@secret.password}</code></p>
-          <p>{gettext("SIP domain")}: <code dir="ltr">{@current_account.tenant.sip_domain}</code></p>
         </div>
+      </header>
+
+      <div
+        :if={@secret}
+        class="rounded-[12px] border border-warning/50 bg-warm-pale p-4 space-y-2"
+        id="device-secret"
+        role="alert"
+      >
+        <p class="font-semibold text-warm-ink">
+          {gettext("Copy this password now. It is shown only once.")}
+        </p>
+        <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+          <dt class="text-muted">{gettext("SIP user")}</dt>
+          <dd><code dir="ltr" id="secret-username" class="select-all">{@secret.username}</code></dd>
+          <dt class="text-muted">{gettext("Password")}</dt>
+          <dd><code dir="ltr" id="secret-password" class="select-all">{@secret.password}</code></dd>
+          <dt class="text-muted">{gettext("SIP domain")}</dt>
+          <dd><code dir="ltr" class="select-all">{@current_account.tenant.sip_domain}</code></dd>
+        </dl>
         <button class="btn btn-sm" phx-click="hide_secret">{gettext("Done")}</button>
       </div>
 
-      <h2 class="text-lg font-semibold">{gettext("Devices")}</h2>
-      <.table id="devices" rows={@ext.devices}>
-        <:col :let={d} label={gettext("Label")}>{if d.label == "", do: "—", else: d.label}</:col>
-        <:col :let={d} label={gettext("SIP user")}>
-          <span dir="ltr">{d.sip_credential.username}</span>
-        </:col>
-        <:col :let={d} label={gettext("Kind")}>{kind_label(d.kind)}</:col>
-        <:col :let={d} label={gettext("MAC")}><span dir="ltr">{d.mac || "—"}</span></:col>
-        <:action :let={d}>
-          <.link
-            phx-click="reset_device"
-            phx-value-id={d.id}
-            id={"reset-#{d.id}"}
+      <.section
+        title={gettext("Devices")}
+        icon="hero-device-phone-mobile"
+        hint={gettext("Each device has its own SIP login; all of them ring together.")}
+      >
+        <div class="space-y-4">
+          <.live_component
+            module={PagedTable}
+            id="devices"
+            rows={@ext.devices}
+            empty={gettext("No devices yet. Add one below.")}
+          >
+            <:col :let={d} label={gettext("Device")}>
+              <span class="font-medium">{if d.label == "", do: "—", else: d.label}</span>
+              <span class="block text-xs text-muted" dir="ltr">{d.sip_credential.username}</span>
+            </:col>
+            <:col :let={d} label={gettext("Kind")}>
+              <.chip tone={:plain}>{kind_label(d.kind)}</.chip>
+            </:col>
+            <:col :let={d} label={gettext("MAC")}>
+              <span class="text-sm" dir="ltr">{d.mac || "—"}</span>
+            </:col>
+            <:action :let={d}>
+              <.link
+                phx-click="reset_device"
+                phx-value-id={d.id}
+                id={"reset-#{d.id}"}
+                class="btn btn-ghost btn-xs"
+                data-confirm={
+                  gettext("Make a new password? The device stops working until it gets the new one.")
+                }
+              >
+                <.icon name="hero-key" class="size-4" /> {gettext("New password")}
+              </.link>
+            </:action>
+            <:action :let={d}>
+              <.link
+                phx-click="delete_device"
+                phx-value-id={d.id}
+                id={"delete-device-#{d.id}"}
+                class="btn btn-ghost btn-xs text-error"
+                data-confirm={gettext("Remove device %{label}?", label: d.label)}
+              >
+                <.icon name="hero-trash" class="size-4" /> {gettext("Remove")}
+              </.link>
+            </:action>
+          </.live_component>
+
+          <.form
+            for={@device_form}
+            id="device-form"
+            phx-change="validate_device"
+            phx-submit="add_device"
+          >
+            <div class="grid sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-x-4 items-end">
+              <.input
+                field={@device_form[:label]}
+                label={gettext("Label (e.g. desk; empty: login is the extension number)")}
+                dir="ltr"
+              />
+              <.input
+                field={@device_form[:kind]}
+                type="select"
+                label={gettext("Kind")}
+                options={Enum.map(Core.Device.kinds(), &{kind_label(&1), &1})}
+              />
+              <.input field={@device_form[:mac]} label={gettext("MAC (optional)")} dir="ltr" />
+              <.input field={@device_form[:model]} label={gettext("Model (optional)")} />
+              <.button variant="primary" class="mb-2">
+                <.icon name="hero-plus" class="size-4" /> {gettext("Add device")}
+              </.button>
+            </div>
+          </.form>
+        </div>
+      </.section>
+
+      <.form for={@form} id="extension-form" phx-submit="save">
+        <div class="divide-y divide-base-300">
+          <.section title={gettext("Call features")} icon="hero-phone">
+            <div class="grid sm:grid-cols-2 gap-x-4">
+              <.input field={@form[:name]} label={gettext("Name")} required />
+              <.input
+                field={@form[:external_caller_id]}
+                label={gettext("Outside caller ID (one of your numbers)")}
+                dir="ltr"
+              />
+            </div>
+            <div class="flex flex-wrap gap-x-8">
+              <.input field={@form[:dnd]} type="checkbox" label={gettext("Do not disturb")} />
+              <.input field={@form[:call_waiting]} type="checkbox" label={gettext("Call waiting")} />
+            </div>
+          </.section>
+          <.section
+            title={gettext("Forwarding")}
+            icon="hero-arrow-uturn-right"
+            hint={gettext("Numbers can be typed the local way, for example 02-123-4567.")}
+          >
+            <div class="grid sm:grid-cols-2 gap-x-4">
+              <.input
+                field={@form[:forward_always]}
+                label={gettext("Forward all calls to")}
+                dir="ltr"
+              />
+              <.input
+                field={@form[:forward_busy]}
+                label={gettext("Forward when busy to")}
+                dir="ltr"
+              />
+              <.input
+                field={@form[:forward_no_answer]}
+                label={gettext("Forward when not answered to")}
+                dir="ltr"
+              />
+              <.input
+                field={@form[:no_answer_seconds]}
+                type="number"
+                label={gettext("Ring for (seconds)")}
+                min="5"
+                max="120"
+              />
+            </div>
+          </.section>
+          <.section
+            title={gettext("Follow me")}
+            icon="hero-arrows-pointing-out"
+            hint={gettext("When the extension is not answered, these numbers ring together.")}
+          >
+            <.input
+              field={@form[:follow_me_enabled]}
+              type="checkbox"
+              label={gettext("Follow me")}
+            />
+            <.input
+              name="extension[follow_me_text]"
+              value={@form.params["follow_me_text"]}
+              id="extension_follow_me_text"
+              label={gettext("Follow-me numbers (comma-separated, up to 5)")}
+              dir="ltr"
+              errors={translate_list_errors(@form[:follow_me_numbers])}
+            />
+          </.section>
+        </div>
+        <.form_actions>
+          <.button variant="primary">{gettext("Save")}</.button>
+          <.button
+            type="button"
+            phx-click="delete"
+            id="delete-extension"
+            class="btn btn-ghost text-error ms-auto"
             data-confirm={
-              gettext("Make a new password? The device stops working until it gets the new one.")
+              gettext("Delete extension %{number} and all its devices?", number: @ext.number)
             }
           >
-            {gettext("New password")}
-          </.link>
-        </:action>
-        <:action :let={d}>
-          <.link
-            phx-click="delete_device"
-            phx-value-id={d.id}
-            id={"delete-device-#{d.id}"}
-            data-confirm={gettext("Remove device %{label}?", label: d.label)}
-          >
-            {gettext("Remove")}
-          </.link>
-        </:action>
-      </.table>
-
-      <.form
-        for={@device_form}
-        id="device-form"
-        phx-change="validate_device"
-        phx-submit="add_device"
-        class="mt-4"
-      >
-        <div class="grid sm:grid-cols-4 gap-2">
-          <.input
-            field={@device_form[:label]}
-            label={gettext("Label (e.g. desk; empty: login is the extension number)")}
-            dir="ltr"
-          />
-          <.input
-            field={@device_form[:kind]}
-            type="select"
-            label={gettext("Kind")}
-            options={Enum.map(Core.Device.kinds(), &{kind_label(&1), &1})}
-          />
-          <.input field={@device_form[:mac]} label={gettext("MAC (optional)")} dir="ltr" />
-          <.input field={@device_form[:model]} label={gettext("Model (optional)")} />
-        </div>
-        <.button variant="primary">{gettext("Add device")}</.button>
+            <.icon name="hero-trash" class="size-4" /> {gettext("Delete extension")}
+          </.button>
+        </.form_actions>
       </.form>
-
-      <h2 class="text-lg font-semibold mt-8">{gettext("Call features")}</h2>
-      <.form for={@form} id="extension-form" phx-submit="save">
-        <.input field={@form[:name]} label={gettext("Name")} required />
-        <.input
-          field={@form[:external_caller_id]}
-          label={gettext("Outside caller ID (one of your numbers)")}
-          dir="ltr"
-        />
-        <.input field={@form[:dnd]} type="checkbox" label={gettext("Do not disturb")} />
-        <.input field={@form[:call_waiting]} type="checkbox" label={gettext("Call waiting")} />
-        <.input field={@form[:forward_always]} label={gettext("Forward all calls to")} dir="ltr" />
-        <.input field={@form[:forward_busy]} label={gettext("Forward when busy to")} dir="ltr" />
-        <.input
-          field={@form[:forward_no_answer]}
-          label={gettext("Forward when not answered to")}
-          dir="ltr"
-        />
-        <.input
-          field={@form[:no_answer_seconds]}
-          type="number"
-          label={gettext("Ring for (seconds)")}
-          min="5"
-          max="120"
-        />
-        <.input field={@form[:follow_me_enabled]} type="checkbox" label={gettext("Follow me")} />
-        <.input
-          name="extension[follow_me_text]"
-          value={@form.params["follow_me_text"]}
-          id="extension_follow_me_text"
-          label={gettext("Follow-me numbers (comma-separated, up to 5)")}
-          dir="ltr"
-          errors={translate_list_errors(@form[:follow_me_numbers])}
-        />
-        <p class="text-sm opacity-70">
-          {gettext("Numbers can be typed the local way, for example 02-123-4567.")}
-        </p>
-        <.button variant="primary">{gettext("Save")}</.button>
-      </.form>
-
-      <div class="mt-12">
-        <.button
-          phx-click="delete"
-          id="delete-extension"
-          data-confirm={
-            gettext("Delete extension %{number} and all its devices?", number: @ext.number)
-          }
-        >
-          {gettext("Delete extension")}
-        </.button>
-      </div>
     </Layouts.app>
     """
   end

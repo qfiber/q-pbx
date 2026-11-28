@@ -64,9 +64,16 @@ defmodule QPBX.Web.Tenant.VoicemailLive do
           )}
         </:subtitle>
       </.header>
-      <p :if={@rows == []} id="no-voicemail">{gettext("No messages.")}</p>
-      <.table :if={@rows != []} id="voicemails" rows={@rows} row_id={&"vm-#{&1.v.id}"}>
-        <:col :let={r} label={gettext("Extension")}>{r.ext}</:col>
+      <.live_component
+        module={PagedTable}
+        id="voicemails"
+        rows={@rows}
+        row_id={&"vm-#{&1.v.id}"}
+        search={&"#{&1.ext} #{&1.v.caller_number} #{&1.v.caller_name}"}
+        placeholder={gettext("Search by extension or caller")}
+        empty={gettext("No messages.")}
+      >
+        <:col :let={r} label={gettext("Extension")}><span class="font-medium">{r.ext}</span></:col>
         <:col :let={r} label={gettext("From")}>
           <span dir="ltr">{r.v.caller_number || gettext("Unknown")}</span>
           <span :if={r.v.caller_name && r.v.caller_name != r.v.caller_number}>
@@ -78,9 +85,8 @@ defmodule QPBX.Web.Tenant.VoicemailLive do
           {gettext("%{seconds} s", seconds: r.v.duration)}
         </:col>
         <:col :let={r} label={gettext("Status")}>
-          <span class={r.v.folder == "new" && "badge badge-primary"}>
-            {if r.v.folder == "new", do: gettext("New"), else: gettext("Heard")}
-          </span>
+          <.chip :if={r.v.folder == "new"} tone={:warm}>{gettext("New")}</.chip>
+          <.chip :if={r.v.folder != "new"} tone={:plain}>{gettext("Heard")}</.chip>
         </:col>
         <:col :let={r} label={gettext("Listen")}>
           <audio
@@ -98,12 +104,13 @@ defmodule QPBX.Web.Tenant.VoicemailLive do
             phx-click="delete"
             phx-value-id={r.v.id}
             id={"delete-#{r.v.id}"}
+            class="btn btn-ghost btn-xs text-error"
             data-confirm={gettext("Delete this message?")}
           >
-            {gettext("Delete")}
+            <.icon name="hero-trash" class="size-4" /> {gettext("Delete")}
           </.link>
         </:action>
-      </.table>
+      </.live_component>
       <script :type={Phoenix.LiveView.ColocatedHook} name=".MarkHeard">
         export default {
           mounted() {

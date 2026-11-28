@@ -70,36 +70,51 @@ defmodule QPBX.Web.Tenant.NumberFormatLive do
         </:subtitle>
       </.header>
       <.form for={@form} id="number-format-form" phx-submit="save">
-        <.input
-          field={@form[:country_code]}
-          label={gettext("Country code (e.g. 972)")}
-          dir="ltr"
-          required
-        />
-        <.input field={@form[:national_prefix]} label={gettext("National prefix (e.g. 0)")} dir="ltr" />
-        <.input
-          name="rule[international_text]"
-          id="rule_international_text"
-          value={@form.params["international_text"]}
-          label={gettext("International prefixes, comma-separated (e.g. 00, 012, 013)")}
-          dir="ltr"
-          errors={Enum.map(@form[:international_prefixes].errors, &translate_error/1)}
-        />
-        <.input
-          field={@form[:area_code]}
-          label={gettext("Area code for short local numbers (optional, e.g. 2)")}
-          dir="ltr"
-        />
-        <.button variant="primary">{gettext("Save")}</.button>
-        <.button
-          :if={@own?}
-          type="button"
-          phx-click="reset"
-          id="reset-format"
-          data-confirm={gettext("Go back to the platform's default?")}
+        <.section
+          title={gettext("How your numbers are written")}
+          icon="hero-hashtag"
+          hint={gettext("Used to read numbers typed the local way, like 02-123-4567.")}
         >
-          {gettext("Use the platform default")}
-        </.button>
+          <div class="grid sm:grid-cols-2 gap-x-4">
+            <.input
+              field={@form[:country_code]}
+              label={gettext("Country code (e.g. 972)")}
+              dir="ltr"
+              required
+            />
+            <.input
+              field={@form[:national_prefix]}
+              label={gettext("National prefix (e.g. 0)")}
+              dir="ltr"
+            />
+            <.input
+              name="rule[international_text]"
+              id="rule_international_text"
+              value={@form.params["international_text"]}
+              label={gettext("International prefixes, comma-separated (e.g. 00, 012, 013)")}
+              dir="ltr"
+              errors={Enum.map(@form[:international_prefixes].errors, &translate_error/1)}
+            />
+            <.input
+              field={@form[:area_code]}
+              label={gettext("Area code for short local numbers (optional, e.g. 2)")}
+              dir="ltr"
+            />
+          </div>
+        </.section>
+        <.form_actions>
+          <.button variant="primary">{gettext("Save")}</.button>
+          <.button
+            :if={@own?}
+            type="button"
+            phx-click="reset"
+            id="reset-format"
+            class="btn btn-ghost"
+            data-confirm={gettext("Go back to the platform's default?")}
+          >
+            {gettext("Use the platform default")}
+          </.button>
+        </.form_actions>
       </.form>
     </Layouts.app>
     """

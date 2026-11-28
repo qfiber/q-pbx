@@ -70,14 +70,14 @@ defmodule QPBX.Web.Tenant.CallsLive do
           {gettext("Every call of your company. Times are in your company's time zone.")}
         </:subtitle>
         <:actions>
-          <.link href={~p"/app/calls/export?#{@filters}"} class="btn btn-sm" id="export-csv">
-            {gettext("Export CSV")}
+          <.link href={~p"/app/calls/export?#{@filters}"} class="btn" id="export-csv">
+            <.icon name="hero-arrow-down-tray" class="size-4" /> {gettext("Export CSV")}
           </.link>
         </:actions>
       </.header>
 
       <.form for={@form} id="calls-filter" phx-submit="search">
-        <div class="grid sm:grid-cols-6 gap-2">
+        <div class="grid sm:grid-cols-3 lg:grid-cols-6 gap-x-4">
           <.input field={@form[:from]} type="date" label={gettext("From")} />
           <.input field={@form[:to]} type="date" label={gettext("To")} />
           <.input field={@form[:number]} label={gettext("Number contains")} dir="ltr" />
@@ -102,45 +102,83 @@ defmodule QPBX.Web.Tenant.CallsLive do
             options={[{gettext("One row per call"), "a"}, {gettext("Every leg"), "all"}]}
           />
         </div>
-        <.button variant="primary">{gettext("Search")}</.button>
+        <.form_actions>
+          <.button variant="primary">
+            <.icon name="hero-magnifying-glass" class="size-4" /> {gettext("Search")}
+          </.button>
+        </.form_actions>
       </.form>
 
-      <p :if={@rows == []} id="no-calls" class="mt-4">{gettext("No calls found.")}</p>
+      <div
+        :if={@rows == []}
+        id="no-calls"
+        class="rounded-[12px] border border-dashed border-hairline bg-base-100/60 px-6 py-10 text-center text-sm text-muted"
+      >
+        <.icon name="hero-phone" class="size-6 mx-auto mb-2 opacity-60" />
+        {gettext("No calls found.")}
+      </div>
       <.table :if={@rows != []} id="calls" rows={@rows} row_id={&"cdr-#{&1.id}"}>
-        <:col :let={c} label={gettext("When")}><span dir="ltr">{c.local}</span></:col>
-        <:col :let={c} label={gettext("Direction")}>{direction(c.direction)}</:col>
-        <:col :let={c} label={gettext("From")}><span dir="ltr">{c.caller_number}</span></:col>
-        <:col :let={c} label={gettext("To")}><span dir="ltr">{c.destination}</span></:col>
-        <:col :let={c} label={gettext("Outcome")}>{outcome(c.disposition)}</:col>
-        <:col :let={c} label={gettext("Talk time")}>{duration(c.billsec)}</:col>
+        <:col :let={c} label={gettext("Call")}>
+          <div class="flex items-center gap-3">
+            <span class="size-8 shrink-0 rounded-[8px] grid place-items-center bg-accent-pale text-secondary">
+              <.icon name={direction_icon(c.direction)} class="size-4" />
+            </span>
+            <div>
+              <span class="text-sm font-medium" dir="ltr">{c.caller_number} → {c.destination}</span>
+              <span class="block text-xs text-muted" dir="ltr">{c.local}</span>
+            </div>
+          </div>
+        </:col>
+        <:col :let={c} label={gettext("Direction")}>
+          <.chip tone={:plain}>{direction(c.direction)}</.chip>
+        </:col>
+        <:col :let={c} label={gettext("Outcome")}>
+          <.chip tone={if c.disposition == "answered", do: :ok, else: :warm}>
+            {outcome(c.disposition)}
+          </.chip>
+        </:col>
+        <:col :let={c} label={gettext("Talk time")}>
+          <span class="tabular-nums">{duration(c.billsec)}</span>
+        </:col>
       </.table>
-      <div class="flex gap-2 mt-2">
+      <div :if={@page > 1 or @more} class="join">
         <.link
           :if={@page > 1}
           patch={~p"/app/calls?#{Map.put(@filters, "page", @page - 1)}"}
-          class="btn btn-sm"
+          class="join-item btn btn-sm"
         >
-          {gettext("Newer")}
+          <.icon name="hero-chevron-left" class="size-4 rtl:rotate-180" /> {gettext("Newer")}
         </.link>
         <.link
           :if={@more}
           patch={~p"/app/calls?#{Map.put(@filters, "page", @page + 1)}"}
-          class="btn btn-sm"
+          class="join-item btn btn-sm"
           id="older"
         >
-          {gettext("Older")}
+          {gettext("Older")} <.icon name="hero-chevron-right" class="size-4 rtl:rotate-180" />
         </.link>
       </div>
 
-      <h2 class="text-lg font-semibold mt-8">{gettext("Last 14 days")}</h2>
-      <p :if={@usage == []}>{gettext("No calls yet.")}</p>
-      <.table :if={@usage != []} id="usage" rows={@usage}>
-        <:col :let={u} label={gettext("Day")}><span dir="ltr">{u.day}</span></:col>
-        <:col :let={u} label={gettext("Direction")}>{direction(u.direction)}</:col>
-        <:col :let={u} label={gettext("Calls")}>{u.calls}</:col>
-        <:col :let={u} label={gettext("Answered")}>{u.answered}</:col>
-        <:col :let={u} label={gettext("Talk time")}>{duration(u.seconds)}</:col>
-      </.table>
+      <.section title={gettext("Last 14 days")} icon="hero-chart-bar">
+        <.live_component
+          module={PagedTable}
+          id="usage"
+          rows={@usage}
+          empty={gettext("No calls yet.")}
+        >
+          <:col :let={u} label={gettext("Day")}><span dir="ltr">{u.day}</span></:col>
+          <:col :let={u} label={gettext("Direction")}>
+            <.chip tone={:plain}>{direction(u.direction)}</.chip>
+          </:col>
+          <:col :let={u} label={gettext("Calls")}><span class="tabular-nums">{u.calls}</span></:col>
+          <:col :let={u} label={gettext("Answered")}>
+            <span class="tabular-nums">{u.answered}</span>
+          </:col>
+          <:col :let={u} label={gettext("Talk time")}>
+            <span class="tabular-nums">{duration(u.seconds)}</span>
+          </:col>
+        </.live_component>
+      </.section>
     </Layouts.app>
     """
   end

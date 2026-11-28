@@ -289,10 +289,6 @@ defmodule QPBX.Web.Tenant.HomeLive do
     """
   end
 
-  defp direction_icon("inbound"), do: "hero-phone-arrow-down-left"
-  defp direction_icon("outbound"), do: "hero-phone-arrow-up-right"
-  defp direction_icon(_), do: "hero-phone"
-
   defp time(nil, _tz), do: ""
 
   defp time(at, tz),

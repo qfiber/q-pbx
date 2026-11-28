@@ -12,7 +12,12 @@ defmodule QPBX.Web.Platform.TrunksLive do
     do: {:noreply, apply_action(socket, socket.assigns.live_action, params)}
 
   defp apply_action(socket, :index, _),
-    do: assign(socket, trunks: Core.list_trunks(socket.assigns.current_scope), trunk: nil)
+    do:
+      assign(socket,
+        trunks: Core.list_trunks(socket.assigns.current_scope),
+        status: QPBX.Edge.trunk_status(),
+        trunk: nil
+      )
 
   defp apply_action(socket, :new, _) do
     trunk = %Trunk{addresses: [%TrunkAddress{}]}
@@ -101,22 +106,36 @@ defmodule QPBX.Web.Platform.TrunksLive do
         {gettext("Trunks")}
         <:subtitle>{gettext("Shared carrier trunks. Every tenant's routes can use them.")}</:subtitle>
         <:actions>
-          <.link navigate={~p"/platform/trunks/new"} class="btn btn-primary btn-sm" id="new-trunk">
-            {gettext("New trunk")}
+          <.link navigate={~p"/platform/trunks/new"} class="btn btn-primary" id="new-trunk">
+            <.icon name="hero-plus" class="size-4" /> {gettext("New trunk")}
           </.link>
         </:actions>
       </.header>
-      <.table id="trunks" rows={@trunks} row_click={&JS.navigate(~p"/platform/trunks/#{&1.id}")}>
-        <:col :let={t} label={gettext("Name")}>{t.name}</:col>
-        <:col :let={t} label={gettext("Authentication")}>{auth_label(t.auth_mode)}</:col>
+      <.live_component
+        module={PagedTable}
+        id="trunks"
+        rows={@trunks}
+        search={&"#{&1.name} #{Enum.map_join(&1.addresses, " ", fn a -> a.host end)}"}
+        placeholder={gettext("Search by name or address")}
+        empty={gettext("No trunks yet.")}
+        row_click={&JS.navigate(~p"/platform/trunks/#{&1.id}")}
+      >
+        <:col :let={t} label={gettext("Name")}>
+          <div class="flex items-center gap-3">
+            <.avatar name={t.name} size={:sm} tone={:accent} />
+            <span class="font-semibold">{t.name}</span>
+          </div>
+        </:col>
+        <:col :let={t} label={gettext("Status")}>
+          <.trunk_state trunk={t} status={@status[t.id]} />
+        </:col>
+        <:col :let={t} label={gettext("Authentication")}>
+          <.chip tone={:plain}>{auth_label(t.auth_mode)}</.chip>
+        </:col>
         <:col :let={t} label={gettext("Addresses")}>
-          <span dir="ltr">{Enum.map_join(t.addresses, ", ", & &1.host)}</span>
+          <span class="text-sm" dir="ltr">{Enum.map_join(t.addresses, ", ", & &1.host)}</span>
         </:col>
-        <:col :let={t} label={gettext("Fax")}>{t.fax_mode}</:col>
-        <:col :let={t} label={gettext("Enabled")}>
-          {if t.enabled, do: gettext("Yes"), else: gettext("No")}
-        </:col>
-      </.table>
+      </.live_component>
     </Layouts.app>
     """
   end
@@ -139,127 +158,170 @@ defmodule QPBX.Web.Platform.TrunksLive do
         </:actions>
       </.header>
       <.form for={@form} id="trunk-form" phx-change="validate" phx-submit="save">
-        <.input field={@form[:name]} label={gettext("Name")} required />
-        <.input
-          field={@form[:auth_mode]}
-          type="select"
-          label={gettext("Authentication")}
-          options={Enum.map(Trunk.auth_modes(), &{auth_label(&1), &1})}
-          prompt={gettext("Choose")}
-        />
-        <.input field={@form[:username]} label={gettext("Registration user")} dir="ltr" />
-        <.input
-          field={@form[:password]}
-          type="password"
-          label={
-            if @trunk.id,
-              do: gettext("Registration password (empty: keep)"),
-              else: gettext("Registration password")
-          }
-          dir="ltr"
-          autocomplete="new-password"
-        />
-
-        <fieldset class="fieldset">
-          <legend class="fieldset-legend">{gettext("Signalling addresses")}</legend>
-          <p class="text-sm opacity-70">
-            {gettext(
-              "Calls from any address are accepted. Outbound calls use the lowest priority first; weight shares calls within one priority."
-            )}
-          </p>
-          <.inputs_for :let={a} field={@form[:addresses]}>
-            <input type="hidden" name="trunk[addresses_sort][]" value={a.index} />
-            <div class="grid sm:grid-cols-6 gap-2 items-end">
-              <div class="sm:col-span-2">
-                <.input field={a[:host]} label={gettext("IP or host name")} dir="ltr" />
-              </div>
-              <.input field={a[:port]} type="number" label={gettext("Port")} />
+        <div class="divide-y divide-base-300">
+          <.section title={gettext("Connection")} icon="hero-server-stack">
+            <div class="grid sm:grid-cols-2 gap-x-4">
+              <.input field={@form[:name]} label={gettext("Name")} required />
               <.input
-                field={a[:transport]}
+                field={@form[:auth_mode]}
                 type="select"
-                label={gettext("Transport")}
-                options={[{"UDP", "udp"}, {"TCP", "tcp"}, {"TLS", "tls"}]}
+                label={gettext("Authentication")}
+                options={Enum.map(Trunk.auth_modes(), &{auth_label(&1), &1})}
+                prompt={gettext("Choose")}
               />
-              <.input field={a[:priority]} type="number" label={gettext("Priority")} />
-              <label class="label cursor-pointer gap-2 mb-2">
-                <input
-                  type="checkbox"
-                  name="trunk[addresses_drop][]"
-                  value={a.index}
-                  class="checkbox checkbox-sm"
-                />
-                {gettext("Remove")}
-              </label>
+              <.input field={@form[:username]} label={gettext("Registration user")} dir="ltr" />
+              <.input
+                field={@form[:password]}
+                type="password"
+                label={
+                  if @trunk.id,
+                    do: gettext("Registration password (empty: keep)"),
+                    else: gettext("Registration password")
+                }
+                dir="ltr"
+                autocomplete="new-password"
+              />
             </div>
-          </.inputs_for>
-          <input type="hidden" name="trunk[addresses_drop][]" />
-          <button
-            type="button"
-            name="trunk[addresses_sort][]"
-            value="new"
-            phx-click={JS.dispatch("change")}
-            class="btn btn-sm"
-            id="add-address"
-          >
-            {gettext("Add address")}
-          </button>
-          <p
-            :for={msg <- Enum.map(@form[:addresses].errors, &translate_error/1)}
-            class="text-error text-sm"
-          >
-            {msg}
-          </p>
-        </fieldset>
+            <.input field={@form[:enabled]} type="checkbox" label={gettext("Enabled")} />
+          </.section>
 
-        <.input
-          field={@form[:codecs]}
-          type="select"
-          multiple
-          label={gettext("Codecs")}
-          options={Trunk.codecs()}
-        />
-        <.input
-          field={@form[:fax_mode]}
-          type="select"
-          label={gettext("Fax")}
-          options={[
-            {gettext("T.38 re-INVITE"), "t38"},
-            {gettext("T.38 passthrough"), "t38_passthrough"},
-            {gettext("G.711 passthrough"), "g711"}
-          ]}
-        />
-        <.input field={@form[:ecm]} type="checkbox" label={gettext("Fax error correction (ECM)")} />
-        <.input
-          field={@form[:max_channels]}
-          type="number"
-          label={gettext("Maximum calls (empty: no limit)")}
-        />
-        <.input
-          field={@form[:caller_id_mode]}
-          type="select"
-          label={gettext("Caller ID")}
-          options={[
-            {gettext("May show the tenant's numbers, even from other carriers"), "tenant_numbers"},
-            {gettext("Must show its own number"), "own_number"}
-          ]}
-        />
-        <.input field={@form[:default_caller_id]} label={gettext("Its own number (E.164)")} dir="ltr" />
-        <.input field={@form[:enabled]} type="checkbox" label={gettext("Enabled")} />
-        <.button variant="primary">{gettext("Save")}</.button>
+          <.section
+            title={gettext("Signalling addresses")}
+            icon="hero-globe-alt"
+            hint={
+              gettext(
+                "Calls from any address are accepted. Outbound calls use the lowest priority first; weight shares calls within one priority."
+              )
+            }
+          >
+            <.inputs_for :let={a} field={@form[:addresses]}>
+              <input type="hidden" name="trunk[addresses_sort][]" value={a.index} />
+              <div class="grid sm:grid-cols-6 gap-2 items-end">
+                <div class="sm:col-span-2">
+                  <.input field={a[:host]} label={gettext("IP or host name")} dir="ltr" />
+                </div>
+                <.input field={a[:port]} type="number" label={gettext("Port")} />
+                <.input
+                  field={a[:transport]}
+                  type="select"
+                  label={gettext("Transport")}
+                  options={[{"UDP", "udp"}, {"TCP", "tcp"}, {"TLS", "tls"}]}
+                />
+                <.input field={a[:priority]} type="number" label={gettext("Priority")} />
+                <label class="label cursor-pointer gap-2 mb-2">
+                  <input
+                    type="checkbox"
+                    name="trunk[addresses_drop][]"
+                    value={a.index}
+                    class="checkbox checkbox-sm"
+                  />
+                  {gettext("Remove")}
+                </label>
+              </div>
+            </.inputs_for>
+            <input type="hidden" name="trunk[addresses_drop][]" />
+            <button
+              type="button"
+              name="trunk[addresses_sort][]"
+              value="new"
+              phx-click={JS.dispatch("change")}
+              class="btn btn-sm"
+              id="add-address"
+            >
+              {gettext("Add address")}
+            </button>
+            <p
+              :for={msg <- Enum.map(@form[:addresses].errors, &translate_error/1)}
+              class="text-error text-sm"
+            >
+              {msg}
+            </p>
+          </.section>
+
+          <.section title={gettext("Media and fax")} icon="hero-printer">
+            <div class="grid sm:grid-cols-2 gap-x-4">
+              <.input
+                field={@form[:codecs]}
+                type="select"
+                multiple
+                label={gettext("Codecs")}
+                options={Trunk.codecs()}
+              />
+              <.input
+                field={@form[:fax_mode]}
+                type="select"
+                label={gettext("Fax")}
+                options={[
+                  {gettext("T.38 re-INVITE"), "t38"},
+                  {gettext("T.38 passthrough"), "t38_passthrough"},
+                  {gettext("G.711 passthrough"), "g711"}
+                ]}
+              />
+              <.input
+                field={@form[:max_channels]}
+                type="number"
+                label={gettext("Maximum calls (empty: no limit)")}
+              />
+            </div>
+            <.input field={@form[:ecm]} type="checkbox" label={gettext("Fax error correction (ECM)")} />
+          </.section>
+
+          <.section title={gettext("Caller ID")} icon="hero-identification">
+            <div class="grid sm:grid-cols-2 gap-x-4">
+              <.input
+                field={@form[:caller_id_mode]}
+                type="select"
+                label={gettext("Caller ID")}
+                options={[
+                  {gettext("May show the tenant's numbers, even from other carriers"),
+                   "tenant_numbers"},
+                  {gettext("Must show its own number"), "own_number"}
+                ]}
+              />
+              <.input
+                field={@form[:default_caller_id]}
+                label={gettext("Its own number (E.164)")}
+                dir="ltr"
+              />
+            </div>
+          </.section>
+        </div>
+        <.form_actions>
+          <.button variant="primary">{gettext("Save")}</.button>
+          <.button
+            :if={@trunk.id}
+            type="button"
+            phx-click="delete"
+            id="delete-trunk"
+            class="btn btn-ghost text-error ms-auto"
+            data-confirm={gettext("Delete trunk %{name}?", name: @trunk.name)}
+          >
+            <.icon name="hero-trash" class="size-4" /> {gettext("Delete trunk")}
+          </.button>
+        </.form_actions>
       </.form>
-      <div :if={@trunk.id} class="mt-12">
-        <.button
-          phx-click="delete"
-          id="delete-trunk"
-          data-confirm={gettext("Delete trunk %{name}?", name: @trunk.name)}
-        >
-          {gettext("Delete trunk")}
-        </.button>
-      </div>
     </Layouts.app>
     """
   end
 
   defp auth_label("ip"), do: gettext("By IP address")
   defp auth_label("registration"), do: gettext("Registration")
+
+  attr :trunk, :map, required: true
+  attr :status, :map, default: nil, doc: "the trunk monitor's view; nil: not seen yet"
+
+  defp trunk_state(assigns) do
+    ~H"""
+    <.chip :if={!@trunk.enabled} tone={:plain}>{gettext("Disabled")}</.chip>
+    <.chip :if={@trunk.enabled && @status && @status.up} tone={:ok}>{gettext("Up")}</.chip>
+    <.chip
+      :if={@trunk.enabled && @status && !@status.up}
+      tone={:danger}
+      title={@status.reason}
+    >
+      {gettext("Down")}
+    </.chip>
+    <.chip :if={@trunk.enabled && !@status} tone={:plain}>{gettext("Checking")}</.chip>
+    """
+  end
 end

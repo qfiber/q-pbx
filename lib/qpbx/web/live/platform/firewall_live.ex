@@ -93,46 +93,70 @@ defmodule QPBX.Web.Platform.FirewallLive do
         {gettext("The last sync with nftables reported errors. Check the qpbx-fwd service.")}
       </p>
 
-      <.table id="firewall-entries" rows={@entries}>
-        <:col :let={e} label={gettext("Address")}><span dir="ltr">{e.cidr}</span></:col>
-        <:col :let={e} label={gettext("Kind")}>{kind_label(e.kind)}</:col>
-        <:col :let={e} label={gettext("Scope")}>{scope_label(e.scope)}</:col>
+      <.live_component
+        module={PagedTable}
+        id="firewall-entries"
+        rows={@entries}
+        search={&"#{&1.cidr} #{&1.reason}"}
+        placeholder={gettext("Search by address or reason")}
+        empty={gettext("No entries yet.")}
+      >
+        <:col :let={e} label={gettext("Address")}>
+          <span class="font-semibold tabular-nums" dir="ltr">{e.cidr}</span>
+        </:col>
+        <:col :let={e} label={gettext("Kind")}>
+          <.chip tone={if e.kind == "allow", do: :ok, else: :danger}>{kind_label(e.kind)}</.chip>
+        </:col>
+        <:col :let={e} label={gettext("Scope")}>
+          <.chip tone={:plain}>{scope_label(e.scope)}</.chip>
+        </:col>
         <:col :let={e} label={gettext("Reason")}>{e.reason}</:col>
-        <:col :let={e} label={gettext("Expires")}>{e.expires_at || "—"}</:col>
+        <:col :let={e} label={gettext("Expires")}>
+          <span class="text-muted">{e.expires_at || "—"}</span>
+        </:col>
         <:action :let={e}>
           <.link
             phx-click="delete"
             phx-value-id={e.id}
             data-confirm={gettext("Remove %{cidr}?", cidr: e.cidr)}
             id={"delete-#{e.id}"}
+            class="btn btn-ghost btn-xs text-error"
           >
-            {gettext("Remove")}
+            <.icon name="hero-trash" class="size-4" /> {gettext("Remove")}
           </.link>
         </:action>
-      </.table>
+      </.live_component>
 
-      <h2 class="text-lg font-semibold mt-8">{gettext("Add an entry")}</h2>
       <.form for={@form} id="firewall-form" phx-change="validate" phx-submit="save">
-        <.input field={@form[:cidr]} label={gettext("IP address or prefix")} dir="ltr" required />
-        <.input
-          field={@form[:kind]}
-          type="select"
-          label={gettext("Kind")}
-          options={[{kind_label("allow"), "allow"}, {kind_label("block"), "block"}]}
-        />
-        <.input
-          field={@form[:scope]}
-          type="select"
-          label={gettext("Scope")}
-          options={Enum.map(~w(all ssh sip https), &{scope_label(&1), &1})}
-        />
-        <.input field={@form[:reason]} label={gettext("Reason")} required />
-        <.input
-          field={@form[:expires_at]}
-          type="datetime-local"
-          label={gettext("Expires (UTC, optional)")}
-        />
-        <.button variant="primary">{gettext("Add")}</.button>
+        <.section title={gettext("Add an entry")} icon="hero-plus">
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-4">
+            <.input
+              field={@form[:cidr]}
+              label={gettext("IP address or prefix")}
+              dir="ltr"
+              required
+            />
+            <.input
+              field={@form[:kind]}
+              type="select"
+              label={gettext("Kind")}
+              options={[{kind_label("allow"), "allow"}, {kind_label("block"), "block"}]}
+            />
+            <.input
+              field={@form[:scope]}
+              type="select"
+              label={gettext("Scope")}
+              options={Enum.map(~w(all ssh sip https), &{scope_label(&1), &1})}
+            />
+            <.input field={@form[:reason]} label={gettext("Reason")} required />
+            <.input
+              field={@form[:expires_at]}
+              type="datetime-local"
+              label={gettext("Expires (UTC, optional)")}
+            />
+          </div>
+        </.section>
+        <.form_actions><.button variant="primary">{gettext("Add")}</.button></.form_actions>
       </.form>
     </Layouts.app>
     """

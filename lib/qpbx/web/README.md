@@ -145,12 +145,22 @@ Tailwind colours. Fonts: IBM Plex Sans, Vazirmatn for Arabic (`priv/static/fonts
 `Layouts.app`: a night sidebar with the pages grouped by task (platform: overview, customers,
 telephony, security, monitoring, administration; tenant: me, team, routing, security,
 integrations), fixed on the reading-start side and sliding in on phones (a checkbox, no
-script); `app.js` marks the current page. Every form placed directly on a page is drawn as a
-card (`.page > form`). `Layouts.auth`: the sign-in pages, a night panel beside the form card.
-Without an account `Layouts.app` is a plain page (the alert acknowledge page).
-Long lists (tenants, plans) come in pages of 25 (`QPBX.Web.Pager`: `paginate/3`, `pager/1`,
-`page_of/2`; the page is a `?page=` parameter). Plan limits in groups: `QPBX.Web.PlanFields`
-(`limits/1`, `section/1`, `group/1`; `grouped/0` covers every limit, checked by a test).
+script); `app.js` marks the current page. A form placed on a page, in a page-level section or
+in that section's box is drawn as a card (`.page > form` and the rules beside it in
+`app.css`; search boxes excluded). `Layouts.auth`: the sign-in pages, a night panel beside the
+form card. Without an account `Layouts.app` is a plain page (the alert acknowledge page).
+
+**Shared pieces (use these, not page-made markup):** `QPBX.Web.UI`, imported on every page:
+`avatar` (letter tile), `chip` (coloured label; tones `:brand`, `:accent`, `:warm`, `:ok`,
+`:danger`, `:plain`), `section` (icon, title, hint) and `field_group` (a group inside it),
+`form_actions` (the Save bar), `setup_link` (a setup link shown once), `severity_tone/1`,
+`state_tone/1`, `direction_icon/1`. Every list is `QPBX.Web.PagedTable` (a LiveComponent:
+pages of 25, a search box when given `search`, an empty box with `empty`, `focus` to open on
+the page holding a just-saved row; the table keeps the component's id; row events still go
+to the page). Pages of server-side lists (call records, audit log) keep their own paging.
+Plan limits in groups: `QPBX.Web.PlanFields` (`limits/1`; `grouped/0` covers every limit,
+checked by a test). Plans: the list, `/platform/plans/new` and `/platform/plans/:id` are
+separate pages.
 `lab/done-when/portal-shots.mjs` takes review screenshots (desktop and phone, light and dark,
 English and Arabic).
 

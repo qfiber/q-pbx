@@ -195,14 +195,16 @@
 
 /* Pages: each form directly on a page is a card, so related settings read as one group;
    section headings get room above them. */
-.page > form, .page > section > form {
+.page > form, .page > section > form, .page > div > form:not([id$="-search"]),
+.page > section > div > form:not([id$="-search"]), .page > div > section > div > form:not([id$="-search"]) {
   background: var(--color-base-100);
   border: 1px solid var(--q-hairline);
   border-radius: 12px;
   padding: 1.25rem;
   box-shadow: 0 1px 2px rgba(14, 26, 33, 0.06), 0 10px 30px -12px rgba(14, 26, 33, 0.22);
 }
-@media (min-width: 640px) { .page > form, .page > section > form { padding: 1.5rem; } }
+@media (min-width: 640px) { .page > form, .page > section > form, .page > div > form:not([id$="-search"]),
+.page > section > div > form:not([id$="-search"]), .page > div > section > div > form:not([id$="-search"]) { padding: 1.5rem; } }
 .page > h2 { margin-top: 2rem; font-size: 1.125rem; font-weight: 600; }
 
 /* Sign-in: a night panel with sound rings around the hexagon; the rings breathe slowly. */

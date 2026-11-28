@@ -11,8 +11,16 @@ defmodule QPBX.Web.Tenant.ExtensionsLive do
      |> load()}
   end
 
-  defp load(socket),
-    do: assign(socket, extensions: Core.list_extensions(socket.assigns.current_scope))
+  defp load(socket) do
+    scope = socket.assigns.current_scope
+    domain = Core.my_tenant(scope).sip_domain
+
+    assign(socket,
+      extensions: Core.list_extensions(scope),
+      # SIP user names registered now (Kamailio's memory).
+      online: for({u, ^domain} <- QPBX.Edge.registered_devices(), do: u)
+    )
+  end
 
   @impl true
   def handle_event("validate", %{"extension" => params}, socket),
@@ -57,32 +65,61 @@ defmodule QPBX.Web.Tenant.ExtensionsLive do
         </:subtitle>
       </.header>
 
-      <.table
+      <.live_component
+        module={PagedTable}
         id="extensions"
         rows={@extensions}
+        search={&"#{&1.number} #{&1.name}"}
+        placeholder={gettext("Search by number or name")}
+        empty={gettext("No extensions yet. Create the first one below.")}
         row_click={&JS.navigate(~p"/app/extensions/#{&1.id}")}
       >
-        <:col :let={e} label={gettext("Number")}><span dir="ltr">{e.number}</span></:col>
-        <:col :let={e} label={gettext("Name")}>{e.name}</:col>
-        <:col :let={e} label={gettext("Devices")}>{length(e.devices)}</:col>
-        <:col :let={e} label={gettext("Do not disturb")}>
-          {if e.dnd, do: gettext("On"), else: "—"}
+        <:col :let={e} label={gettext("Extension")}>
+          <div class="flex items-center gap-3">
+            <span class="size-9 shrink-0 rounded-[8px] bg-accent-pale text-secondary grid place-items-center text-sm font-semibold tabular-nums">
+              {e.number}
+            </span>
+            <span class="font-semibold">{e.name}</span>
+          </div>
         </:col>
-      </.table>
+        <:col :let={e} label={gettext("Phones")}>
+          <span class="flex items-center gap-2 whitespace-nowrap">
+            <span class={[
+              "size-2 shrink-0 rounded-full",
+              if(online_count(e, @online) > 0, do: "bg-success", else: "bg-base-300")
+            ]}>
+            </span>
+            {gettext("%{online} of %{total} online",
+              online: online_count(e, @online),
+              total: length(e.devices)
+            )}
+          </span>
+        </:col>
+        <:col :let={e} label={gettext("Do not disturb")}>
+          <.chip :if={e.dnd} tone={:warm}>{gettext("On")}</.chip>
+          <span :if={!e.dnd} class="text-muted">—</span>
+        </:col>
+      </.live_component>
 
-      <h2 class="text-lg font-semibold mt-8">{gettext("New extension")}</h2>
       <.form for={@form} id="extension-form" phx-change="validate" phx-submit="save">
-        <.input
-          field={@form[:number]}
-          label={gettext("Number")}
-          inputmode="numeric"
-          dir="ltr"
-          required
-        />
-        <.input field={@form[:name]} label={gettext("Name")} required />
-        <.button variant="primary">{gettext("Create")}</.button>
+        <.section title={gettext("New extension")} icon="hero-plus">
+          <div class="grid sm:grid-cols-[1fr_2fr_auto] gap-x-4 items-end">
+            <.input
+              field={@form[:number]}
+              label={gettext("Number")}
+              inputmode="numeric"
+              dir="ltr"
+              required
+            />
+            <.input field={@form[:name]} label={gettext("Name")} required />
+            <.button variant="primary" class="mb-2">{gettext("Create")}</.button>
+          </div>
+        </.section>
       </.form>
     </Layouts.app>
     """
   end
+
+  defp online_count(ext, online),
+    do: Enum.count(ext.devices, &(&1.sip_credential && &1.sip_credential.username in online))
 end

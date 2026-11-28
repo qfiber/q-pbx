@@ -147,9 +147,23 @@ defmodule QPBX.Web.Tenant.UsersLive do
         </:subtitle>
       </.header>
 
-      <.table id="users" rows={@users} row_id={&"user-#{&1.id}"}>
-        <:col :let={u} label={gettext("Name")}>{u.name}</:col>
-        <:col :let={u} label={gettext("Email")}><span dir="ltr">{u.email}</span></:col>
+      <.live_component
+        module={PagedTable}
+        id="users"
+        rows={@users}
+        row_id={&"user-#{&1.id}"}
+        search={&"#{&1.name} #{&1.email}"}
+        placeholder={gettext("Search by name or email")}
+      >
+        <:col :let={u} label={gettext("Name")}>
+          <div class="flex items-center gap-3">
+            <.avatar name={u.name} size={:sm} />
+            <div class="min-w-0">
+              <span class="font-medium">{u.name}</span>
+              <span class="block text-xs text-muted truncate" dir="ltr">{u.email}</span>
+            </div>
+          </div>
+        </:col>
         <:col :let={u} label={gettext("Role")}>
           <form phx-change="set_role" id={"role-#{u.id}"}>
             <input type="hidden" name="user_id" value={u.id} />
@@ -171,6 +185,8 @@ defmodule QPBX.Web.Tenant.UsersLive do
             phx-click="setup_link"
             phx-value-id={u.id}
             id={"setup-link-#{u.id}"}
+            class="btn btn-ghost btn-xs"
+            title={gettext("New setup link")}
             data-confirm={
               gettext(
                 "Send %{email} a new setup link? It lets them choose a new password and authenticator.",
@@ -178,7 +194,8 @@ defmodule QPBX.Web.Tenant.UsersLive do
               )
             }
           >
-            {gettext("New setup link")}
+            <.icon name="hero-envelope" class="size-4" />
+            <span class="sr-only">{gettext("New setup link")}</span>
           </.link>
         </:action>
         <:action :let={u}>
@@ -187,9 +204,12 @@ defmodule QPBX.Web.Tenant.UsersLive do
             phx-click="sign_out"
             phx-value-id={u.id}
             id={"sign-out-#{u.id}"}
+            class="btn btn-ghost btn-xs"
+            title={gettext("Sign out everywhere")}
             data-confirm={gettext("Sign %{email} out everywhere?", email: u.email)}
           >
-            {gettext("Sign out everywhere")}
+            <.icon name="hero-arrow-right-start-on-rectangle" class="size-4 rtl:rotate-180" />
+            <span class="sr-only">{gettext("Sign out everywhere")}</span>
           </.link>
         </:action>
         <:action :let={u}>
@@ -198,27 +218,40 @@ defmodule QPBX.Web.Tenant.UsersLive do
             phx-click="delete"
             phx-value-id={u.id}
             id={"delete-user-#{u.id}"}
+            class="btn btn-ghost btn-xs text-error"
+            title={gettext("Remove")}
             data-confirm={gettext("Remove %{email}? They can no longer sign in.", email: u.email)}
           >
-            {gettext("Remove")}
+            <.icon name="hero-trash" class="size-4" />
+            <span class="sr-only">{gettext("Remove")}</span>
           </.link>
         </:action>
-      </.table>
+      </.live_component>
 
-      <h2 class="text-lg font-semibold mt-8">{gettext("Invite a user")}</h2>
       <.form for={@form} id="invite-form" phx-submit="invite">
-        <div class="grid sm:grid-cols-2 gap-x-4">
-          <.input field={@form[:name]} label={gettext("Name")} required />
-          <.input field={@form[:email]} type="email" label={gettext("Email")} dir="ltr" required />
-          <.input field={@form[:role]} type="select" label={gettext("Role")} options={role_options()} />
-          <.input
-            field={@form[:extension_id]}
-            type="select"
-            label={gettext("Extension")}
-            options={@ext_options}
-          />
-        </div>
-        <.button variant="primary">{gettext("Invite")}</.button>
+        <.section
+          title={gettext("Invite a user")}
+          icon="hero-user-plus"
+          hint={gettext("They get an email with a link to choose a password and set up 2FA.")}
+        >
+          <div class="grid sm:grid-cols-2 gap-x-4">
+            <.input field={@form[:name]} label={gettext("Name")} required />
+            <.input field={@form[:email]} type="email" label={gettext("Email")} dir="ltr" required />
+            <.input
+              field={@form[:role]}
+              type="select"
+              label={gettext("Role")}
+              options={role_options()}
+            />
+            <.input
+              field={@form[:extension_id]}
+              type="select"
+              label={gettext("Extension")}
+              options={@ext_options}
+            />
+          </div>
+        </.section>
+        <.form_actions><.button variant="primary">{gettext("Invite")}</.button></.form_actions>
       </.form>
     </Layouts.app>
     """

@@ -120,78 +120,125 @@ defmodule QPBX.Web.Tenant.RoutesLive do
         </:subtitle>
       </.header>
 
-      <.table id="routes" rows={@routes}>
-        <:col :let={r} label={gettext("Position")}>{r.position}</:col>
-        <:col :let={r} label={gettext("Name")}>{r.name}</:col>
-        <:col :let={r} label={gettext("Prefixes")}>
-          <span dir="ltr">{Enum.join(r.prefixes, ", ")}</span>
+      <.live_component
+        module={PagedTable}
+        id="routes"
+        rows={@routes}
+        empty={gettext("No routes yet. Without one, outside calls cannot go out.")}
+      >
+        <:col :let={r} label={gettext("Route")}>
+          <div class="flex items-center gap-3">
+            <span class="size-8 shrink-0 rounded-[8px] bg-base-200 text-muted grid place-items-center text-sm font-semibold tabular-nums">
+              {r.position}
+            </span>
+            <div>
+              <span class="font-semibold">{r.name}</span>
+              <span class="block text-xs text-muted" dir="ltr">
+                {if r.prefixes == [], do: gettext("every number"), else: Enum.join(r.prefixes, ", ")}
+              </span>
+            </div>
+          </div>
         </:col>
-        <:col :let={r} label={gettext("Class")}>{class_label(r.destination_class)}</:col>
+        <:col :let={r} label={gettext("Class")}>
+          <.chip>{class_label(r.destination_class)}</.chip>
+        </:col>
         <:col :let={r} label={gettext("Trunks in order")}>
-          <span dir="ltr">{trunk_names(r, @trunks)}</span>
+          <span class="text-sm" dir="ltr">{trunk_names(r, @trunks)}</span>
         </:col>
         <:col :let={r} label={gettext("Enabled")}>
-          {if r.enabled, do: gettext("Yes"), else: gettext("No")}
+          <.chip :if={r.enabled} tone={:ok}>{gettext("Yes")}</.chip>
+          <.chip :if={!r.enabled} tone={:plain}>{gettext("No")}</.chip>
         </:col>
         <:action :let={r}>
-          <.link phx-click="edit" phx-value-id={r.id} id={"edit-#{r.id}"}>{gettext("Edit")}</.link>
+          <.link phx-click="edit" phx-value-id={r.id} id={"edit-#{r.id}"} class="btn btn-ghost btn-xs">
+            <.icon name="hero-pencil-square" class="size-4" /> {gettext("Edit")}
+          </.link>
         </:action>
         <:action :let={r}>
           <.link
             phx-click="delete"
             phx-value-id={r.id}
             id={"delete-#{r.id}"}
+            class="btn btn-ghost btn-xs text-error"
             data-confirm={gettext("Delete route %{name}?", name: r.name)}
           >
-            {gettext("Delete")}
+            <.icon name="hero-trash" class="size-4" /> {gettext("Delete")}
           </.link>
         </:action>
-      </.table>
+      </.live_component>
 
-      <h2 class="text-lg font-semibold mt-8">
-        {if @editing, do: gettext("Edit route"), else: gettext("New route")}
-      </h2>
       <.form for={@form} id="route-form" phx-change="validate" phx-submit="save">
-        <.input field={@form[:name]} label={gettext("Name")} required />
-        <.input
-          name="route[prefixes_text]"
-          id="route_prefixes_text"
-          value={@form.params["prefixes_text"]}
-          label={
-            gettext("Number prefixes in E.164, comma-separated (e.g. +972, +9725); empty for all")
-          }
-          dir="ltr"
-          errors={Enum.map(@form[:prefixes].errors, &translate_error/1)}
-        />
-        <.input
-          field={@form[:destination_class]}
-          type="select"
-          label={gettext("Destination class")}
-          options={Enum.map(Core.Plan.destination_classes(), &{class_label(&1), &1})}
-        />
-        <.input field={@form[:position]} type="number" label={gettext("Position")} min="0" />
-        <div class="grid sm:grid-cols-3 gap-2">
-          <.input
-            :for={n <- 1..3}
-            name={"route[trunk_#{n}]"}
-            id={"route_trunk_#{n}"}
-            type="select"
-            value={@form.params["trunk_#{n}"]}
-            label={gettext("Trunk %{n}", n: n)}
-            options={[{"—", ""} | Enum.map(@trunks, &{trunk_label(&1), &1.id})]}
-            errors={if n == 1, do: Enum.map(@form[:trunk_ids].errors, &translate_error/1), else: []}
-          />
+        <div class="divide-y divide-base-300">
+          <.section
+            title={if @editing, do: gettext("Edit route"), else: gettext("New route")}
+            icon="hero-arrows-right-left"
+          >
+            <div class="grid sm:grid-cols-2 gap-x-4">
+              <.input field={@form[:name]} label={gettext("Name")} required />
+              <.input field={@form[:position]} type="number" label={gettext("Position")} min="0" />
+              <.input
+                field={@form[:destination_class]}
+                type="select"
+                label={gettext("Destination class")}
+                options={Enum.map(Core.Plan.destination_classes(), &{class_label(&1), &1})}
+              />
+              <.input
+                name="route[prefixes_text]"
+                id="route_prefixes_text"
+                value={@form.params["prefixes_text"]}
+                label={
+                  gettext(
+                    "Number prefixes in E.164, comma-separated (e.g. +972, +9725); empty for all"
+                  )
+                }
+                dir="ltr"
+                errors={Enum.map(@form[:prefixes].errors, &translate_error/1)}
+              />
+            </div>
+            <.input field={@form[:enabled]} type="checkbox" label={gettext("Enabled")} />
+          </.section>
+          <.section
+            title={gettext("Trunks")}
+            icon="hero-server-stack"
+            hint={gettext("Tried in this order: the next one when a trunk fails or refuses.")}
+          >
+            <div class="grid sm:grid-cols-3 gap-x-4">
+              <.input
+                :for={n <- 1..3}
+                name={"route[trunk_#{n}]"}
+                id={"route_trunk_#{n}"}
+                type="select"
+                value={@form.params["trunk_#{n}"]}
+                label={gettext("Trunk %{n}", n: n)}
+                options={[{"—", ""} | Enum.map(@trunks, &{trunk_label(&1), &1.id})]}
+                errors={
+                  if n == 1, do: Enum.map(@form[:trunk_ids].errors, &translate_error/1), else: []
+                }
+              />
+            </div>
+          </.section>
+          <.section title={gettext("Number changes")} icon="hero-adjustments-horizontal">
+            <div class="grid sm:grid-cols-2 gap-x-4">
+              <.input
+                field={@form[:strip_digits]}
+                type="number"
+                label={gettext("Digits to remove before sending (after +)")}
+                min="0"
+              />
+              <.input
+                field={@form[:add_prefix]}
+                label={gettext("Prefix to add before sending")}
+                dir="ltr"
+              />
+            </div>
+          </.section>
         </div>
-        <.input
-          field={@form[:strip_digits]}
-          type="number"
-          label={gettext("Digits to remove before sending (after +)")}
-          min="0"
-        />
-        <.input field={@form[:add_prefix]} label={gettext("Prefix to add before sending")} dir="ltr" />
-        <.input field={@form[:enabled]} type="checkbox" label={gettext("Enabled")} />
-        <.button variant="primary">{gettext("Save")}</.button>
-        <.button :if={@editing} type="button" phx-click="cancel">{gettext("Cancel")}</.button>
+        <.form_actions>
+          <.button variant="primary">{gettext("Save")}</.button>
+          <.button :if={@editing} type="button" phx-click="cancel" class="btn btn-ghost">
+            {gettext("Cancel")}
+          </.button>
+        </.form_actions>
       </.form>
     </Layouts.app>
     """

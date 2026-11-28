@@ -115,24 +115,52 @@ defmodule QPBX.Web.Account.NotificationsLive do
       <.header>
         {gettext("Notifications")}
         <:actions>
-          <.button phx-click="read_all" id="read-all">{gettext("Mark all read")}</.button>
+          <.button phx-click="read_all" id="read-all">
+            <.icon name="hero-check" class="size-4" /> {gettext("Mark all read")}
+          </.button>
         </:actions>
       </.header>
 
-      <p :if={@items == []} id="no-notifications">{gettext("No notifications.")}</p>
-      <.table :if={@items != []} id="notifications" rows={@items} row_id={&"n-#{&1.id}"}>
-        <:col :let={n} label={gettext("Time")}>
-          <span dir="ltr">{Calendar.strftime(n.inserted_at, "%Y-%m-%d %H:%M")}</span>
-        </:col>
-        <:col :let={n} label={gettext("Severity")}>{severity_label(n.alert.severity)}</:col>
+      <.live_component
+        module={PagedTable}
+        id="notifications"
+        rows={@items}
+        row_id={&"n-#{&1.id}"}
+        search={&"#{&1.alert.title} #{&1.alert.message}"}
+        placeholder={gettext("Search notifications")}
+        empty={gettext("No notifications.")}
+      >
         <:col :let={n} label={gettext("Alert")}>
-          <span class={!n.read_at && "font-semibold"}>{n.alert.title}</span>
-          <span class="text-sm opacity-70">{event_label(n.event)}</span>
-          <p class="text-sm">{n.alert.message}</p>
+          <div class="flex items-start gap-3">
+            <span class={[
+              "mt-1.5 size-2.5 shrink-0 rounded-full",
+              if(n.read_at, do: "bg-base-300", else: "bg-secondary")
+            ]}>
+            </span>
+            <div class="min-w-0">
+              <span class={["block", !n.read_at && "font-semibold"]}>{n.alert.title}</span>
+              <span class="block text-sm text-muted">{n.alert.message}</span>
+              <span class="block text-xs text-muted mt-0.5">
+                <span dir="ltr">{Calendar.strftime(n.inserted_at, "%Y-%m-%d %H:%M")}</span>
+                · {event_label(n.event)}
+              </span>
+            </div>
+          </div>
         </:col>
-        <:col :let={n} label={gettext("State")}>{state_label(n.alert.state)}</:col>
+        <:col :let={n} label={gettext("Severity")}>
+          <.chip tone={severity_tone(n.alert.severity)}>{severity_label(n.alert.severity)}</.chip>
+        </:col>
+        <:col :let={n} label={gettext("State")}>
+          <.chip tone={state_tone(n.alert.state)}>{state_label(n.alert.state)}</.chip>
+        </:col>
         <:action :let={n}>
-          <.link :if={!n.read_at} phx-click="read" phx-value-id={n.id} id={"read-#{n.id}"}>
+          <.link
+            :if={!n.read_at}
+            phx-click="read"
+            phx-value-id={n.id}
+            id={"read-#{n.id}"}
+            class="btn btn-ghost btn-xs"
+          >
             {gettext("Mark read")}
           </.link>
         </:action>
@@ -142,81 +170,97 @@ defmodule QPBX.Web.Account.NotificationsLive do
             phx-click="acknowledge"
             phx-value-id={n.alert.id}
             id={"ack-#{n.id}"}
+            class="btn btn-ghost btn-xs"
           >
             {gettext("Acknowledge")}
           </.link>
         </:action>
-      </.table>
+      </.live_component>
 
-      <h2 class="text-lg font-semibold mt-8">{gettext("My notification settings")}</h2>
-      <form id="settings-form" phx-submit="save_settings" class="mt-2 space-y-4">
-        <table class="table table-sm w-auto">
-          <thead>
-            <tr>
-              <th>{gettext("Category")}</th>
-              <th>{gettext("In the portal")}</th>
-              <th>{gettext("Email")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr :for={c <- Catalogue.categories()}>
-              <td>
-                {category_label(c)}
-                <span :if={c in @mandatory} class="badge badge-sm ms-1">{gettext("Mandatory")}</span>
-              </td>
-              <td :for={ch <- ~w(portal email)}>
-                <input type="hidden" name={"settings[channels][#{c}][]"} value="" />
+      <form id="settings-form" phx-submit="save_settings">
+        <div class="divide-y divide-base-300">
+          <.section
+            title={gettext("My notification settings")}
+            icon="hero-adjustments-horizontal"
+            hint={
+              gettext(
+                "Email carries warning and critical alerts and usage reports; other info alerts stay in the portal. Mandatory categories always reach you both ways."
+              )
+            }
+          >
+            <div class="overflow-x-auto">
+              <table class="table table-sm w-auto">
+                <thead>
+                  <tr class="text-muted">
+                    <th>{gettext("Category")}</th>
+                    <th>{gettext("In the portal")}</th>
+                    <th>{gettext("Email")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr :for={c <- Catalogue.categories()}>
+                    <td class="font-medium">
+                      {category_label(c)}
+                      <.chip :if={c in @mandatory} tone={:plain} class="ms-1">
+                        {gettext("Mandatory")}
+                      </.chip>
+                    </td>
+                    <td :for={ch <- ~w(portal email)}>
+                      <input type="hidden" name={"settings[channels][#{c}][]"} value="" />
+                      <input
+                        type="checkbox"
+                        class="checkbox checkbox-sm checkbox-primary"
+                        name={"settings[channels][#{c}][]"}
+                        value={ch}
+                        id={"pref-#{c}-#{ch}"}
+                        checked={checked?(@channels, c, ch, Catalogue.default_channels())}
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </.section>
+          <.section
+            title={gettext("Quiet hours")}
+            icon="hero-moon"
+            hint={gettext("In quiet hours no email is sent, except for critical alerts.")}
+          >
+            <div class="flex flex-wrap gap-4 items-end">
+              <label class="block">
+                <span class="text-sm">{gettext("Quiet hours from")}</span>
+                <select name="settings[quiet_start]" class="select" id="quiet-start">
+                  <option value="">{gettext("None")}</option>
+                  <option :for={h <- 0..23} value={h} selected={@quiet_start == h}>
+                    {String.pad_leading("#{h}", 2, "0")}:00
+                  </option>
+                </select>
+              </label>
+              <label class="block">
+                <span class="text-sm">{gettext("to")}</span>
+                <select name="settings[quiet_end]" class="select" id="quiet-end">
+                  <option value="">{gettext("None")}</option>
+                  <option :for={h <- 0..23} value={h} selected={@quiet_end == h}>
+                    {String.pad_leading("#{h}", 2, "0")}:00
+                  </option>
+                </select>
+              </label>
+              <label class="block">
+                <span class="text-sm">{gettext("Time zone")}</span>
                 <input
-                  type="checkbox"
-                  class="checkbox checkbox-sm"
-                  name={"settings[channels][#{c}][]"}
-                  value={ch}
-                  id={"pref-#{c}-#{ch}"}
-                  checked={checked?(@channels, c, ch, Catalogue.default_channels())}
+                  name="settings[timezone]"
+                  value={@timezone}
+                  class="input"
+                  dir="ltr"
+                  id="pref-timezone"
                 />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <p class="text-sm opacity-70">
-          {gettext(
-            "Email carries warning and critical alerts; info alerts stay in the portal. Mandatory categories always reach you both ways."
-          )}
-        </p>
-        <div class="flex flex-wrap gap-4 items-end">
-          <label class="block">
-            <span class="text-sm">{gettext("Quiet hours from")}</span>
-            <select name="settings[quiet_start]" class="select select-sm" id="quiet-start">
-              <option value="">{gettext("None")}</option>
-              <option :for={h <- 0..23} value={h} selected={@quiet_start == h}>
-                {String.pad_leading("#{h}", 2, "0")}:00
-              </option>
-            </select>
-          </label>
-          <label class="block">
-            <span class="text-sm">{gettext("to")}</span>
-            <select name="settings[quiet_end]" class="select select-sm" id="quiet-end">
-              <option value="">{gettext("None")}</option>
-              <option :for={h <- 0..23} value={h} selected={@quiet_end == h}>
-                {String.pad_leading("#{h}", 2, "0")}:00
-              </option>
-            </select>
-          </label>
-          <label class="block">
-            <span class="text-sm">{gettext("Time zone")}</span>
-            <input
-              name="settings[timezone]"
-              value={@timezone}
-              class="input input-sm"
-              dir="ltr"
-              id="pref-timezone"
-            />
-          </label>
+              </label>
+            </div>
+          </.section>
         </div>
-        <p class="text-sm opacity-70">
-          {gettext("In quiet hours no email is sent, except for critical alerts.")}
-        </p>
-        <.button variant="primary" id="save-settings">{gettext("Save")}</.button>
+        <.form_actions>
+          <.button variant="primary" id="save-settings">{gettext("Save")}</.button>
+        </.form_actions>
       </form>
     </Layouts.app>
     """

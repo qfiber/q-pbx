@@ -6,14 +6,6 @@ defmodule QPBX.Web.Dashboard do
   use Phoenix.Component
   import QPBX.Web.CoreComponents, only: [icon: 1]
 
-  @tones %{
-    brand: "bg-brand-pale text-primary",
-    accent: "bg-accent-pale text-secondary",
-    warm: "bg-warm-pale text-warm-ink",
-    ok: "bg-ok-pale text-success",
-    danger: "bg-error/10 text-error"
-  }
-
   attr :id, :string, required: true
   attr :navigate, :string, default: nil, doc: "the page behind the number; nil: not a link"
   attr :icon, :string, required: true
@@ -28,7 +20,7 @@ defmodule QPBX.Web.Dashboard do
   slot :inner_block, doc: "a line under the number"
 
   def stat(assigns) do
-    assigns = assign(assigns, :tile, @tones[assigns.tone])
+    assigns = assign(assigns, :tile, QPBX.Web.UI.tone(assigns.tone))
 
     ~H"""
     <.link :if={@navigate} navigate={@navigate} id={@id} class={card_class(@alert, true)}>

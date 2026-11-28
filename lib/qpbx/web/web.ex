@@ -140,10 +140,11 @@ defmodule QPBX.Web do
       import Phoenix.HTML
       # Core UI components
       import QPBX.Web.CoreComponents
+      import QPBX.Web.UI
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS
-      alias QPBX.Web.Layouts
+      alias QPBX.Web.{Layouts, PagedTable}
 
       # Routes generation with the ~p sigil
       unquote(verified_routes())

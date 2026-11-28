@@ -1,21 +1,21 @@
 defmodule QPBX.Web.Platform.PlansLive do
   @moduledoc """
-  Platform admin: list plans, create one, or edit one (`/platform/plans/:id`). An edit applies
-  to every tenant on the plan at once (their own overrides still win).
+  Platform admin: the plans (`/platform/plans`), a new one (`/platform/plans/new`) or one to edit
+  (`/platform/plans/:id`), each on its own page. An edit applies to every tenant on the plan at
+  once (their own overrides still win).
   """
   use QPBX.Web, :live_view
   alias QPBX.Core
   alias QPBX.Core.Plan
-  alias QPBX.Web.{Pager, PlanFields}
+  alias QPBX.Web.PlanFields
 
   @impl true
   def mount(_params, _session, socket),
-    do: {:ok, assign(socket, page_title: gettext("Plans"), plans: Core.list_plans())}
+    do:
+      {:ok, assign(socket, page_title: gettext("Plans"), plans: Core.list_plans(), saved_id: nil)}
 
   @impl true
-  def handle_params(params, uri, socket) do
-    socket |> assign(page: params["page"]) |> plan_params_for(params, uri)
-  end
+  def handle_params(params, uri, socket), do: plan_params_for(socket, params, uri)
 
   defp plan_params_for(socket, %{"id" => id}, _uri) do
     case Ecto.UUID.cast(id) do
@@ -54,8 +54,8 @@ defmodule QPBX.Web.Platform.PlansLive do
         {:noreply,
          socket
          |> put_flash(:info, msg)
-         |> assign(plans: plans)
-         |> push_patch(to: ~p"/platform/plans?page=#{Pager.page_of(plans, saved.id)}")}
+         |> assign(plans: plans, saved_id: saved.id)
+         |> push_patch(to: ~p"/platform/plans")}
 
       {:error, cs} ->
         {:noreply, assign(socket, form: to_form(Map.put(cs, :action, :validate)))}
@@ -64,11 +64,7 @@ defmodule QPBX.Web.Platform.PlansLive do
 
   @impl true
   def render(assigns) do
-    assigns =
-      assign(assigns,
-        on_plan: Enum.frequencies_by(Core.list_tenants(), & &1.plan_id),
-        paged: Pager.paginate(assigns.plans, assigns.page)
-      )
+    assigns = assign(assigns, on_plan: Enum.frequencies_by(Core.list_tenants(), & &1.plan_id))
 
     ~H"""
     <Layouts.app
@@ -79,20 +75,39 @@ defmodule QPBX.Web.Platform.PlansLive do
       idle_timeout={@idle_timeout}
     >
       <.header>
-        {gettext("Plans")}
+        {cond do
+          @live_action == :index -> gettext("Plans")
+          @plan.id -> gettext("Edit plan %{name}", name: @plan.name)
+          true -> gettext("New plan")
+        end}
         <:subtitle>
-          {gettext("What a tenant may use. A tenant's own overrides win over its plan.")}
+          {if @live_action == :index,
+            do: gettext("What a tenant may use. A tenant's own overrides win over its plan."),
+            else: nil}
         </:subtitle>
         <:actions>
-          <.link :if={@plan.id} patch={~p"/platform/plans"} class="btn btn-primary" id="new-plan">
+          <.link
+            :if={@live_action == :index}
+            patch={~p"/platform/plans/new"}
+            class="btn btn-primary"
+            id="new-plan"
+          >
             <.icon name="hero-plus" class="size-4" /> {gettext("New plan")}
+          </.link>
+          <.link :if={@live_action != :index} patch={~p"/platform/plans"} class="btn btn-ghost btn-sm">
+            <.icon name="hero-arrow-left" class="size-4 rtl:rotate-180" /> {gettext("All plans")}
           </.link>
         </:actions>
       </.header>
 
-      <.table
+      <.live_component
+        :if={@live_action == :index}
+        module={PagedTable}
         id="plans"
-        rows={@paged.items}
+        rows={@plans}
+        search={& &1.name}
+        placeholder={gettext("Search plans")}
+        focus={@saved_id}
         row_click={&JS.patch(~p"/platform/plans/#{&1.id}")}
       >
         <:col :let={p} label={gettext("Plan")}>
@@ -110,22 +125,14 @@ defmodule QPBX.Web.Platform.PlansLive do
         </:col>
         <:col :let={p} label={gettext("Destinations")}>
           <div class="flex flex-wrap gap-1">
-            <span
-              :for={c <- p.allowed_destination_classes}
-              class="rounded-[6px] bg-accent-pale text-secondary px-1.5 py-0.5 text-xs"
-            >
-              {class_label(c)}
-            </span>
+            <.chip :for={c <- p.allowed_destination_classes}>{class_label(c)}</.chip>
           </div>
         </:col>
         <:col :let={p} label={gettext("Features")}>
           <div class="flex flex-wrap gap-1">
-            <span
-              :for={{f, true} <- Enum.sort(p.features || %{})}
-              class="rounded-[6px] bg-warm-pale text-warm-ink px-1.5 py-0.5 text-xs"
-            >
+            <.chip :for={{f, true} <- Enum.sort(p.features || %{})} tone={:warm}>
               {feature_label(to_string(f))}
-            </span>
+            </.chip>
           </div>
         </:col>
         <:action :let={p}>
@@ -137,16 +144,17 @@ defmodule QPBX.Web.Platform.PlansLive do
             <.icon name="hero-pencil-square" class="size-4" /> {gettext("Edit")}
           </.link>
         </:action>
-      </.table>
+      </.live_component>
 
-      <Pager.pager id="plans-pages" page={@paged} to={&page_path(@plan, &1)} />
-
-      <h2 id="plan-form-title">
-        {if @plan.id, do: gettext("Edit plan %{name}", name: @plan.name), else: gettext("New plan")}
-      </h2>
-      <.form for={@form} id="plan-form" phx-change="validate" phx-submit="save">
+      <.form
+        :if={@live_action != :index}
+        for={@form}
+        id="plan-form"
+        phx-change="validate"
+        phx-submit="save"
+      >
         <div class="divide-y divide-base-300">
-          <PlanFields.section
+          <.section
             title={gettext("Plan")}
             icon="hero-rectangle-stack"
             hint={
@@ -161,14 +169,14 @@ defmodule QPBX.Web.Platform.PlansLive do
             <div class="max-w-md">
               <.input field={@form[:name]} label={gettext("Name")} required />
             </div>
-          </PlanFields.section>
+          </.section>
 
           <PlanFields.limits
             hint={gettext("Leave a limit empty for unlimited.")}
             input={fn l -> %{field: @form[l]} end}
           />
 
-          <PlanFields.section
+          <.section
             title={gettext("Destinations and features")}
             icon="hero-sparkles"
             hint={gettext("Where tenants on this plan may call, and what they get.")}
@@ -217,23 +225,20 @@ defmodule QPBX.Web.Platform.PlansLive do
                 errors={Enum.map(@form[:usage_thresholds].errors, &translate_error/1)}
               />
             </div>
-          </PlanFields.section>
+          </.section>
         </div>
-        <div class="flex flex-wrap gap-2 pt-5 mt-2 border-t border-base-300">
+        <.form_actions>
           <.button variant="primary">
             {if @plan.id, do: gettext("Save plan"), else: gettext("Create plan")}
           </.button>
           <.link :if={@plan.id} patch={~p"/platform/plans"} class="btn btn-ghost">
             {gettext("Cancel")}
           </.link>
-        </div>
+        </.form_actions>
       </.form>
     </Layouts.app>
     """
   end
-
-  defp page_path(%Plan{id: nil}, n), do: ~p"/platform/plans?page=#{n}"
-  defp page_path(%Plan{id: id}, n), do: ~p"/platform/plans/#{id}?page=#{n}"
 
   defp limit_value(nil), do: gettext("Unlimited")
   defp limit_value(n), do: n

@@ -136,61 +136,125 @@ defmodule QPBX.Web.Tenant.MyExtensionLive do
       unread={assigns[:unread]}
       idle_timeout={@idle_timeout}
     >
-      <.header>{gettext("My extension")}</.header>
+      <.header :if={!@ext}>{gettext("My extension")}</.header>
 
-      <p :if={!@ext} id="no-extension">
+      <div
+        :if={!@ext}
+        id="no-extension"
+        class="rounded-[12px] border border-dashed border-hairline bg-base-100/60 px-6 py-10 text-center text-sm text-muted"
+      >
+        <.icon name="hero-phone" class="size-6 mx-auto mb-2 opacity-60" />
         {gettext(
           "No extension is linked to your account yet. Ask your company's admin to link one under Users."
         )}
-      </p>
+      </div>
 
-      <div :if={@ext}>
-        <p class="text-lg" id="my-number">
-          {gettext("Extension %{number}", number: @ext.number)} · {@ext.name}
-        </p>
+      <div :if={@ext} class="space-y-6">
+        <header class="flex items-center gap-3">
+          <span class="size-12 shrink-0 rounded-[12px] bg-accent-pale text-secondary grid place-items-center text-lg font-semibold tabular-nums">
+            {@ext.number}
+          </span>
+          <div>
+            <h1 class="text-2xl font-semibold leading-tight tracking-tight">
+              {gettext("My extension")}
+            </h1>
+            <p class="mt-1 text-sm text-muted" id="my-number">
+              {gettext("Extension %{number}", number: @ext.number)} · {@ext.name}
+            </p>
+          </div>
+        </header>
 
-        <.form for={%{}} as={:call} id="call-form" phx-submit="call" class="mt-4 flex items-end gap-2">
-          <.input name="call[to]" value="" label={gettext("Call a number")} dir="ltr" required />
-          <.button variant="primary" id="call-button">{gettext("Call")}</.button>
+        <.form for={%{}} as={:call} id="call-form" phx-submit="call">
+          <div class="flex flex-wrap items-end gap-3">
+            <div class="grow min-w-48">
+              <.input
+                name="call[to]"
+                value=""
+                label={gettext("Call a number")}
+                dir="ltr"
+                placeholder="050-123-4567"
+                required
+              />
+            </div>
+            <.button variant="primary" id="call-button" class="mb-2">
+              <.icon name="hero-phone-arrow-up-right" class="size-4" /> {gettext("Call")}
+            </.button>
+          </div>
+          <p class="text-xs text-muted">
+            {gettext("Your phone rings first; answer it and the number is dialled.")}
+          </p>
         </.form>
 
-        <h2 class="text-lg font-semibold mt-6">{gettext("Voicemail")}</h2>
-        <p :if={@voicemails == []} id="no-voicemail">{gettext("No messages.")}</p>
-        <.table :if={@voicemails != []} id="my-voicemails" rows={@voicemails} row_id={&"vm-#{&1.id}"}>
-          <:col :let={v} label={gettext("From")}>
-            <span dir="ltr">{v.caller_number || gettext("Unknown")}</span>
-          </:col>
-          <:col :let={v} label={gettext("When")}>
-            <span dir="ltr">{local(v.inserted_at, @tz)}</span>
-          </:col>
-          <:col :let={v} label={gettext("Length")}>
-            {gettext("%{seconds} s", seconds: v.duration)}
-          </:col>
-          <:col :let={v} label={gettext("Status")}>
-            {if v.folder == "new", do: gettext("New"), else: gettext("Heard")}
-          </:col>
-          <:col :let={v} label={gettext("Listen")}>
-            <audio
-              controls
-              preload="none"
-              src={~p"/app/voicemail/#{v.id}/audio"}
-              phx-hook=".MarkHeard"
-              id={"audio-#{v.id}"}
-              data-id={v.id}
+        <div class="grid xl:grid-cols-2 gap-6">
+          <.section title={gettext("Voicemail")} icon="hero-inbox">
+            <.live_component
+              module={PagedTable}
+              id="my-voicemails"
+              rows={@voicemails}
+              row_id={&"vm-#{&1.id}"}
+              empty={gettext("No messages.")}
             >
-            </audio>
-          </:col>
-          <:action :let={v}>
-            <.link
-              phx-click="delete_voicemail"
-              phx-value-id={v.id}
-              id={"delete-#{v.id}"}
-              data-confirm={gettext("Delete this message?")}
+              <:col :let={v} label={gettext("From")}>
+                <span class="font-medium" dir="ltr">{v.caller_number || gettext("Unknown")}</span>
+                <span class="block text-xs text-muted" dir="ltr">
+                  {local(v.inserted_at, @tz)} · {gettext("%{seconds} s", seconds: v.duration)}
+                </span>
+              </:col>
+              <:col :let={v} label={gettext("Status")}>
+                <.chip :if={v.folder == "new"} tone={:warm}>{gettext("New")}</.chip>
+                <.chip :if={v.folder != "new"} tone={:plain}>{gettext("Heard")}</.chip>
+              </:col>
+              <:col :let={v} label={gettext("Listen")}>
+                <audio
+                  controls
+                  preload="none"
+                  class="h-8 max-w-48"
+                  src={~p"/app/voicemail/#{v.id}/audio"}
+                  phx-hook=".MarkHeard"
+                  id={"audio-#{v.id}"}
+                  data-id={v.id}
+                >
+                </audio>
+              </:col>
+              <:action :let={v}>
+                <.link
+                  phx-click="delete_voicemail"
+                  phx-value-id={v.id}
+                  id={"delete-#{v.id}"}
+                  class="btn btn-ghost btn-xs text-error"
+                  title={gettext("Delete")}
+                  data-confirm={gettext("Delete this message?")}
+                >
+                  <.icon name="hero-trash" class="size-4" />
+                  <span class="sr-only">{gettext("Delete")}</span>
+                </.link>
+              </:action>
+            </.live_component>
+          </.section>
+
+          <.section title={gettext("Recent calls")} icon="hero-clock">
+            <.live_component
+              module={PagedTable}
+              id="my-calls"
+              rows={@calls}
+              row_id={&"cdr-#{&1.id}"}
+              empty={gettext("No calls yet.")}
             >
-              {gettext("Delete")}
-            </.link>
-          </:action>
-        </.table>
+              <:col :let={c} label={gettext("Call")}>
+                <span class="text-sm" dir="ltr">{c.caller_number} → {c.destination}</span>
+                <span class="block text-xs text-muted" dir="ltr">{local(c.started_at, @tz)}</span>
+              </:col>
+              <:col :let={c} label={gettext("Talk time")}>
+                <span class="tabular-nums">
+                  {div(c.billsec, 60)}:{c.billsec
+                  |> rem(60)
+                  |> Integer.to_string()
+                  |> String.pad_leading(2, "0")}
+                </span>
+              </:col>
+            </.live_component>
+          </.section>
+        </div>
         <script :type={Phoenix.LiveView.ColocatedHook} name=".MarkHeard">
           export default {
             mounted() {
@@ -199,60 +263,90 @@ defmodule QPBX.Web.Tenant.MyExtensionLive do
           }
         </script>
 
-        <h2 class="text-lg font-semibold mt-6">{gettext("Recent calls")}</h2>
-        <p :if={@calls == []} id="no-calls">{gettext("No calls yet.")}</p>
-        <.table :if={@calls != []} id="my-calls" rows={@calls} row_id={&"cdr-#{&1.id}"}>
-          <:col :let={c} label={gettext("When")}>
-            <span dir="ltr">{local(c.started_at, @tz)}</span>
-          </:col>
-          <:col :let={c} label={gettext("From")}><span dir="ltr">{c.caller_number}</span></:col>
-          <:col :let={c} label={gettext("To")}><span dir="ltr">{c.destination}</span></:col>
-          <:col :let={c} label={gettext("Talk time")}>
-            {div(c.billsec, 60)}:{c.billsec
-            |> rem(60)
-            |> Integer.to_string()
-            |> String.pad_leading(2, "0")}
-          </:col>
-        </.table>
-
-        <h2 class="text-lg font-semibold mt-6">{gettext("Forwarding and do not disturb")}</h2>
         <.form for={@form} id="my-extension-form" phx-submit="save">
-          <.input field={@form[:dnd]} type="checkbox" label={gettext("Do not disturb")} />
-          <.input field={@form[:call_waiting]} type="checkbox" label={gettext("Call waiting")} />
-          <.input field={@form[:forward_always]} label={gettext("Forward all calls to")} dir="ltr" />
-          <.input field={@form[:forward_busy]} label={gettext("Forward when busy to")} dir="ltr" />
-          <.input
-            field={@form[:forward_no_answer]}
-            label={gettext("Forward when not answered to")}
-            dir="ltr"
-          />
-          <.input
-            field={@form[:no_answer_seconds]}
-            type="number"
-            label={gettext("Ring for (seconds)")}
-            min="5"
-            max="120"
-          />
-          <.input field={@form[:follow_me_enabled]} type="checkbox" label={gettext("Follow me")} />
-          <.input
-            name="extension[follow_me_text]"
-            value={@form.params["follow_me_text"]}
-            id="extension_follow_me_text"
-            label={gettext("Follow-me numbers (comma-separated, up to 5)")}
-            dir="ltr"
-          />
-          <.button variant="primary">{gettext("Save")}</.button>
+          <div class="divide-y divide-base-300">
+            <.section title={gettext("Availability")} icon="hero-bell-slash">
+              <div class="flex flex-wrap gap-x-8">
+                <.input field={@form[:dnd]} type="checkbox" label={gettext("Do not disturb")} />
+                <.input
+                  field={@form[:call_waiting]}
+                  type="checkbox"
+                  label={gettext("Call waiting")}
+                />
+              </div>
+            </.section>
+            <.section
+              title={gettext("Forwarding")}
+              icon="hero-arrow-uturn-right"
+              hint={gettext("Numbers can be typed the local way, for example 02-123-4567.")}
+            >
+              <div class="grid sm:grid-cols-2 gap-x-4">
+                <.input
+                  field={@form[:forward_always]}
+                  label={gettext("Forward all calls to")}
+                  dir="ltr"
+                />
+                <.input
+                  field={@form[:forward_busy]}
+                  label={gettext("Forward when busy to")}
+                  dir="ltr"
+                />
+                <.input
+                  field={@form[:forward_no_answer]}
+                  label={gettext("Forward when not answered to")}
+                  dir="ltr"
+                />
+                <.input
+                  field={@form[:no_answer_seconds]}
+                  type="number"
+                  label={gettext("Ring for (seconds)")}
+                  min="5"
+                  max="120"
+                />
+              </div>
+            </.section>
+            <.section
+              title={gettext("Follow me")}
+              icon="hero-arrows-pointing-out"
+              hint={gettext("When the extension is not answered, these numbers ring together.")}
+            >
+              <.input
+                field={@form[:follow_me_enabled]}
+                type="checkbox"
+                label={gettext("Follow me")}
+              />
+              <.input
+                name="extension[follow_me_text]"
+                value={@form.params["follow_me_text"]}
+                id="extension_follow_me_text"
+                label={gettext("Follow-me numbers (comma-separated, up to 5)")}
+                dir="ltr"
+              />
+            </.section>
+          </div>
+          <.form_actions><.button variant="primary">{gettext("Save")}</.button></.form_actions>
         </.form>
 
-        <h2 class="text-lg font-semibold mt-6">{gettext("Devices")}</h2>
-        <ul id="my-devices" class="list-disc ps-6">
-          <li :for={d <- @ext.devices}>
-            <span dir="ltr">{d.sip_credential.username}</span> · {d.label}
-          </li>
-        </ul>
-        <p class="text-sm opacity-70">
-          {gettext("Your admin adds devices and gives out their passwords.")}
-        </p>
+        <.section
+          title={gettext("Devices")}
+          icon="hero-device-phone-mobile"
+          hint={gettext("Your admin adds devices and gives out their passwords.")}
+        >
+          <ul id="my-devices" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <li
+              :for={d <- @ext.devices}
+              class="rounded-[12px] border border-hairline bg-base-100 shadow-card p-4 flex items-center gap-3"
+            >
+              <.icon name="hero-device-phone-mobile" class="size-5 text-secondary" />
+              <div class="min-w-0">
+                <span class="block font-medium truncate">
+                  {if d.label == "", do: "—", else: d.label}
+                </span>
+                <span class="block text-xs text-muted" dir="ltr">{d.sip_credential.username}</span>
+              </div>
+            </li>
+          </ul>
+        </.section>
       </div>
     </Layouts.app>
     """

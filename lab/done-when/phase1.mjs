@@ -48,7 +48,7 @@ try {
   check("platform admin enrolled 2FA and reached /platform", new URL(ap.url()).pathname === "/platform", ap.url());
 
   // Create a plan, then a tenant with that plan and its first tenant admin.
-  await ap.goto(`${base}/platform/plans`, { waitUntil: "networkidle0" });
+  await ap.goto(`${base}/platform/plans/new`, { waitUntil: "networkidle0" });
   const planName = `Lab plan ${run}`;
   await fill(ap, { "plan[name]": planName, "plan[max_extensions]": "25" });
   await ap.click("#plan-form button");
