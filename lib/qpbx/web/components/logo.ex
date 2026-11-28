@@ -23,7 +23,7 @@ defmodule QPBX.Web.Logo do
     ~H"""
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox={if @mark_only, do: "0 0 193.6 223.51", else: "0 0 757.6781 223.50984"}
+      viewBox={if @mark_only, do: "0 0 193.6 223.51", else: "0 0 731.39484 223.50984"}
       class={["qpbx-logo", @class]}
       role="img"
       aria-label="Q-PBX"

@@ -41,6 +41,8 @@ Kamailio gets its real config.
 
 ## Done
 
+- Logo updated (2026-11-28): new wordmark; same hexagons, so the favicons are unchanged.
+
 - 3-9 Alert sources (done, 2026-11-28): security (Kamailio bans: failed SIP logins become the
   targeted tenant's brute-force alert, floods and scanners a platform SIP attack; office IPs
   spared; fraud rules; portal logins from a new address, wrong 2FA codes, failures on an
