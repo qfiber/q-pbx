@@ -2,24 +2,30 @@ defmodule QPBX.Web.Captcha.Pow do
   @moduledoc """
   Built-in proof of work in the ALTCHA format: the server picks a secret number, sends
   `sha256(salt <> number)` signed with HMAC, and the browser finds the number by trying them
-  all (about a second). The answer is checked, must not have expired (5 minutes) and is
-  accepted once. Bots then pay CPU time for every attempt; people barely notice.
+  all. The answer is checked, must not have expired (5 minutes) and is accepted once. Bots
+  then pay CPU time for every attempt; people barely notice. How many numbers it searches
+  (its strength) is `pow_max_number` in the captcha config or on the settings page (default
+  60,000: about a third of a second on a computer).
   """
   @behaviour QPBX.Web.Captcha
 
-  @max_number 60_000
+  @default_max 60_000
   @ttl 300
 
+  @doc "The strength in use: the numbers a browser searches."
+  def max_number, do: QPBX.Web.Captcha.config()[:pow_max_number] || @default_max
+
   def challenge do
+    max = max_number()
     expires = System.os_time(:second) + @ttl
     salt = Base.encode16(:crypto.strong_rand_bytes(12), case: :lower) <> "?expires=#{expires}"
-    number = :rand.uniform(@max_number + 1) - 1
+    number = :rand.uniform(max + 1) - 1
     challenge = sha256(salt <> Integer.to_string(number))
 
     %{
       algorithm: "SHA-256",
       challenge: challenge,
-      maxnumber: @max_number,
+      maxnumber: max,
       salt: salt,
       signature: sign(challenge)
     }

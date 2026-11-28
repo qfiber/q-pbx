@@ -19,6 +19,8 @@ defmodule QPBX.Core.PlatformSettings do
     field :captcha_provider, :string
     field :captcha_site_key, :string
     field :captcha_secret, QPBX.Core.Encrypted.Binary, redact: true
+    # Proof-of-work strength: the numbers a browser searches (empty: 60,000).
+    field :pow_max_number, :integer
     timestamps(type: :utc_datetime)
   end
 
@@ -33,7 +35,9 @@ defmodule QPBX.Core.PlatformSettings do
 
     settings
     |> cast(attrs, ~w(smtp_host smtp_port smtp_username smtp_password mail_from
-                      captcha_provider captcha_site_key captcha_secret)a, empty_values: [""])
+                      captcha_provider captcha_site_key captcha_secret pow_max_number)a,
+      empty_values: [""]
+    )
     |> update_change(:smtp_host, &(&1 && String.trim(&1)))
     |> validate_number(:smtp_port, greater_than: 0, less_than: 65_536)
     |> validate_format(:smtp_host, ~r/^[A-Za-z0-9.-]+$/)
@@ -41,6 +45,10 @@ defmodule QPBX.Core.PlatformSettings do
     |> validate_inclusion(:captcha_provider, @captcha_providers)
     |> validate_length(:smtp_username, max: 200)
     |> validate_length(:captcha_site_key, max: 200)
+    |> validate_number(:pow_max_number,
+      greater_than_or_equal_to: 10_000,
+      less_than_or_equal_to: 2_000_000
+    )
     |> validate_service_keys()
   end
 

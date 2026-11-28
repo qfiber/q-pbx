@@ -104,8 +104,22 @@ defmodule QPBX.Web.SettingsLiveTest do
     assert Captcha.provider() == :turnstile
     assert Captcha.config()[:secret] == "sec"
 
+    # Proof of work: its strength is chosen here and reaches the challenge.
+    view |> form("#captcha-form", captcha: %{captcha_provider: "pow"}) |> render_change()
+    assert has_element?(view, "#pow-strength")
+
+    view
+    |> form("#captcha-form", captcha: %{captcha_provider: "pow", pow_max_number: "200000"})
+    |> render_submit()
+
+    assert Captcha.Pow.challenge().maxnumber == 200_000
+
+    view |> form("#captcha-form", captcha: %{captcha_provider: "turnstile"}) |> render_change()
+    refute has_element?(view, "#pow-strength")
+
     view |> element("#reset-captcha") |> render_click()
     assert Captcha.provider() == (Application.get_env(:qpbx, Captcha, [])[:provider] || :pow)
+    assert Captcha.Pow.challenge().maxnumber == 60_000
   end
 
   test "the API reads and changes the settings, never returning secrets; a test email", %{

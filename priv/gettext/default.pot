@@ -249,7 +249,7 @@ msgid "Outbound minutes per month"
 msgstr ""
 
 #: lib/qpbx/web/controllers/auth_html.ex:30
-#: lib/qpbx/web/live/platform/settings_live.ex:136
+#: lib/qpbx/web/live/platform/settings_live.ex:146
 #: lib/qpbx/web/live/tenant/extension_live.ex:175
 #, elixir-autogen, elixir-format
 msgid "Password"
@@ -1280,7 +1280,7 @@ msgid "Outside number"
 msgstr ""
 
 #: lib/qpbx/web/live/platform/protection_live.ex:146
-#: lib/qpbx/web/live/platform/settings_live.ex:119
+#: lib/qpbx/web/live/platform/settings_live.ex:129
 #: lib/qpbx/web/live/platform/trunks_live.ex:203
 #, elixir-autogen, elixir-format
 msgid "Port"
@@ -1372,8 +1372,8 @@ msgstr ""
 #: lib/qpbx/web/live/platform/fraud_live.ex:105
 #: lib/qpbx/web/live/platform/numbering_live.ex:177
 #: lib/qpbx/web/live/platform/protection_live.ex:122
-#: lib/qpbx/web/live/platform/settings_live.ex:153
-#: lib/qpbx/web/live/platform/settings_live.ex:240
+#: lib/qpbx/web/live/platform/settings_live.ex:163
+#: lib/qpbx/web/live/platform/settings_live.ex:264
 #: lib/qpbx/web/live/platform/tenant_live.ex:223
 #: lib/qpbx/web/live/platform/trunks_live.ex:290
 #: lib/qpbx/web/live/tenant/extension_live.ex:326
@@ -2137,7 +2137,7 @@ msgstr ""
 
 #: lib/qpbx/web/live/account/notifications_live.ex:229
 #: lib/qpbx/web/live/account/notifications_live.ex:238
-#: lib/qpbx/web/live/platform/settings_live.ex:261
+#: lib/qpbx/web/live/platform/settings_live.ex:301
 #: lib/qpbx/web/live/tenant/users_live.ex:24
 #, elixir-autogen, elixir-format
 msgid "None"
@@ -3923,8 +3923,8 @@ msgid "Search prefixes"
 msgstr ""
 
 #: lib/qpbx/web/components/layouts.ex:326
-#: lib/qpbx/web/live/platform/settings_live.ex:20
-#: lib/qpbx/web/live/platform/settings_live.ex:91
+#: lib/qpbx/web/live/platform/settings_live.ex:30
+#: lib/qpbx/web/live/platform/settings_live.ex:101
 #: lib/qpbx/web/live/tenant/webhook_live.ex:165
 #, elixir-autogen, elixir-format
 msgid "Settings"
@@ -4398,123 +4398,163 @@ msgstr ""
 msgid "Search by who, what or name"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:214
+#: lib/qpbx/web/live/platform/settings_live.ex:224
 #, elixir-autogen, elixir-format
 msgid "Check"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:159
+#: lib/qpbx/web/live/platform/settings_live.ex:169
 #, elixir-autogen, elixir-format
 msgid "Go back to the installation's email settings?"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:246
+#: lib/qpbx/web/live/platform/settings_live.ex:270
 #, elixir-autogen, elixir-format
 msgid "Go back to the installation's sign-in check?"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:124
+#: lib/qpbx/web/live/platform/settings_live.ex:134
 #, elixir-autogen, elixir-format
 msgid "Login (empty: none)"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:112
+#: lib/qpbx/web/live/platform/settings_live.ex:122
 #, elixir-autogen, elixir-format
 msgid "Mail server"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:191
+#: lib/qpbx/web/live/platform/settings_live.ex:201
 #, elixir-autogen, elixir-format
 msgid "Not sent: %{reason}"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:101
+#: lib/qpbx/web/live/platform/settings_live.ex:111
 #, elixir-autogen, elixir-format
 msgid "Outgoing email"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:135
+#: lib/qpbx/web/live/platform/settings_live.ex:145
 #, elixir-autogen, elixir-format
 msgid "Password (saved; empty keeps it)"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:257
+#: lib/qpbx/web/live/platform/settings_live.ex:297
 #, elixir-autogen, elixir-format
 msgid "Proof of work (built in)"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:73
+#: lib/qpbx/web/live/platform/settings_live.ex:83
 #, elixir-autogen, elixir-format
 msgid "Saved. It applies at once."
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:232
+#: lib/qpbx/web/live/platform/settings_live.ex:256
 #, elixir-autogen, elixir-format
 msgid "Secret (outside services)"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:231
+#: lib/qpbx/web/live/platform/settings_live.ex:255
 #, elixir-autogen, elixir-format
 msgid "Secret (saved; empty keeps it)"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:168
+#: lib/qpbx/web/live/platform/settings_live.ex:178
 #, elixir-autogen, elixir-format
 msgid "Send a test email to"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:179
+#: lib/qpbx/web/live/platform/settings_live.ex:189
 #, elixir-autogen, elixir-format
 msgid "Send test email"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:146
+#: lib/qpbx/web/live/platform/settings_live.ex:156
 #, elixir-autogen, elixir-format
 msgid "Sender address"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:178
+#: lib/qpbx/web/live/platform/settings_live.ex:188
 #, elixir-autogen, elixir-format
 msgid "Sending..."
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:183
+#: lib/qpbx/web/live/platform/settings_live.ex:193
 #, elixir-autogen, elixir-format
 msgid "Sent. Check the inbox of %{to}."
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:93
+#: lib/qpbx/web/live/platform/settings_live.ex:103
 #, elixir-autogen, elixir-format
 msgid "Server-wide settings. An empty field uses the installation's value, shown as its hint. Changes apply at once."
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:202
+#: lib/qpbx/web/live/platform/settings_live.ex:212
 #, elixir-autogen, elixir-format
 msgid "Sign-in protection"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:222
+#: lib/qpbx/web/live/platform/settings_live.ex:246
 #, elixir-autogen, elixir-format
 msgid "Site key (outside services)"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:205
+#: lib/qpbx/web/live/platform/settings_live.ex:215
 #, elixir-autogen, elixir-format
 msgid "The human check on the login and account setup pages. Proof of work runs in the browser with no outside service."
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:215
+#: lib/qpbx/web/live/platform/settings_live.ex:225
 #, elixir-autogen, elixir-format
 msgid "The installation's (%{name})"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:104
+#: lib/qpbx/web/live/platform/settings_live.ex:114
 #, elixir-autogen, elixir-format
 msgid "The mail server every email goes through: alerts, voicemail, setup links. With a login, the connection must be encrypted (TLS)."
 msgstr ""
 
-#: lib/qpbx/web/live/platform/settings_live.ex:161
-#: lib/qpbx/web/live/platform/settings_live.ex:248
+#: lib/qpbx/web/live/platform/settings_live.ex:171
+#: lib/qpbx/web/live/platform/settings_live.ex:272
 #, elixir-autogen, elixir-format
 msgid "Use the installation's settings"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/settings_live.ex:290
+#, elixir-autogen, elixir-format
+msgid "Light (about 0.2 s)"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/settings_live.ex:294
+#, elixir-autogen, elixir-format
+msgid "Maximum (about 8 s)"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/settings_live.ex:291
+#, elixir-autogen, elixir-format
+msgid "Normal (about 0.3 s)"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/settings_live.ex:234
+#, elixir-autogen, elixir-format
+msgid "Normal (the default)"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/settings_live.ex:233
+#, elixir-autogen, elixir-format
+msgid "Proof-of-work strength"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/settings_live.ex:292
+#, elixir-autogen, elixir-format
+msgid "Strong (about 1 s)"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/settings_live.ex:238
+#, elixir-autogen, elixir-format
+msgid "Stronger costs bots more on every attempt, and makes people wait longer on the sign-in pages. Times are for a computer; phones take longer."
+msgstr ""
+
+#: lib/qpbx/web/live/platform/settings_live.ex:293
+#, elixir-autogen, elixir-format
+msgid "Very strong (about 3 s)"
 msgstr ""

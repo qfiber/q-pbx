@@ -41,6 +41,12 @@ Kamailio gets its real config.
 
 ## Done
 
+- Proof-of-work strength (2026-11-29): platform admins choose how hard the built-in sign-in
+  check is (light, normal, strong, very strong, maximum: 30,000 to 1,500,000 numbers a browser
+  searches; normal, 60,000, stays the default), shown only while proof of work is the check;
+  also `pow_max_number` in the API. Times on the labels are a typical computer's (measured in
+  Chrome on a fast desktop at about half of them).
+
 - Platform settings page (2026-11-29): Administration > Settings for outgoing email (mail
   server, port, login, password, sender; a "send a test email" that answers at once, the
   reason in plain words when it fails) and the sign-in check (proof of work, Turnstile,

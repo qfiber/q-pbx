@@ -43,11 +43,15 @@ defmodule QPBX.Web.Captcha do
     [
       provider: s.captcha_provider && String.to_existing_atom(s.captcha_provider),
       site_key: s.captcha_site_key,
-      secret: s.captcha_secret
+      secret: s.captcha_secret,
+      pow_max_number: s.pow_max_number
     ]
     |> Enum.reject(fn {_, v} -> is_nil(v) end)
   rescue
     _ -> []
+  catch
+    # A database that does not answer in time exits rather than raises: same fallback.
+    :exit, _ -> []
   end
 
   @doc "Checks the answer the form carried."

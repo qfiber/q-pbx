@@ -10,7 +10,17 @@ defmodule QPBX.Web.Platform.SettingsLive do
   alias QPBX.Core.PlatformSettings
 
   @email_fields ~w(smtp_host smtp_port smtp_username smtp_password mail_from)
-  @captcha_fields ~w(captcha_provider captcha_site_key captcha_secret)
+  @captcha_fields ~w(captcha_provider captcha_site_key captcha_secret pow_max_number)
+
+  # Strength presets: numbers a browser searches, and the average time on a computer measured
+  # at about 125,000 tries a second (quoted conservatively; phones are slower).
+  @strengths [
+    {30_000, :light},
+    {60_000, :normal},
+    {200_000, :strong},
+    {600_000, :very_strong},
+    {1_500_000, :maximum}
+  ]
 
   @impl true
   def mount(_params, _session, socket) do
@@ -216,6 +226,20 @@ defmodule QPBX.Web.Platform.SettingsLive do
               options={Enum.map(PlatformSettings.captcha_providers(), &{provider_label(&1), &1})}
             />
           </div>
+          <div :if={pow?(@captcha_form, @captcha_default)} class="max-w-md" id="pow-strength">
+            <.input
+              field={@captcha_form[:pow_max_number]}
+              type="select"
+              label={gettext("Proof-of-work strength")}
+              prompt={gettext("Normal (the default)")}
+              options={for {n, level} <- strengths(), do: {strength_label(level), n}}
+            />
+            <p class="text-xs text-muted -mt-1 mb-2">
+              {gettext(
+                "Stronger costs bots more on every attempt, and makes people wait longer on the sign-in pages. Times are for a computer; phones take longer."
+              )}
+            </p>
+          </div>
           <div class="grid sm:grid-cols-2 gap-x-4">
             <.input
               field={@captcha_form[:captcha_site_key]}
@@ -252,6 +276,22 @@ defmodule QPBX.Web.Platform.SettingsLive do
     </Layouts.app>
     """
   end
+
+  defp strengths, do: @strengths
+
+  # Proof of work is in use when chosen here, or when nothing is chosen and the installation's is.
+  defp pow?(form, default) do
+    case Phoenix.HTML.Form.input_value(form, :captcha_provider) do
+      v when v in [nil, ""] -> default == :pow
+      v -> to_string(v) == "pow"
+    end
+  end
+
+  defp strength_label(:light), do: gettext("Light (about 0.2 s)")
+  defp strength_label(:normal), do: gettext("Normal (about 0.3 s)")
+  defp strength_label(:strong), do: gettext("Strong (about 1 s)")
+  defp strength_label(:very_strong), do: gettext("Very strong (about 3 s)")
+  defp strength_label(:maximum), do: gettext("Maximum (about 8 s)")
 
   defp provider_label(p) when is_atom(p), do: provider_label(Atom.to_string(p))
   defp provider_label("pow"), do: gettext("Proof of work (built in)")

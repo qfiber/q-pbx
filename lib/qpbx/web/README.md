@@ -202,7 +202,9 @@ IPs exempt). `QPBX.Web.Captcha` (`provider/0`, `verify/2`, `widget/1`) with `Pow
 (read at each check; if the settings cannot be read, the installation's alone).
 
 **Platform settings:** `/platform/settings` (`Platform.SettingsLive`, Administration):
-outgoing email with a test email, and the sign-in check; the API is `GET/PATCH
+outgoing email with a test email, and the sign-in check with the proof-of-work strength
+(presets from 30,000 to 1,500,000 numbers searched; measured in Chrome at about 250,000 tries a
+second on a fast desktop, the labels quote half that); the API is `GET/PATCH
 /v1/platform-settings` and `POST /v1/platform-settings/test-email` (502 with the reason when
 the mail server refuses).
 
