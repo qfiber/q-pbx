@@ -95,7 +95,7 @@ defmodule QPBX.Notify.Alerts do
         set: [message: attrs.message, data: attrs[:data] || alert.data, updated_at: now]
       )
 
-    if DateTime.diff(now, alert.notified_at) >= @group_window do
+    if repeat_notice?(alert, now) do
       {1, [alert]} =
         Repo.update_all(from(a in Alert, where: a.id == ^alert.id, select: a),
           set: [repeats: 0, notified_at: now]
@@ -107,6 +107,14 @@ defmodule QPBX.Notify.Alerts do
       {:ok, alert}
     end
   end
+
+  # Repeats of an event (another attack, another fraud hit) are told at most once per window.
+  # Not when someone already acknowledged it, and not for a condition that is still the same
+  # (a trunk still down after a restart): those are only counted.
+  defp repeat_notice?(alert, now),
+    do:
+      alert.state == "open" and not Catalogue.condition?(alert.kind) and
+        DateTime.diff(now, alert.notified_at) >= @group_window
 
   defp open_alert(nil, key),
     do:

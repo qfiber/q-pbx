@@ -97,6 +97,34 @@ defmodule QPBX.Notify.AlertsTest do
     assert b.id != a.id
   end
 
+  test "no repeat notice for an acknowledged alert or for a condition that is still the same", %{
+    t: t,
+    admin: admin
+  } do
+    later = fn a ->
+      Repo.update_all(from(x in Alert, where: x.id == ^a.id),
+        set: [notified_at: DateTime.add(DateTime.utc_now(), -16 * 60)]
+      )
+    end
+
+    # A trunk still down (say, seen again after a restart): counted, nobody told again.
+    {:ok, trunk} = raise_alert(t, "trunk_down", "trunk:1")
+    later.(trunk)
+    {:ok, _} = raise_alert(t, "trunk_down", "trunk:1")
+    assert %{count: 2} = Repo.get!(Alert, trunk.id)
+    assert length(to(admin)) == 1
+
+    # An acknowledged attack: someone is on it, repeats are counted silently.
+    {:ok, bf} = raise_alert(t, "brute_force", "bf:9")
+    {:ok, _} = Notify.acknowledge_alert(Core.scope_for(admin), bf.id, admin)
+    later.(bf)
+    {:ok, _} = raise_alert(t, "brute_force", "bf:9")
+    assert %{count: 2, state: "acknowledged"} = Repo.get!(Alert, bf.id)
+    # Two notices in all: the trunk's and the attack's first.
+    assert length(to(admin)) == 2
+    refute Enum.any?(to(admin), &(&1.event == "repeated"))
+  end
+
   test "preferences per category; a mandatory category cannot be switched off", %{
     t: t,
     admin: admin,

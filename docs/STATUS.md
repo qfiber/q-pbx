@@ -41,6 +41,15 @@ Kamailio gets its real config.
 
 ## Done
 
+- Repeated notifications (2026-11-29, from a lab report): a trunk that stayed down produced a
+  "Repeated" notice after every app restart (the trunk monitor sees it again, the open alert
+  counts a repeat), even after it was acknowledged. Now repeats are counted without telling
+  anyone when the alert is acknowledged, or when it is a condition (trunk or service down,
+  phone offline, disk, certificate, backups, job backlog); attacks and fraud still repeat
+  their notice at most every 15 minutes. The notifications page shows one row per alert with
+  how many notices ("×4", first at 16:57); marking it read marks them all. 2 new tests (377
+  in all).
+
 - Proof-of-work strength (2026-11-29): platform admins choose how hard the built-in sign-in
   check is (light, normal, strong, very strong, maximum: 30,000 to 1,500,000 numbers a browser
   searches; normal, 60,000, stays the default), shown only while proof of work is the check;

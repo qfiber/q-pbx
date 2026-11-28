@@ -1,7 +1,8 @@
 defmodule QPBX.Web.Account.NotificationsLive do
   @moduledoc """
-  The signed-in person's notifications (the bell's list): mark read, acknowledge an open
-  alert; and their own settings: channels per category (mandatory categories always reach
+  The signed-in person's notifications (the bell's list), one row per alert: its latest notice
+  and how many came (a repeated alert is one row, "×4"); mark read (every notice of that alert),
+  acknowledge an open alert; and their own settings: channels per category (mandatory categories always reach
   them), quiet hours (critical alerts ignore them) and the time zone of those hours.
   """
   use QPBX.Web, :live_view
@@ -17,7 +18,7 @@ defmodule QPBX.Web.Account.NotificationsLive do
     pref = Notify.my_preference(me)
 
     assign(socket,
-      items: Notify.list_notifications(me),
+      items: by_alert(Notify.list_notifications(me)),
       channels: (pref && pref.channels) || %{},
       quiet_start: pref && pref.quiet_start,
       quiet_end: pref && pref.quiet_end,
@@ -26,12 +27,41 @@ defmodule QPBX.Web.Account.NotificationsLive do
     )
   end
 
+  # One row per alert, newest first: the latest notice stands for it, with the count and the
+  # first time; it is unread while any of its notices is.
+  defp by_alert(notifications) do
+    notifications
+    |> Enum.group_by(& &1.alert_id)
+    |> Enum.map(fn {_, ns} ->
+      [latest | _] = ns = Enum.sort_by(ns, & &1.inserted_at, {:desc, DateTime})
+
+      %{
+        latest
+        | read_at: if(Enum.any?(ns, &is_nil(&1.read_at)), do: nil, else: latest.read_at)
+      }
+      |> Map.merge(%{
+        times: length(ns),
+        first_at: List.last(ns).inserted_at,
+        unread_ids: for(n <- ns, is_nil(n.read_at), do: n.id)
+      })
+    end)
+    |> Enum.sort_by(& &1.inserted_at, {:desc, DateTime})
+  end
+
   defp zone(%QPBX.Core.User{tenant: %{timezone: tz}}), do: tz
   defp zone(_), do: "Etc/UTC"
 
   @impl true
   def handle_event("read", %{"id" => id}, socket) do
-    :ok = Notify.mark_read(socket.assigns.current_account, id)
+    me = socket.assigns.current_account
+
+    ids =
+      case Enum.find(socket.assigns.items, &(&1.id == id)) do
+        nil -> [id]
+        row -> row.unread_ids
+      end
+
+    for i <- ids, do: :ok = Notify.mark_read(me, i)
     {:noreply, load(socket)}
   end
 
@@ -134,11 +164,17 @@ defmodule QPBX.Web.Account.NotificationsLive do
             ]}>
             </span>
             <div class="min-w-0">
-              <span class={["block", !n.read_at && "font-semibold"]}>{n.alert.title}</span>
+              <span class={["block", !n.read_at && "font-semibold"]}>
+                {n.alert.title}
+                <.chip :if={n.times > 1} tone={:plain} class="ms-1">×{n.times}</.chip>
+              </span>
               <span class="block text-sm text-muted">{n.alert.message}</span>
               <span class="block text-xs text-muted mt-0.5">
                 <span dir="ltr">{Calendar.strftime(n.inserted_at, "%Y-%m-%d %H:%M")}</span>
-                · {event_label(n.event)}
+                <span :if={n.times > 1}>
+                  · {gettext("first at %{time}", time: Calendar.strftime(n.first_at, "%H:%M"))}
+                </span>
+                <span :if={event_label(n.event) != ""}>· {event_label(n.event)}</span>
               </span>
             </div>
           </div>

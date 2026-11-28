@@ -13,7 +13,10 @@ audio, decrypted while the email is built). Queue `notify`.
 - `raise_alert(%{kind, key, title, message, tenant_id?, user_id?, data?, category?,
   severity?})`: kinds in `QPBX.Notify.Catalogue` (category, severity, audience). An open
   alert with the same key (per tenant, or platform) is the same alert: the repeat is counted
-  (`count`), and recipients hear of repeats at most every 15 minutes ("37 more since 14:02").
+  (`count`), and recipients hear of repeats at most every 15 minutes ("37 more since 14:02"),
+  and not at all once it is acknowledged, or for a condition (`Catalogue.condition?/1`: trunk
+  down, service down, phone offline, disk, certificate, backups, job backlog), which is the
+  same state seen again (after a restart, say), not news.
   `resolve_alert_key(tenant_id, key)`: the problem went away.
 - States: open, acknowledged, resolved. Acknowledging tells webhooks only; resolving tells
   everyone told of the alert ("back to normal").

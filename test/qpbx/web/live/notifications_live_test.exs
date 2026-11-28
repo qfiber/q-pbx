@@ -4,6 +4,7 @@ defmodule QPBX.Web.NotificationsLiveTest do
   import Phoenix.LiveViewTest
   import QPBX.Fixtures
   alias QPBX.{Core, Notify}
+  alias QPBX.Notify.Alerts.Alert
 
   defp signed_in(conn, account, path \\ ~p"/login") do
     secret = Core.new_totp_secret()
@@ -28,6 +29,35 @@ defmodule QPBX.Web.NotificationsLiveTest do
         title: "Title #{key}",
         message: "Message #{key}"
       })
+
+  test "an alert told three times is one row, ×3; marking it read marks all three", %{
+    conn: conn,
+    t: t,
+    admin: admin
+  } do
+    import Ecto.Query
+    {:ok, a} = alert(t, "brute_force", "bf1")
+
+    for _ <- 1..2 do
+      QPBX.Repo.update_all(from(x in Alert, where: x.id == ^a.id),
+        set: [notified_at: DateTime.add(DateTime.utc_now(), -16 * 60)]
+      )
+
+      {:ok, _} = alert(t, "brute_force", "bf1")
+    end
+
+    assert length(Notify.list_notifications(admin)) == 3
+    {:ok, view, html} = live(signed_in(conn, admin), ~p"/app/notifications")
+    assert html =~ "×3"
+
+    assert [row] =
+             view |> element("#notifications") |> render() |> String.split(~s(id="n-)) |> tl()
+
+    [latest | _] = Notify.list_notifications(admin)
+    view |> element("#read-#{latest.id}") |> render_click()
+    assert Notify.unread_count(admin) == 0
+    _ = row
+  end
 
   test "the bell counts unread notifications and updates live; read and acknowledge on the page",
        %{conn: conn, t: t, admin: admin} do

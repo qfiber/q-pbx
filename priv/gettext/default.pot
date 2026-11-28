@@ -68,7 +68,7 @@ msgstr ""
 #: lib/qpbx/web/live/account/alerts_live.ex:399
 #: lib/qpbx/web/live/account/alerts_live.ex:451
 #: lib/qpbx/web/live/account/alerts_live.ex:575
-#: lib/qpbx/web/live/account/notifications_live.ex:193
+#: lib/qpbx/web/live/account/notifications_live.ex:229
 #: lib/qpbx/web/live/platform/admins_live.ex:144
 #: lib/qpbx/web/live/platform/tenant_live.ex:279
 #: lib/qpbx/web/live/platform/tenants_live.ex:155
@@ -392,7 +392,7 @@ msgstr ""
 msgid "This setup link is invalid or has expired. Ask your administrator for a new one."
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:245
+#: lib/qpbx/web/live/account/notifications_live.ex:281
 #: lib/qpbx/web/live/platform/tenant_live.ex:168
 #: lib/qpbx/web/live/platform/tenants_live.ex:136
 #, elixir-autogen, elixir-format
@@ -1368,7 +1368,7 @@ msgid "SIP user"
 msgstr ""
 
 #: lib/qpbx/web/live/account/alerts_live.ex:530
-#: lib/qpbx/web/live/account/notifications_live.ex:258
+#: lib/qpbx/web/live/account/notifications_live.ex:294
 #: lib/qpbx/web/live/platform/fraud_live.ex:105
 #: lib/qpbx/web/live/platform/numbering_live.ex:177
 #: lib/qpbx/web/live/platform/protection_live.ex:122
@@ -1389,7 +1389,7 @@ msgstr ""
 
 #: lib/qpbx/web/live/account/alerts_live.ex:144
 #: lib/qpbx/web/live/account/alerts_live.ex:171
-#: lib/qpbx/web/live/account/notifications_live.ex:70
+#: lib/qpbx/web/live/account/notifications_live.ex:100
 #: lib/qpbx/web/live/platform/dids_live.ex:60
 #: lib/qpbx/web/live/platform/fraud_live.ex:29
 #: lib/qpbx/web/live/platform/numbering_live.ex:57
@@ -1703,7 +1703,7 @@ msgstr ""
 msgid "No tenant is blocked."
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:221
+#: lib/qpbx/web/live/account/notifications_live.ex:257
 #: lib/qpbx/web/live/platform/fraud_live.ex:81
 #: lib/qpbx/web/live/platform/fraud_live.ex:144
 #, elixir-autogen, elixir-format
@@ -2135,8 +2135,8 @@ msgstr ""
 msgid "No extension is linked to your account yet. Ask your company's admin to link one under Users."
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:229
-#: lib/qpbx/web/live/account/notifications_live.ex:238
+#: lib/qpbx/web/live/account/notifications_live.ex:265
+#: lib/qpbx/web/live/account/notifications_live.ex:274
 #: lib/qpbx/web/live/platform/settings_live.ex:301
 #: lib/qpbx/web/live/tenant/users_live.ex:24
 #, elixir-autogen, elixir-format
@@ -2680,7 +2680,7 @@ msgstr ""
 
 #: lib/qpbx/web/controllers/alert_ack_html.ex:18
 #: lib/qpbx/web/live/account/alerts_live.ex:285
-#: lib/qpbx/web/live/account/notifications_live.ex:171
+#: lib/qpbx/web/live/account/notifications_live.ex:207
 #, elixir-autogen, elixir-format
 msgid "Acknowledge"
 msgstr ""
@@ -2698,13 +2698,13 @@ msgstr ""
 msgid "Acknowledge this alert so the others who got it know someone is on it."
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:98
+#: lib/qpbx/web/live/account/notifications_live.ex:128
 #, elixir-autogen, elixir-format
 msgid "Acknowledged"
 msgstr ""
 
 #: lib/qpbx/web/live/account/alerts_live.ex:65
-#: lib/qpbx/web/live/account/notifications_live.ex:48
+#: lib/qpbx/web/live/account/notifications_live.ex:78
 #, elixir-autogen, elixir-format
 msgid "Acknowledged."
 msgstr ""
@@ -2725,7 +2725,7 @@ msgid "Addresses that get alerts besides the people (for example it@ or billing@
 msgstr ""
 
 #: lib/qpbx/web/live/account/alerts_live.ex:246
-#: lib/qpbx/web/live/account/notifications_live.ex:129
+#: lib/qpbx/web/live/account/notifications_live.ex:159
 #, elixir-autogen, elixir-format
 msgid "Alert"
 msgstr ""
@@ -2774,12 +2774,12 @@ msgstr ""
 msgid "Categories"
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:191
+#: lib/qpbx/web/live/account/notifications_live.ex:227
 #, elixir-autogen, elixir-format
 msgid "Category"
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:92
+#: lib/qpbx/web/live/account/notifications_live.ex:122
 #, elixir-autogen, elixir-format
 msgid "Critical"
 msgstr ""
@@ -2800,7 +2800,7 @@ msgstr ""
 msgid "Generic JSON"
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:86
+#: lib/qpbx/web/live/account/notifications_live.ex:116
 #, elixir-autogen, elixir-format
 msgid "Health"
 msgstr ""
@@ -2810,22 +2810,22 @@ msgstr ""
 msgid "Held back"
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:223
+#: lib/qpbx/web/live/account/notifications_live.ex:259
 #, elixir-autogen, elixir-format
 msgid "In quiet hours no email is sent, except for critical alerts."
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:192
+#: lib/qpbx/web/live/account/notifications_live.ex:228
 #, elixir-autogen, elixir-format
 msgid "In the portal"
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:94
+#: lib/qpbx/web/live/account/notifications_live.ex:124
 #, elixir-autogen, elixir-format
 msgid "Info"
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:201
+#: lib/qpbx/web/live/account/notifications_live.ex:237
 #, elixir-autogen, elixir-format
 msgid "Mandatory"
 msgstr ""
@@ -2835,22 +2835,22 @@ msgstr ""
 msgid "Mandatory categories"
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:115
+#: lib/qpbx/web/live/account/notifications_live.ex:145
 #, elixir-autogen, elixir-format
 msgid "Mark all read"
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:160
+#: lib/qpbx/web/live/account/notifications_live.ex:196
 #, elixir-autogen, elixir-format
 msgid "Mark read"
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:179
+#: lib/qpbx/web/live/account/notifications_live.ex:215
 #, elixir-autogen, elixir-format
 msgid "My notification settings"
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:127
+#: lib/qpbx/web/live/account/notifications_live.ex:157
 #, elixir-autogen, elixir-format
 msgid "No notifications."
 msgstr ""
@@ -2858,18 +2858,18 @@ msgstr ""
 #: lib/qpbx/web/components/layouts.ex:96
 #: lib/qpbx/web/components/layouts.ex:329
 #: lib/qpbx/web/components/layouts.ex:340
-#: lib/qpbx/web/live/account/notifications_live.ex:13
-#: lib/qpbx/web/live/account/notifications_live.ex:112
+#: lib/qpbx/web/live/account/notifications_live.ex:14
+#: lib/qpbx/web/live/account/notifications_live.ex:142
 #, elixir-autogen, elixir-format
 msgid "Notifications"
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:97
+#: lib/qpbx/web/live/account/notifications_live.ex:127
 #, elixir-autogen, elixir-format
 msgid "Open"
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:88
+#: lib/qpbx/web/live/account/notifications_live.ex:118
 #, elixir-autogen, elixir-format
 msgid "Operations"
 msgstr ""
@@ -2879,7 +2879,7 @@ msgstr ""
 msgid "People cannot switch these off."
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:89
+#: lib/qpbx/web/live/account/notifications_live.ex:119
 #, elixir-autogen, elixir-format
 msgid "Personal"
 msgstr ""
@@ -2889,7 +2889,7 @@ msgstr ""
 msgid "Problems and notices, who was told, and how."
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:227
+#: lib/qpbx/web/live/account/notifications_live.ex:263
 #, elixir-autogen, elixir-format
 msgid "Quiet hours from"
 msgstr ""
@@ -2914,7 +2914,7 @@ msgstr ""
 msgid "Resolve"
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:99
+#: lib/qpbx/web/live/account/notifications_live.ex:129
 #, elixir-autogen, elixir-format
 msgid "Resolved"
 msgstr ""
@@ -2926,7 +2926,7 @@ msgstr ""
 
 #: lib/qpbx/web/components/layouts.ex:310
 #: lib/qpbx/web/components/layouts.ex:361
-#: lib/qpbx/web/live/account/notifications_live.ex:85
+#: lib/qpbx/web/live/account/notifications_live.ex:115
 #, elixir-autogen, elixir-format
 msgid "Security"
 msgstr ""
@@ -2947,7 +2947,7 @@ msgid "Sent"
 msgstr ""
 
 #: lib/qpbx/web/live/account/alerts_live.ex:266
-#: lib/qpbx/web/live/account/notifications_live.ex:146
+#: lib/qpbx/web/live/account/notifications_live.ex:182
 #, elixir-autogen, elixir-format
 msgid "Severity"
 msgstr ""
@@ -2958,7 +2958,7 @@ msgid "Shared recipients and alert webhooks"
 msgstr ""
 
 #: lib/qpbx/web/live/account/alerts_live.ex:269
-#: lib/qpbx/web/live/account/notifications_live.ex:149
+#: lib/qpbx/web/live/account/notifications_live.ex:185
 #, elixir-autogen, elixir-format
 msgid "State"
 msgstr ""
@@ -2978,12 +2978,12 @@ msgstr ""
 msgid "This link is not valid."
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:73
+#: lib/qpbx/web/live/account/notifications_live.ex:103
 #, elixir-autogen, elixir-format
 msgid "Those settings could not be saved."
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:87
+#: lib/qpbx/web/live/account/notifications_live.ex:117
 #, elixir-autogen, elixir-format
 msgid "Usage"
 msgstr ""
@@ -2993,7 +2993,7 @@ msgstr ""
 msgid "Waiting"
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:93
+#: lib/qpbx/web/live/account/notifications_live.ex:123
 #: lib/qpbx/web/live/platform/health_live.ex:88
 #, elixir-autogen, elixir-format
 msgid "Warning"
@@ -3009,7 +3009,7 @@ msgstr ""
 msgid "Who was told"
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:236
+#: lib/qpbx/web/live/account/notifications_live.ex:272
 #, elixir-autogen, elixir-format
 msgid "to"
 msgstr ""
@@ -3699,7 +3699,7 @@ msgstr ""
 msgid "Each device has its own SIP login; all of them ring together."
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:182
+#: lib/qpbx/web/live/account/notifications_live.ex:218
 #, elixir-autogen, elixir-format
 msgid "Email carries warning and critical alerts and usage reports; other info alerts stay in the portal. Mandatory categories always reach you both ways."
 msgstr ""
@@ -3907,7 +3907,7 @@ msgstr ""
 msgid "Search keys"
 msgstr ""
 
-#: lib/qpbx/web/live/account/notifications_live.ex:126
+#: lib/qpbx/web/live/account/notifications_live.ex:156
 #, elixir-autogen, elixir-format
 msgid "Search notifications"
 msgstr ""
@@ -4557,4 +4557,9 @@ msgstr ""
 #: lib/qpbx/web/live/platform/settings_live.ex:293
 #, elixir-autogen, elixir-format
 msgid "Very strong (about 3 s)"
+msgstr ""
+
+#: lib/qpbx/web/live/account/notifications_live.ex:175
+#, elixir-autogen, elixir-format
+msgid "first at %{time}"
 msgstr ""

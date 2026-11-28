@@ -2,6 +2,14 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-29: Which repeats tell people again
+
+- **Only events repeat their notice** (another attack, another fraud hit), at most every 15
+  minutes. A condition that is still the same (a trunk still down, seen again after a
+  restart) and anything acknowledged are counted silently. Rejected: remembering told states
+  across restarts in the trunk and health monitors (each source would need it; the alert
+  already knows it is open).
+
 ## 2026-11-29: Email and sign-in settings in the portal
 
 - **Platform admins set outgoing email and the sign-in check in the portal**, which wins over

@@ -6,9 +6,13 @@ defmodule QPBX.Notify.Catalogue do
   admins. `:account`: the person in the alert's data (`account_type`, `account_id`), a
   platform admin or a user. Sources raise alerts by kind (`QPBX.Notify.Sources`); `test` is the
   test notification. Notices (`notice?/1`) are things that happened, not problems: they are
-  recorded resolved (no acknowledging, no "back to normal").
+  recorded resolved (no acknowledging, no "back to normal"). Conditions (`condition?/1`) are
+  states that last until resolved (a trunk down, a service down): raising one again while it
+  is open is not news, so it is counted without telling anyone again.
   """
   @notices ~w(login_new_ip failed_2fa usage_threshold usage_summary missed_call voicemail)
+  @conditions ~w(service_down queue_backlog trunk_down disk backup_failed certificate_expiring
+                 device_offline failover)
   @categories ~w(security health usage operations personal)
   @severities ~w(info warning critical)
 
@@ -40,6 +44,7 @@ defmodule QPBX.Notify.Catalogue do
 
   def categories, do: @categories
   def notice?(kind), do: kind in @notices
+  def condition?(kind), do: kind in @conditions
   def severities, do: @severities
   def kinds, do: Map.keys(@kinds)
 
