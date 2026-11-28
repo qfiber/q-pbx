@@ -41,7 +41,7 @@ Kamailio gets its real config.
 
 ## Done
 
-- Repeated notifications (2026-11-29, from a lab report): a trunk that stayed down produced a
+- Repeated notifications (2026-11-28, from a lab report): a trunk that stayed down produced a
   "Repeated" notice after every app restart (the trunk monitor sees it again, the open alert
   counts a repeat), even after it was acknowledged. Now repeats are counted without telling
   anyone when the alert is acknowledged, or when it is a condition (trunk or service down,
@@ -50,13 +50,13 @@ Kamailio gets its real config.
   how many notices ("×4", first at 16:57); marking it read marks them all. 2 new tests (377
   in all).
 
-- Proof-of-work strength (2026-11-29): platform admins choose how hard the built-in sign-in
+- Proof-of-work strength (2026-11-28): platform admins choose how hard the built-in sign-in
   check is (light, normal, strong, very strong, maximum: 30,000 to 1,500,000 numbers a browser
   searches; normal, 60,000, stays the default), shown only while proof of work is the check;
   also `pow_max_number` in the API. Times on the labels are a typical computer's (measured in
   Chrome on a fast desktop at about half of them).
 
-- Platform settings page (2026-11-29): Administration > Settings for outgoing email (mail
+- Platform settings page (2026-11-28): Administration > Settings for outgoing email (mail
   server, port, login, password, sender; a "send a test email" that answers at once, the
   reason in plain words when it fails) and the sign-in check (proof of work, Turnstile,
   Friendly Captcha, Captcha.eu or none, with site key and secret). An empty field uses the
@@ -64,7 +64,7 @@ Kamailio gets its real config.
   never shown or audited, and an empty one keeps the saved one; changes apply to the next
   email or sign-in. Also in the API (`/v1/platform-settings`). 4 new tests (375 in all; lab: the test email through the installation's server and a portal-set one, a refused server reported in plain words, the sign-in check switched from the settings and back).
 
-- Audit log made readable (2026-11-29, from a lab report): entries read as sentences ("Dana
+- Audit log made readable (2026-11-28, from a lab report): entries read as sentences ("Dana
   Levi turned on two-factor authentication", "System (lab) created extension 104 Lab") with
   the changed values as tags; each entry now keeps the names of who, what and which tenant
   as they were (migration `audit_labels`), so a removed account no longer shows as "Removed
@@ -74,7 +74,7 @@ Kamailio gets its real config.
   holding a list of maps (a trunk's addresses) crashed the page; fixed, with a test. 1 new
   test (371 in all). Entries written before this change keep the old fallbacks.
 
-- Alert delivery review (2026-11-29, from a lab report): "who was told" is one row per person
+- Alert delivery review (2026-11-28, from a lab report): "who was told" is one row per person
   or address with each channel and its state, a summary ("36 recipients · 36 sent · 36
   retrying") and a search; an alert email whose last attempt fails is now given up (it stayed
   "Retrying" forever); email errors are kept in plain words ("The mail server refused the
@@ -82,7 +82,7 @@ Kamailio gets its real config.
   platform admins left over by the lab checks each got the alert; the checks now remove the
   admins they create, and the lab's leftovers are gone. 1 new test (370 in all).
 
-- Shared portal components (2026-11-29): `QPBX.Web.UI` (avatar, chip, section, field group,
+- Shared portal components (2026-11-28): `QPBX.Web.UI` (avatar, chip, section, field group,
   form actions, setup link, alert and call tones) and `QPBX.Web.PagedTable` (search, pages of
   25, empty box, opening on a just-saved row) used by every list page: tenants, plans,
   numbers, numbering, trunks (with each trunk's live status), platform admins, firewall, SIP

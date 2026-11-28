@@ -2,7 +2,7 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
-## 2026-11-29: Which repeats tell people again
+## 2026-11-28: Which repeats tell people again
 
 - **Only events repeat their notice** (another attack, another fraud hit), at most every 15
   minutes. A condition that is still the same (a trunk still down, seen again after a
@@ -10,7 +10,7 @@ Newest first. Each entry: date, what, why, alternatives rejected.
   across restarts in the trunk and health monitors (each source would need it; the alert
   already knows it is open).
 
-## 2026-11-29: Email and sign-in settings in the portal
+## 2026-11-28: Email and sign-in settings in the portal
 
 - **Platform admins set outgoing email and the sign-in check in the portal**, which wins over
   the installation's (Ansible) values; an empty field falls back to them, so a fresh install
@@ -20,7 +20,7 @@ Newest first. Each entry: date, what, why, alternatives rejected.
 - **If the settings cannot be read, sign-in uses the installation's check** rather than
   failing: signing in must not depend on this row.
 
-## 2026-11-29: Shared portal components
+## 2026-11-28: Shared portal components
 
 - **One list component for every list** (`PagedTable`, a LiveComponent): search and paging
   live in it, so pages hand it rows and columns and no page has its own paging code. Rejected:
