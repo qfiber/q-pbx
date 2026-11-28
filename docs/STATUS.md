@@ -41,6 +41,16 @@ Kamailio gets its real config.
 
 ## Done
 
+- Audit log made readable (2026-11-29, from a lab report): entries read as sentences ("Dana
+  Levi turned on two-factor authentication", "System (lab) created extension 104 Lab") with
+  the changed values as tags; each entry now keeps the names of who, what and which tenant
+  as they were (migration `audit_labels`), so a removed account no longer shows as "Removed
+  account" and a removed tenant's entries show "Acme Dental (removed)" instead of "—". The
+  "Removed account" in the report was right but unhelpful: the lab's screenshot run removes
+  its tenant and user afterwards. Pages of 25 with a search. Found in the lab: a change
+  holding a list of maps (a trunk's addresses) crashed the page; fixed, with a test. 1 new
+  test (371 in all). Entries written before this change keep the old fallbacks.
+
 - Alert delivery review (2026-11-29, from a lab report): "who was told" is one row per person
   or address with each channel and its state, a summary ("36 recipients · 36 sent · 36
   retrying") and a search; an alert email whose last attempt fails is now given up (it stayed

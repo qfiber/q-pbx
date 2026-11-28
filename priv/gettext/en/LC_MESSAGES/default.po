@@ -67,7 +67,7 @@ msgstr ""
 #: lib/qpbx/web/controllers/auth_html.ex:22
 #: lib/qpbx/web/live/account/alerts_live.ex:399
 #: lib/qpbx/web/live/account/alerts_live.ex:451
-#: lib/qpbx/web/live/account/alerts_live.ex:570
+#: lib/qpbx/web/live/account/alerts_live.ex:575
 #: lib/qpbx/web/live/account/notifications_live.ex:193
 #: lib/qpbx/web/live/platform/admins_live.ex:144
 #: lib/qpbx/web/live/platform/tenant_live.ex:279
@@ -1247,7 +1247,6 @@ msgstr ""
 msgid "Office IPs"
 msgstr ""
 
-#: lib/qpbx/web/components/audit_table.ex:33
 #: lib/qpbx/web/live/account/alerts_live.ex:413
 #: lib/qpbx/web/live/platform/admins_live.ex:103
 #: lib/qpbx/web/live/tenant/extensions_live.ex:99
@@ -1366,7 +1365,7 @@ msgstr ""
 msgid "SIP user"
 msgstr ""
 
-#: lib/qpbx/web/live/account/alerts_live.ex:525
+#: lib/qpbx/web/live/account/alerts_live.ex:530
 #: lib/qpbx/web/live/account/notifications_live.ex:258
 #: lib/qpbx/web/live/platform/fraud_live.ex:105
 #: lib/qpbx/web/live/platform/numbering_live.ex:177
@@ -1426,7 +1425,7 @@ msgstr ""
 msgid "T.38 re-INVITE"
 msgstr ""
 
-#: lib/qpbx/web/components/audit_table.ex:28
+#: lib/qpbx/web/components/audit_table.ex:32
 #: lib/qpbx/web/live/platform/audit_live.ex:63
 #: lib/qpbx/web/live/platform/dids_live.ex:107
 #: lib/qpbx/web/live/platform/dids_live.ex:110
@@ -1933,7 +1932,7 @@ msgstr ""
 msgid "Voicemail on"
 msgstr ""
 
-#: lib/qpbx/web/components/audit_table.ex:25
+#: lib/qpbx/web/components/audit_table.ex:24
 #: lib/qpbx/web/live/tenant/voicemail_live.ex:83
 #, elixir-autogen, elixir-format
 msgid "When"
@@ -2197,11 +2196,6 @@ msgstr ""
 msgid "A setup link was emailed to %{email}."
 msgstr ""
 
-#: lib/qpbx/web/components/audit_table.ex:30
-#, elixir-autogen, elixir-format
-msgid "Action"
-msgstr ""
-
 #: lib/qpbx/web/live/platform/admins_live.ex:138
 #, elixir-autogen, elixir-format
 msgid "Add a platform admin"
@@ -2226,11 +2220,6 @@ msgstr ""
 #: lib/qpbx/web/live/tenant/audit_live.ex:32
 #, elixir-autogen, elixir-format
 msgid "Audit log"
-msgstr ""
-
-#: lib/qpbx/web/components/audit_table.ex:34
-#, elixir-autogen, elixir-format
-msgid "Change"
 msgstr ""
 
 #: lib/qpbx/web/live/platform/audit_live.ex:56
@@ -2266,9 +2255,8 @@ msgstr ""
 msgid "Nothing recorded yet."
 msgstr ""
 
-#: lib/qpbx/web/components/audit_table.ex:46
 #: lib/qpbx/web/controllers/auth_html.ex:10
-#: lib/qpbx/web/live/account/alerts_live.ex:574
+#: lib/qpbx/web/live/account/alerts_live.ex:579
 #, elixir-autogen, elixir-format
 msgid "Platform admin"
 msgstr ""
@@ -2278,11 +2266,6 @@ msgstr ""
 #: lib/qpbx/web/live/platform/admins_live.ex:75
 #, elixir-autogen, elixir-format
 msgid "Platform admins"
-msgstr ""
-
-#: lib/qpbx/web/components/audit_table.ex:48
-#, elixir-autogen, elixir-format
-msgid "Removed account"
 msgstr ""
 
 #: lib/qpbx/web/live/platform/admins_live.ex:113
@@ -2314,7 +2297,7 @@ msgstr ""
 msgid "Signed out of %{count} sessions."
 msgstr ""
 
-#: lib/qpbx/web/components/audit_table.ex:41
+#: lib/qpbx/web/components/audit_table.ex:89
 #, elixir-autogen, elixir-format
 msgid "System (%{name})"
 msgstr ""
@@ -2329,7 +2312,6 @@ msgstr ""
 msgid "Two-factor"
 msgstr ""
 
-#: lib/qpbx/web/components/audit_table.ex:29
 #: lib/qpbx/web/live/account/alerts_live.ex:314
 #, elixir-autogen, elixir-format
 msgid "Who"
@@ -2350,7 +2332,7 @@ msgid "API explorer"
 msgstr ""
 
 #: lib/qpbx/web/api/controllers/spec_html.ex:27
-#: lib/qpbx/web/components/audit_table.ex:43
+#: lib/qpbx/web/components/audit_table.ex:95
 #, elixir-autogen, elixir-format
 msgid "API key"
 msgstr ""
@@ -2636,7 +2618,7 @@ msgstr ""
 
 #: lib/qpbx/web/live/account/alerts_live.ex:399
 #: lib/qpbx/web/live/account/alerts_live.ex:451
-#: lib/qpbx/web/live/account/alerts_live.ex:571
+#: lib/qpbx/web/live/account/alerts_live.ex:576
 #: lib/qpbx/web/live/tenant/webhook_live.ex:22
 #, elixir-autogen, elixir-format
 msgid "Webhook"
@@ -3981,27 +3963,27 @@ msgstr ""
 msgid "All plans"
 msgstr ""
 
-#: lib/qpbx/web/live/account/alerts_live.ex:556
+#: lib/qpbx/web/live/account/alerts_live.ex:561
 #, elixir-autogen, elixir-format
 msgid "%{n} bounced"
 msgstr ""
 
-#: lib/qpbx/web/live/account/alerts_live.ex:555
+#: lib/qpbx/web/live/account/alerts_live.ex:560
 #, elixir-autogen, elixir-format
 msgid "%{n} given up"
 msgstr ""
 
-#: lib/qpbx/web/live/account/alerts_live.ex:554
+#: lib/qpbx/web/live/account/alerts_live.ex:559
 #, elixir-autogen, elixir-format
 msgid "%{n} retrying"
 msgstr ""
 
-#: lib/qpbx/web/live/account/alerts_live.ex:553
+#: lib/qpbx/web/live/account/alerts_live.ex:558
 #, elixir-autogen, elixir-format
 msgid "%{n} sent"
 msgstr ""
 
-#: lib/qpbx/web/live/account/alerts_live.ex:552
+#: lib/qpbx/web/live/account/alerts_live.ex:557
 #, elixir-autogen, elixir-format
 msgid "1 recipient"
 msgid_plural "%{count} recipients"
@@ -4018,7 +4000,7 @@ msgstr ""
 msgid "Nobody was told yet."
 msgstr ""
 
-#: lib/qpbx/web/live/account/alerts_live.ex:569
+#: lib/qpbx/web/live/account/alerts_live.ex:574
 #, elixir-autogen, elixir-format
 msgid "Portal"
 msgstr ""
@@ -4028,7 +4010,382 @@ msgstr ""
 msgid "Search people and addresses"
 msgstr ""
 
-#: lib/qpbx/web/live/account/alerts_live.ex:575
+#: lib/qpbx/web/live/account/alerts_live.ex:580
 #, elixir-autogen, elixir-format
 msgid "User"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:57
+#, elixir-autogen, elixir-format
+msgid "%{name} (removed)"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:99
+#, elixir-autogen, elixir-format
+msgid "A removed platform admin"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:60
+#, elixir-autogen, elixir-format
+msgid "A removed tenant"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:102
+#, elixir-autogen, elixir-format
+msgid "A removed user"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:94
+#, elixir-autogen, elixir-format
+msgid "API key %{name}"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:35
+#, elixir-autogen, elixir-format
+msgid "What happened"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:116
+#, elixir-autogen, elixir-format
+msgid "added the alert recipient"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:149
+#, elixir-autogen, elixir-format
+msgid "added the destination prefix"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:122
+#, elixir-autogen, elixir-format
+msgid "added the device"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:134
+#, elixir-autogen, elixir-format
+msgid "added the emergency number"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:139
+#, elixir-autogen, elixir-format
+msgid "added the firewall entry"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:124
+#, elixir-autogen, elixir-format
+msgid "added the number"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:156
+#, elixir-autogen, elixir-format
+msgid "added the platform admin"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:167
+#, elixir-autogen, elixir-format
+msgid "added the trunk"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:170
+#, elixir-autogen, elixir-format
+msgid "added the user"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:176
+#, elixir-autogen, elixir-format
+msgid "added the webhook"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:137
+#, elixir-autogen, elixir-format
+msgid "changed extension"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:133
+#, elixir-autogen, elixir-format
+msgid "changed the SIP protection settings"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:117
+#, elixir-autogen, elixir-format
+msgid "changed the alert recipient"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:143
+#, elixir-autogen, elixir-format
+msgid "changed the fraud protection settings"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:119
+#, elixir-autogen, elixir-format
+msgid "changed the mandatory alert categories"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:125
+#, elixir-autogen, elixir-format
+msgid "changed the number"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:152
+#, elixir-autogen, elixir-format
+msgid "changed the number format"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:155
+#, elixir-autogen, elixir-format
+msgid "changed the plan"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:171
+#, elixir-autogen, elixir-format
+msgid "changed the role of"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:158
+#, elixir-autogen, elixir-format
+msgid "changed the route"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:166
+#, elixir-autogen, elixir-format
+msgid "changed the tenant"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:168
+#, elixir-autogen, elixir-format
+msgid "changed the trunk"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:146
+#, elixir-autogen, elixir-format
+msgid "changed the voicemail of"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:177
+#, elixir-autogen, elixir-format
+msgid "changed the webhook"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:126
+#, elixir-autogen, elixir-format
+msgid "changed where calls go for"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:136
+#, elixir-autogen, elixir-format
+msgid "created extension"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:120
+#, elixir-autogen, elixir-format
+msgid "created the API key"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:162
+#, elixir-autogen, elixir-format
+msgid "created the SIP login"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:154
+#, elixir-autogen, elixir-format
+msgid "created the plan"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:157
+#, elixir-autogen, elixir-format
+msgid "created the route"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:165
+#, elixir-autogen, elixir-format
+msgid "created the tenant"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:175
+#, elixir-autogen, elixir-format
+msgid "deleted a voicemail of"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:138
+#, elixir-autogen, elixir-format
+msgid "deleted extension"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:159
+#, elixir-autogen, elixir-format
+msgid "deleted the route"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:169
+#, elixir-autogen, elixir-format
+msgid "deleted the trunk"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:140
+#, elixir-autogen, elixir-format
+msgid "extended the firewall entry"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:128
+#, elixir-autogen, elixir-format
+msgid "lifted the SIP ban of"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:142
+#, elixir-autogen, elixir-format
+msgid "lifted the fraud block of"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:172
+#, elixir-autogen, elixir-format
+msgid "linked an extension to"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:174
+#, elixir-autogen, elixir-format
+msgid "listened to a voicemail of"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:163
+#, elixir-autogen, elixir-format
+msgid "made a new SIP password for"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:178
+#, elixir-autogen, elixir-format
+msgid "made a new secret for the webhook"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:80
+#, elixir-autogen, elixir-format
+msgid "no"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:145
+#, elixir-autogen, elixir-format
+msgid "removed a greeting of"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:164
+#, elixir-autogen, elixir-format
+msgid "removed the SIP login"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:118
+#, elixir-autogen, elixir-format
+msgid "removed the alert recipient"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:150
+#, elixir-autogen, elixir-format
+msgid "removed the destination prefix"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:123
+#, elixir-autogen, elixir-format
+msgid "removed the device"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:135
+#, elixir-autogen, elixir-format
+msgid "removed the emergency number"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:141
+#, elixir-autogen, elixir-format
+msgid "removed the firewall entry"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:127
+#, elixir-autogen, elixir-format
+msgid "removed the number"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:173
+#, elixir-autogen, elixir-format
+msgid "removed the user"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:147
+#, elixir-autogen, elixir-format
+msgid "removed the voicemail of"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:180
+#, elixir-autogen, elixir-format
+msgid "removed the webhook"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:121
+#, elixir-autogen, elixir-format
+msgid "revoked the API key"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:115
+#, elixir-autogen, elixir-format
+msgid "saw repeated failed logins for"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:148
+#, elixir-autogen, elixir-format
+msgid "sent a notification again to"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:114
+#, elixir-autogen, elixir-format
+msgid "sent a setup link to"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:179
+#, elixir-autogen, elixir-format
+msgid "sent a webhook delivery again to"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:151
+#, elixir-autogen, elixir-format
+msgid "set the number format"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:112
+#, elixir-autogen, elixir-format
+msgid "set up their account"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:160
+#, elixir-autogen, elixir-format
+msgid "signed out a session of"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:161
+#, elixir-autogen, elixir-format
+msgid "signed out every session of"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:113
+#, elixir-autogen, elixir-format
+msgid "turned on two-factor authentication"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:144
+#, elixir-autogen, elixir-format
+msgid "uploaded a greeting for"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:131
+#, elixir-autogen, elixir-format
+msgid "was warned about failed logins from the office address"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:153
+#, elixir-autogen, elixir-format
+msgid "went back to the default number format"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:79
+#, elixir-autogen, elixir-format
+msgid "yes"
+msgstr ""
+
+#: lib/qpbx/web/components/audit_table.ex:21
+#, elixir-autogen, elixir-format
+msgid "Search by who, what or name"
 msgstr ""

@@ -12,6 +12,10 @@ defmodule QPBX.Core.AuditLog do
     field :target_type, :string
     field :target_id, :binary_id
     field :changes, :map, default: %{}
+    # Names at the time of the change (the records may be removed later).
+    field :actor_label, :string
+    field :target_label, :string
+    field :tenant_label, :string
     timestamps(type: :utc_datetime_usec, updated_at: false)
   end
 end

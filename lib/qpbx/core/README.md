@@ -8,7 +8,10 @@
 `EmergencyRoute`, `NumberRule`, `NumberClass`, `ApiKey`; `Vault`, `Encrypted.Binary` (the
 Cloak field type, for other areas' encrypted columns), `Scope`, `KeyProvider`; and `Numbers`).
 Every changing function takes an `actor` (`%PlatformAdmin{}`, `%User{}`, `%ApiKey{}` or `{:system, name}`)
-and writes an audit entry in the same transaction.
+and writes an audit entry in the same transaction. Each entry keeps names as they were
+(`actor_label` "Name (email)" or the API key's name, `target_label` the record's own name,
+`tenant_label`), so it still reads right after the account, record or tenant is removed
+(removing a tenant clears its entries' `tenant_id`; the name stays).
 - A tenant's users (tenant scope, for tenant admins; `QPBX.Core.Users`): `list_tenant_users/1`,
   `invite_user/3` (role, optional `extension_id`; the caller sends the setup link),
   `set_user_extension/4` (one user per extension: it moves from whoever had it),

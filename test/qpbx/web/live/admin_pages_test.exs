@@ -5,7 +5,7 @@ defmodule QPBX.Web.AdminPagesTest do
   import Phoenix.LiveViewTest
   import QPBX.Fixtures
   alias QPBX.Core
-  alias QPBX.Web.{Pager, PlanFields}
+  alias QPBX.Web.{AuditTable, Pager, PlanFields}
 
   defp signed_in(conn, account, login_path) do
     secret = Core.new_totp_secret()
@@ -163,12 +163,50 @@ defmodule QPBX.Web.AdminPagesTest do
       {:ok, _} = Core.update_tenant(a, %{name: "Alpha Two"}, admin)
       {:ok, _} = Core.update_tenant(b, %{name: "Beta Two"}, admin)
       {:ok, view, html} = live(conn, ~p"/platform/audit")
-      assert html =~ "tenant.update" and html =~ admin.email
+      assert html =~ "changed the tenant" and html =~ admin.email
       view |> form("#audit-filter", f: %{tenant: a.id}) |> render_change()
       table = view |> element("#audit") |> render()
       assert table =~ "Alpha Two"
       refute table =~ "Beta Two"
     end
+  end
+
+  test "the audit log keeps names: a removed account and its removed tenant still read right" do
+    t = tenant_fixture(name: "Gone Dental")
+    user = user_fixture(t, "tenant_admin", %{name: "Dana Levi"})
+    {:ok, _} = Core.create_extension(Core.scope_for(user), %{number: "104", name: "Lab"}, user)
+    QPBX.Repo.delete!(t)
+
+    # The tenant's id is cleared from its entries when it is removed; the names stay.
+    [entry] =
+      Enum.filter(Core.list_audit_logs(limit: 50), &(&1.target_label == "104 Lab"))
+
+    assert entry.actor_label == "Dana Levi (#{user.email})"
+    assert entry.tenant_label == "Gone Dental"
+
+    html =
+      render_component(&AuditTable.audit_table/1,
+        id: "audit",
+        entries: [entry],
+        emails: %{},
+        tenants: %{}
+      )
+
+    assert html =~ "Dana Levi" and html =~ "created extension" and html =~ "104 Lab"
+    assert html =~ "Gone Dental (removed)"
+
+    # Changed values of any shape read as text (a trunk's addresses are a list of maps).
+    html =
+      render_component(&AuditTable.audit_table/1,
+        id: "audit",
+        entries: [
+          %{entry | changes: %{"addresses" => [%{"host" => "192.0.2.1"}], "enabled" => true}}
+        ],
+        emails: %{},
+        tenants: nil
+      )
+
+    assert html =~ "192.0.2.1" and html =~ "yes"
   end
 
   test "a tenant admin: own audit log only; setup link and sign-out for own users", %{conn: conn} do
@@ -180,7 +218,7 @@ defmodule QPBX.Web.AdminPagesTest do
     {:ok, _} = Core.create_extension(other, %{number: "101", name: "Theirs"}, {:system, "test"})
 
     {:ok, _view, html} = live(conn, ~p"/app/audit")
-    assert html =~ "extension.create" and html =~ "Mine"
+    assert html =~ "created extension" and html =~ "101 Mine"
     refute html =~ "Theirs"
 
     user = user_fixture(t, "tenant_user")

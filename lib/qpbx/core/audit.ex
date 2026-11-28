@@ -29,17 +29,56 @@ defmodule QPBX.Core.Audit do
 
   def entry(actor, action, target, changes) do
     {actor_type, actor_id} = actor_ref(actor)
+    tenant_id = tenant_of(target) || tenant_of(actor)
 
     %AuditLog{
-      tenant_id: tenant_of(target) || tenant_of(actor),
+      tenant_id: tenant_id,
       actor_type: actor_type,
       actor_id: actor_id,
+      actor_label: actor_label(actor),
       action: action,
       target_type: target && target.__struct__ |> Module.split() |> List.last(),
       target_id: target && Map.get(target, :id),
+      target_label: target_label(target),
+      tenant_label: tenant_label(target, tenant_id),
       changes: clean(changes)
     }
   end
+
+  defp actor_label(%{name: name, email: email}) when is_binary(name),
+    do: label("#{name} (#{email})")
+
+  defp actor_label(%ApiKey{name: name}), do: label(name)
+  defp actor_label(_), do: nil
+
+  # A record's own name: an extension's number and name, else the first naming field it has.
+  @doc false
+  def target_label(nil), do: nil
+
+  def target_label(%{number: n, name: name}) when is_binary(n) and is_binary(name),
+    do: label("#{n} #{name}")
+
+  def target_label(target) do
+    ~w(email name number cidr prefix url label username)a
+    |> Enum.find_value(&(Map.get(target, &1) |> nonblank()))
+    |> label()
+  end
+
+  defp tenant_label(%QPBX.Core.Tenant{name: name}, _), do: label(name)
+  defp tenant_label(_, nil), do: nil
+
+  defp tenant_label(_, tenant_id) do
+    case QPBX.Repo.get(QPBX.Core.Tenant, tenant_id) do
+      %{name: name} -> label(name)
+      nil -> nil
+    end
+  end
+
+  defp nonblank(v) when is_binary(v) and v != "", do: v
+  defp nonblank(_), do: nil
+
+  defp label(nil), do: nil
+  defp label(text), do: String.slice(text, 0, 200)
 
   defp actor_ref(%PlatformAdmin{id: id}), do: {"platform_admin", id}
   defp actor_ref(%User{id: id}), do: {"user", id}

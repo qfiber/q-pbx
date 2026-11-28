@@ -157,7 +157,10 @@ form card. Without an account `Layouts.app` is a plain page (the alert acknowled
 `state_tone/1`, `direction_icon/1`. Every list is `QPBX.Web.PagedTable` (a LiveComponent:
 pages of 25, a search box when given `search`, an empty box with `empty`, `focus` to open on
 the page holding a just-saved row; the table keeps the component's id; row events still go
-to the page). Pages of server-side lists (call records, audit log) keep their own paging.
+to the page). Call records keep their server paging. The audit log (`QPBX.Web.AuditTable`,
+the latest 300 entries in a `PagedTable`, searchable) reads as sentences: who, what they did
+(one phrase per action), to what, with the changed values as tags (ids left out); names come
+from the entry's stored labels when the account or tenant is gone.
 Plan limits in groups: `QPBX.Web.PlanFields` (`limits/1`; `grouped/0` covers every limit,
 checked by a test). Plans: the list, `/platform/plans/new` and `/platform/plans/:id` are
 separate pages.

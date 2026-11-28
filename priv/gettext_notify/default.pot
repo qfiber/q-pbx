@@ -47,42 +47,42 @@ msgstr ""
 msgid "an unknown caller"
 msgstr ""
 
-#: lib/qpbx/notify/alert_email.ex:135
+#: lib/qpbx/notify/alert_email.ex:128
 #, elixir-autogen, elixir-format
 msgid "%{count} more since %{time} (UTC)."
 msgstr ""
 
-#: lib/qpbx/notify/alert_email.ex:108
+#: lib/qpbx/notify/alert_email.ex:101
 #, elixir-autogen, elixir-format
 msgid "Acknowledge: %{link}"
 msgstr ""
 
-#: lib/qpbx/notify/alert_email.ex:126
+#: lib/qpbx/notify/alert_email.ex:119
 #, elixir-autogen, elixir-format
 msgid "Back to normal: %{title}"
 msgstr ""
 
-#: lib/qpbx/notify/alert_email.ex:143
+#: lib/qpbx/notify/alert_email.ex:136
 #, elixir-autogen, elixir-format
 msgid "Critical"
 msgstr ""
 
-#: lib/qpbx/notify/alert_email.ex:145
+#: lib/qpbx/notify/alert_email.ex:138
 #, elixir-autogen, elixir-format
 msgid "Info"
 msgstr ""
 
-#: lib/qpbx/notify/alert_email.ex:127
+#: lib/qpbx/notify/alert_email.ex:120
 #, elixir-autogen, elixir-format
 msgid "This alert is resolved: %{title}"
 msgstr ""
 
-#: lib/qpbx/notify/alert_email.ex:144
+#: lib/qpbx/notify/alert_email.ex:137
 #, elixir-autogen, elixir-format
 msgid "Warning"
 msgstr ""
 
-#: lib/qpbx/notify/alert_email.ex:118
+#: lib/qpbx/notify/alert_email.ex:111
 #, elixir-autogen, elixir-format
 msgid "Your notification settings are in the portal: %{url}"
 msgstr ""
