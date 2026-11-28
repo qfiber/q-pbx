@@ -41,26 +41,7 @@ defmodule QPBX.Notify.Alerts do
 
     case open_alert(tid, key) do
       nil ->
-        now = DateTime.utc_now()
-
-        row = %{
-          id: Ecto.UUID.generate(),
-          tenant_id: tid,
-          key: key,
-          kind: kind,
-          category: attrs[:category] || category || "operations",
-          severity: attrs[:severity] || severity,
-          title: attrs.title,
-          message: attrs.message,
-          data: attrs[:data] || %{},
-          user_id: attrs[:user_id],
-          state: "open",
-          count: 1,
-          repeats: 0,
-          notified_at: now,
-          inserted_at: now,
-          updated_at: now
-        }
+        row = new_row(kind, category, severity, attrs)
 
         # The partial unique index allows one unresolved alert per key: a concurrent raise of
         # the same key loses here and becomes a repeat.
@@ -76,6 +57,32 @@ defmodule QPBX.Notify.Alerts do
       alert ->
         repeat(alert, attrs)
     end
+  end
+
+  defp new_row(kind, category, severity, attrs) do
+    now = DateTime.utc_now()
+    notice = Catalogue.notice?(kind)
+
+    %{
+      id: Ecto.UUID.generate(),
+      tenant_id: attrs[:tenant_id],
+      key: attrs.key,
+      kind: kind,
+      category: attrs[:category] || category || "operations",
+      severity: attrs[:severity] || severity,
+      title: attrs.title,
+      message: attrs.message,
+      data: attrs[:data] || %{},
+      user_id: attrs[:user_id],
+      # A notice is something that happened, not a problem: recorded resolved.
+      state: if(notice, do: "resolved", else: "open"),
+      resolved_at: if(notice, do: DateTime.truncate(now, :second)),
+      count: 1,
+      repeats: 0,
+      notified_at: now,
+      inserted_at: now,
+      updated_at: now
+    }
   end
 
   defp repeat(alert, attrs) do
@@ -179,7 +186,7 @@ defmodule QPBX.Notify.Alerts do
     :ok
   end
 
-  defp people(%Alert{kind: kind, tenant_id: tid, user_id: uid}) do
+  defp people(%Alert{kind: kind, tenant_id: tid, user_id: uid, data: data}) do
     {_, _, audience} = Catalogue.kind(kind)
 
     audience
@@ -193,11 +200,26 @@ defmodule QPBX.Notify.Alerts do
       :user when is_binary(uid) ->
         uid |> Core.get_user() |> List.wrap() |> Enum.map(&person("user", &1, &1.tenant_id))
 
+      :account ->
+        account(data)
+
       _ ->
         []
     end)
     |> Enum.uniq_by(& &1.id)
   end
+
+  defp account(%{"account_type" => "platform_admin", "account_id" => id}),
+    do:
+      id
+      |> Core.get_platform_admin()
+      |> List.wrap()
+      |> Enum.map(&person("platform_admin", &1, nil))
+
+  defp account(%{"account_type" => "user", "account_id" => id}),
+    do: id |> Core.get_user() |> List.wrap() |> Enum.map(&person("user", &1, &1.tenant_id))
+
+  defp account(_), do: []
 
   defp tenant_admins(tid) do
     for u <- Core.list_users(%Core.Scope{kind: :platform}, %Core.Tenant{id: tid}),

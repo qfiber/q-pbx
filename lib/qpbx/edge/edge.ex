@@ -7,7 +7,7 @@ defmodule QPBX.Edge do
   """
   use Boundary,
     deps: [QPBX.Repo, QPBX.Core, QPBX.Events, QPBX.Firewall, QPBX.Telephony],
-    exports: [Reloader, Registrations, Bans, Settings, Ban, Presence]
+    exports: [Reloader, Registrations, Bans, Settings, Ban, Presence, TrunkMonitor]
 
   import Ecto.Query
   alias QPBX.Edge.{Ban, Settings}
@@ -47,6 +47,9 @@ defmodule QPBX.Edge do
 
   @doc "Reloads the allow lists (platform SIP allows and tenant office IPs)."
   def reload_allowlist, do: ok(rpc("permissions.addressReload"))
+
+  @doc "The trunks' latest up/down view (`QPBX.Edge.TrunkMonitor`)."
+  defdelegate trunk_status(), to: QPBX.Edge.TrunkMonitor, as: :status
 
   ## Registrations reported by Kamailio
 

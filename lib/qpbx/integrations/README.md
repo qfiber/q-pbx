@@ -46,7 +46,8 @@ row-level security):
   delivery), event types, description, enabled, a secret (`whsec_...`, Cloak-encrypted, shown
   on creation and rotation only).
 - Event types (`Webhooks.Event`): `call.started|ringing|answered|transferred|ended|missed`,
-  `extension.registered|unregistered`, `voicemail.received`, `limit.reached`. Body:
+  `extension.registered|unregistered`, `voicemail.received`, `limit.reached`,
+  `usage.threshold_reached`. Body:
   `{"id", "type", "version", "created_at", "tenant_id", "data"}`; `id` is the same for every
   endpoint and resend of one event.
 - `Webhooks.Dispatcher` (started by the application; off in tests) subscribes to the bus and

@@ -17,6 +17,8 @@ defmodule QPBX.Core.Credentials do
       field :locale, :string
       field :totp_secret, QPBX.Core.Encrypted.Binary, redact: true
       field :totp_last_used_at, :utc_datetime
+      # Addresses of the last logins (newest first, at most 10).
+      field :login_ips, {:array, :string}, default: []
     end
   end
 

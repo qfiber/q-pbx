@@ -2,6 +2,30 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-28: Alert sources (3-9)
+
+- **Sources publish events; one Notify process turns them into alerts** (`QPBX.Notify.Sources`),
+  because Telephony already depends on Notify and Notify must not call back. Each mapping is a
+  pure function, tested per alert.
+- **A change must hold for two checks before it is news** (health components, trunks), so a
+  restart that takes a few seconds or one lost OPTIONS reply does not page anyone.
+- **Kamailio's OPTIONS pings now accept live answers code by code.** `class=4` and `class=5`
+  had included the 408 and 5xx the transaction layer makes itself when nothing answers, so a
+  dead carrier stayed "active" forever (found by the 3-9 lab check; a phase 2 setting).
+  Accepted: 2xx and 400, 401, 403, 404, 405, 407, 480, 481, 484, 488, 489, 501.
+- **Usage thresholds fire on crossing:** each call's minutes are compared before and after,
+  so a threshold fires once per period without storing which ones fired. Thresholds live on
+  the plan (default 50, 80, 90, 100) with a per-tenant list replacing them. Minutes are shown
+  to a tenth (a 1-minute lab allowance read "0 of 1" with whole minutes).
+- **Notices are recorded resolved** (logins, usage, missed calls, voicemail): things that
+  happened, with nothing to acknowledge and no "back to normal".
+- **Login alerts:** the last 10 login addresses are kept per account; a login from another
+  address is a notice to the person (not on the first login ever).
+- **Crash loops come from the logger:** crash reports counted per kind of process (3 within 5
+  minutes). Rejected: wrapping every supervisor.
+- **A phone offline is an alert only after 15 minutes** (configurable), so re-registering
+  phones and short network blips stay quiet; registering again resolves it.
+
 ## 2026-11-28: Notification service (3-8)
 
 - **One alert per open key:** repeats while an alert is not resolved are counted on it, and

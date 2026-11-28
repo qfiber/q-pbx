@@ -6,7 +6,14 @@ defmodule QPBX.Notify do
   """
   use Boundary,
     deps: [QPBX.Storage, QPBX.Repo, QPBX.Core, QPBX.Events, QPBX.Integrations],
-    exports: [Catalogue, Alerts.Alert, Alerts.Notification, Alerts.Channel, Alerts.Preference]
+    exports: [
+      Catalogue,
+      Sources,
+      Alerts.Alert,
+      Alerts.Notification,
+      Alerts.Channel,
+      Alerts.Preference
+    ]
 
   alias QPBX.Notify.{SetupLinkEmail, VoicemailEmail}
 

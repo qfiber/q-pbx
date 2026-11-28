@@ -208,7 +208,11 @@ defmodule QPBX.Core do
   ## Login limits (see QPBX.Core.LoginGuard)
 
   defdelegate login_check(ip), to: QPBX.Core.LoginGuard, as: :check
-  defdelegate login_failed(ip, account \\ nil), to: QPBX.Core.LoginGuard, as: :failure
+
+  defdelegate login_failed(ip, account \\ nil, kind \\ :password),
+    to: QPBX.Core.LoginGuard,
+    as: :failure
+
   defdelegate login_succeeded(ip), to: QPBX.Core.LoginGuard, as: :success
 
   ## Audit log
@@ -367,6 +371,22 @@ defmodule QPBX.Core do
 
   defdelegate extension_addresses(tenant_id \\ nil),
     to: QPBX.Core.TelephonySnapshot
+
+  @doc "The tenant user an extension belongs to (`users.extension_id`), or nil."
+  def extension_user(ext_id) when is_binary(ext_id),
+    do: Repo.one(from u in QPBX.Core.User, where: u.extension_id == ^ext_id)
+
+  def extension_user(_), do: nil
+
+  @doc "The id of the tenant with this SIP domain, or nil."
+  def tenant_id_for_domain(domain) when is_binary(domain),
+    do: Repo.one(from t in Tenant, where: t.sip_domain == ^String.downcase(domain), select: t.id)
+
+  def tenant_id_for_domain(_), do: nil
+
+  @doc "The usage thresholds in force for a tenant: its own, else its plan's."
+  def usage_thresholds(%Tenant{usage_thresholds: t}) when is_list(t), do: t
+  def usage_thresholds(%Tenant{} = tenant), do: Repo.preload(tenant, :plan).plan.usage_thresholds
 
   @doc "`%{tenant_id, extension_id, number}` of the extension at a SIP domain and number, or nil."
   defdelegate extension_at(domain, number), to: QPBX.Core.TelephonySnapshot

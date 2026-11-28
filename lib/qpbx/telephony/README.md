@@ -143,8 +143,14 @@ the leg's `origination_uuid`. Not answered: FreeSWITCH's failed BACKGROUND_JOB i
 other side released). Targets: extension numbers, E.164, feature codes, or local forms through
 the tenant's number rule; anything else is refused before FreeSWITCH sees it. Audited.
 
+**Usage alerts (`UsageAlerts`):** after a carrier call's minutes are added, the month's
+outbound minutes against `outbound_minutes_per_month`: each threshold (the tenant's, else the
+plan's) crossed by that call publishes `UsageThresholdReached` once (minutes to a tenth, the
+period end, the run-out at the month's daily average). `UsageAlerts.Summary` (Oban cron, the
+1st at 06:00 UTC, queue `calls`) publishes `UsageSummary` per tenant from `usage_daily`.
+
 **Events consumed:** `ConfigChanged`, `SipCredentialsChanged`, `TenantsChanged` (cache).
-**Emitted:** `CallState`, `CallEvent`, `LimitReached`, `FraudAlert`, `VoicemailReceived`,
+**Emitted:** `CallState`, `CallEvent`, `UsageThresholdReached`, `UsageSummary`, `LimitReached`, `FraudAlert`, `VoicemailReceived`,
 `VoicemailChanged`.
 
 **Gotchas:**

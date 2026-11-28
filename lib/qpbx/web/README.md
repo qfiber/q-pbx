@@ -98,6 +98,12 @@ the key shown once), list by prefix with last use, revoke.
 how to check a signature) and `/app/webhooks/:id` (`WebhookLive`: change, turn off, new secret,
 remove; the delivery log with each attempt and answer, send again), tenant admins.
 
+**Health alerts:** `QPBX.Web.Health` publishes `HealthChanged` when a component's status
+changes and holds for two runs (`changes/2`); the first status seen is the baseline,
+`not_configured` is never news. The `trunk_registrations` check reads `QPBX.Edge.trunk_status/0`.
+Plans and the platform tenant page edit usage alert thresholds ("50, 80, 90, 100"; a tenant's
+empty field: the plan's).
+
 **Notifications:** the bell (layout attr `unread`, assigned by `Auth`'s `on_mount` for every
 signed-in page and kept current through `NotificationsChanged`; every LiveView passes
 `unread={assigns[:unread]}`). `Account.NotificationsLive` (`/app/notifications`,

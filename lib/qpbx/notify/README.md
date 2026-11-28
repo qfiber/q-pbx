@@ -46,9 +46,29 @@ secret}`; email: nil), `update_alert_channel/4`, `delete_alert_channel/3`,
 `list_alert_deliveries/2`, `resend_notification/3`, `mandatory_categories/0`,
 `set_mandatory_categories/3` (platform). Changes are audited.
 
+**Alert sources** (`QPBX.Notify.Sources`, started by the application; off in tests):
+`actions/1` maps each bus event to alerts to raise or resolve (pure, one test per source):
+`EdgeBanned` (failed SIP logins against a tenant's domain: its `brute_force`; floods,
+scanners, rate bans: one platform `sip_attack` alert, repeats grouped), `EdgeAlert` (office IP
+spared), `FraudAlert` (`fraud_block` or `unusual_activity`), `LoginAlert` (`login_new_ip`,
+`failed_2fa` to the person, platform admins included; failures on an account and blocked
+addresses: `brute_force`), `HealthChanged` (FreeSWITCH, Kamailio, PostgreSQL: `service_down`;
+disk, certificate, backups, job backlog; ok again resolves), `TrunkStatusChanged`
+(`trunk_down`, resolved when up), `UsageThresholdReached` (severity info, warning from 90%,
+critical at 100% with "emergency numbers still work"), `LimitReached`, `UsageSummary`,
+`WebhookDeadLettered`, `CallEvent` missed and `VoicemailReceived` (to the user of the
+extension), `ExtensionRegistration` (a device unregistered for `offline_minutes`, default 15,
+raises `device_offline`; registered again resolves). Crash loops: `QPBX.Notify.CrashWatch`, a
+logger handler, counts crash reports per kind of process; 3 within 5 minutes raise
+`crash_loop`. Notices (`Catalogue.notice?/1`: logins, usage, missed calls, voicemail) are
+recorded resolved. Audience `:account`: the person in the alert's data (users or platform
+admins).
+
 **Events emitted:** `AlertChanged` (raised, repeated, acknowledged, resolved),
 `NotificationsChanged` (a person's portal list changed: the bell). **Consumed:** none yet
-(the sources in 3-9 call `raise_alert/1`).
+`EdgeBanned`, `EdgeAlert`, `FraudAlert`, `LoginAlert`, `HealthChanged`, `TrunkStatusChanged`,
+`UsageThresholdReached`, `UsageSummary`, `LimitReached`, `WebhookDeadLettered`, `CallEvent`,
+`VoicemailReceived`, `ExtensionRegistration` (the sources).
 
 **Gotchas:** texts use their own Gettext backend `QPBX.Notify.Gettext`
 (`priv/gettext_notify`). The mailer is `QPBX.Notify.Mailer`; no other area sends email

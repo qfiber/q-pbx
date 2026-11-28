@@ -3,8 +3,12 @@ defmodule QPBX.Notify.Catalogue do
   The alert catalogue: each kind's category, severity and default audience (spec,
   "Notifications and alerts"). Audiences: `:platform_admins`, `:tenant_admins` (of the alert's
   tenant), `:user` (the alert's user). A platform alert (no tenant) never goes to tenant
-  admins. Sources raise alerts by kind (3-9); `test` is the test notification.
+  admins. `:account`: the person in the alert's data (`account_type`, `account_id`), a
+  platform admin or a user. Sources raise alerts by kind (`QPBX.Notify.Sources`); `test` is the
+  test notification. Notices (`notice?/1`) are things that happened, not problems: they are
+  recorded resolved (no acknowledging, no "back to normal").
   """
+  @notices ~w(login_new_ip failed_2fa usage_threshold usage_summary missed_call voicemail)
   @categories ~w(security health usage operations personal)
   @severities ~w(info warning critical)
 
@@ -14,8 +18,11 @@ defmodule QPBX.Notify.Catalogue do
     "brute_force" => {"security", "warning", [:tenant_admins, :platform_admins]},
     "unusual_activity" => {"security", "critical", [:tenant_admins, :platform_admins]},
     "fraud_block" => {"security", "critical", [:tenant_admins]},
-    "login_new_ip" => {"security", "warning", [:user]},
+    "login_new_ip" => {"security", "warning", [:account]},
+    "failed_2fa" => {"security", "warning", [:account]},
     "service_down" => {"health", "critical", [:platform_admins]},
+    "crash_loop" => {"health", "critical", [:platform_admins]},
+    "queue_backlog" => {"health", "warning", [:platform_admins]},
     "failover" => {"health", "critical", [:platform_admins]},
     "trunk_down" => {"health", "critical", [:platform_admins, :tenant_admins]},
     "call_quality" => {"health", "warning", [:platform_admins]},
@@ -32,6 +39,7 @@ defmodule QPBX.Notify.Catalogue do
   }
 
   def categories, do: @categories
+  def notice?(kind), do: kind in @notices
   def severities, do: @severities
   def kinds, do: Map.keys(@kinds)
 

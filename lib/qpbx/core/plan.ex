@@ -25,6 +25,8 @@ defmodule QPBX.Core.Plan do
     for limit <- @limits, do: field(limit, :integer)
     field :allowed_destination_classes, {:array, :string}, default: []
     field :features, :map, default: %{}
+    # Usage alerts at these percentages of a limit (outbound minutes per month).
+    field :usage_thresholds, {:array, :integer}, default: [50, 80, 90, 100]
     timestamps(type: :utc_datetime)
   end
 
@@ -40,7 +42,8 @@ defmodule QPBX.Core.Plan do
 
   def changeset(plan, attrs) do
     plan
-    |> cast(attrs, [:name, :allowed_destination_classes, :features | @limits])
+    |> cast(attrs, [:name, :allowed_destination_classes, :features, :usage_thresholds | @limits])
+    |> validate_thresholds(:usage_thresholds)
     |> validate_required([:name])
     |> validate_length(:name, max: 100)
     |> then(fn cs ->
@@ -49,6 +52,17 @@ defmodule QPBX.Core.Plan do
     |> validate_subset(:allowed_destination_classes, @destination_classes)
     |> validate_change(:features, &validate_features/2)
     |> unique_constraint(:name)
+  end
+
+  @doc "Percentages from 1 to 100, sorted, without repeats."
+  def validate_thresholds(cs, field) do
+    cs
+    |> update_change(field, fn t -> t && t |> Enum.uniq() |> Enum.sort() end)
+    |> validate_change(field, fn ^field, list ->
+      if Enum.all?(list, &(is_integer(&1) and &1 in 1..100)),
+        do: [],
+        else: [{field, "must be percentages from 1 to 100"}]
+    end)
   end
 
   defp validate_features(:features, features) do

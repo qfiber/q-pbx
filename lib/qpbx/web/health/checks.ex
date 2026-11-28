@@ -219,8 +219,19 @@ defmodule QPBX.Web.Health.Checks do
     end
   end
 
-  @doc "Trunk registrations are managed by Kamailio from phase 2."
-  def trunk_registrations(_opts), do: {:not_configured, "no trunks before phase 2"}
+  @doc "Trunks: error when one is down (dispatcher or registration, `QPBX.Edge.TrunkMonitor`)."
+  def trunk_registrations(_opts) do
+    case QPBX.Edge.trunk_status() do
+      view when view == %{} ->
+        {:not_configured, "no trunks"}
+
+      view ->
+        trunks_down(view, for({_, %{up: false} = t} <- view, do: "#{t.name}: #{t.reason}"))
+    end
+  end
+
+  defp trunks_down(view, []), do: {:ok, "#{map_size(view)} up"}
+  defp trunks_down(_view, down), do: {:error, Enum.join(down, "; ")}
 
   defp tcp(host, port) do
     case :gen_tcp.connect(String.to_charlist(host), port, [:binary, active: false], 2_000) do

@@ -197,3 +197,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "pick at least one category"
 msgstr ""
+
+#: lib/qpbx/web/error_messages.ex:32
+#, elixir-autogen, elixir-format
+msgid "must be percentages from 1 to 100"
+msgstr ""

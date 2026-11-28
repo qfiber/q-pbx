@@ -81,7 +81,7 @@ defmodule QPBX.Web.TotpController do
   end
 
   defp code_failed(conn, render) do
-    case QPBX.Web.LoginProtection.failed(conn, conn.assigns.pending) do
+    case QPBX.Web.LoginProtection.failed(conn, conn.assigns.pending, :totp) do
       {:halt, conn} -> conn
       {:cont, conn} -> render.(conn)
     end

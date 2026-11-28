@@ -60,8 +60,13 @@ defmodule QPBX.Telephony.Call.Limits do
 
   # A carrier call ended (or this call did): its talk time goes to the usage, its slot is freed.
   def stop_talking(%{talking: {meta, since}} = s) do
-    Usage.add(s.tenant_id, meta.class, DateTime.diff(DateTime.utc_now(), since), since)
+    seconds = DateTime.diff(DateTime.utc_now(), since)
+    Usage.add(s.tenant_id, meta.class, seconds, since)
     Admission.leave({:out, s.tenant_id})
+
+    snapshot = seconds > 0 && safe_tenant(s.tenant_id)
+    if snapshot, do: QPBX.Telephony.UsageAlerts.after_call(snapshot, seconds)
+
     %{s | talking: nil}
   rescue
     e ->

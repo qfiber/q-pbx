@@ -36,8 +36,36 @@ defmodule QPBX.Core.Sessions do
         expires_at: DateTime.add(now, @max_age)
       })
 
+    note_ip(account, meta[:ip])
     {Base.url_encode64(token, padding: false), session}
   end
+
+  # A login from an address this account has not used lately is a security alert (not on
+  # the very first login). The last 10 addresses are kept.
+  defp note_ip(_account, nil), do: :ok
+
+  defp note_ip(%{login_ips: known} = account, ip) do
+    if known != [] and ip not in known do
+      Events.publish(%QPBX.Events.LoginAlert{
+        kind: "new_ip",
+        account_type: type(account),
+        account_id: account.id,
+        tenant_id: Map.get(account, :tenant_id),
+        ip: ip,
+        at: DateTime.utc_now()
+      })
+    end
+
+    ips = Enum.take([ip | List.delete(known, ip)], 10)
+
+    Repo.update_all(from(a in account.__struct__, where: a.id == ^account.id),
+      set: [login_ips: ips]
+    )
+
+    :ok
+  end
+
+  defp note_ip(_account, _ip), do: :ok
 
   @doc """
   Checks a token: returns `{:ok, account, session}` while the session is live, and records

@@ -40,9 +40,13 @@ defmodule QPBX.Core.LoginGuard do
     end
   end
 
-  @doc "Records a failure from `ip` (and for `account`, if known). Returns `:ok` or `{:blocked, until}`."
-  def failure(ip, account \\ nil) do
+  @doc """
+  Records a failure from `ip` (and for `account`, if known; `kind` `:totp` for a wrong 2FA
+  code). Returns `:ok` or `{:blocked, until}`.
+  """
+  def failure(ip, account \\ nil, kind \\ :password) do
     if account, do: count_account(account)
+    if account && kind == :totp, do: alert("failed_2fa", ip, account)
 
     {:ok, result} = Repo.transaction(fn -> record(ip_key(ip), now()) end)
     result
@@ -72,6 +76,9 @@ defmodule QPBX.Core.LoginGuard do
     Logger.warning(
       "login: blocking #{f.key} for #{div(duration, 3600)} h after #{@limit} failures"
     )
+
+    "ip:" <> ip = f.key
+    alert("ip_blocked", ip, nil, "#{div(duration, 3600)} h")
 
     %{f | failures: 0, strikes: strikes, blocked_until: DateTime.add(now, duration)}
   end
@@ -115,7 +122,23 @@ defmodule QPBX.Core.LoginGuard do
             failures: f.failures
           })
         )
+
+      alert("account_failures", nil, account, "#{f.failures} failed logins")
     end
+  end
+
+  defp alert(kind, ip, account, detail \\ nil) do
+    QPBX.Events.publish(%QPBX.Events.LoginAlert{
+      kind: kind,
+      ip: if(is_tuple(ip), do: ip |> :inet.ntoa() |> to_string(), else: ip),
+      account_type:
+        account &&
+          if(match?(%QPBX.Core.PlatformAdmin{}, account), do: "platform_admin", else: "user"),
+      account_id: account && account.id,
+      tenant_id: account && Map.get(account, :tenant_id),
+      detail: detail,
+      at: DateTime.utc_now()
+    })
   end
 
   defp ip_key(ip) when is_tuple(ip), do: "ip:" <> (ip |> :inet.ntoa() |> to_string())

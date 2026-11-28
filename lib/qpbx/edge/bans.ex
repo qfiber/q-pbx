@@ -14,7 +14,7 @@ defmodule QPBX.Edge.Bans do
   alias QPBX.Edge
   alias QPBX.Edge.Ban
   alias QPBX.Events
-  alias QPBX.Events.EdgeAlert
+  alias QPBX.Events.{EdgeAlert, EdgeBanned}
   alias QPBX.Repo
 
   @every_ms 5_000
@@ -74,6 +74,20 @@ defmodule QPBX.Edge.Bans do
     if is_nil(port),
       do: push(ip, reason, seconds),
       else: Logger.warning("edge: banned #{ip}:#{port} (#{reason})")
+
+    {kind, domain} =
+      case reason do
+        "auth failures " <> domain -> {"auth failures", domain}
+        other -> {other, nil}
+      end
+
+    Events.publish(%EdgeBanned{
+      ip: ip,
+      port: port,
+      reason: kind,
+      domain: domain,
+      at: DateTime.utc_now()
+    })
   end
 
   # A ban placed before Kamailio learned that the address is allowed (the allow list reloads a

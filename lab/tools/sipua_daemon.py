@@ -10,6 +10,7 @@ Commands:
   {"cmd": "phone", "name": N, "ip": IP, "user": U, "domain": D, "password": P, "mode": M}
   {"cmd": "carrier", "name": N, "ip": IP, "port": PORT, "mode": M}
   {"cmd": "unregister", "name": N}                REGISTER with Expires: 0
+  {"cmd": "register", "name": N}                  REGISTER again (same address and port)
   {"cmd": "mode", "name": N, "mode": M}          M: answer | busy | ring | 503
   {"cmd": "call", "from": N, "to": NUMBER, "hold": bool, "wait": SECONDS}
   {"cmd": "bye", "dialog": ID}
@@ -289,6 +290,8 @@ def handle(c):
         return {"status": "ok"}
     if cmd == "unregister":
         return {"status": endpoints[c["name"]].register(0)}
+    if cmd == "register":
+        return {"status": endpoints[c["name"]].register()}
     if cmd == "mode":
         endpoints[c["name"]].mode = c["mode"]
         return {"status": "ok"}

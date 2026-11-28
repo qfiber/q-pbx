@@ -26,8 +26,8 @@ defmodule QPBX.Web.LoginProtection do
   end
 
   @doc "Counts a failure. Returns the conn, or a 429 response (halted) when the IP is now blocked."
-  def failed(conn, account \\ nil) do
-    case !conn.assigns.login_exempt && Core.login_failed(conn.remote_ip, account) do
+  def failed(conn, account \\ nil, kind \\ :password) do
+    case !conn.assigns.login_exempt && Core.login_failed(conn.remote_ip, account, kind) do
       {:blocked, until} -> {:halt, conn |> blocked(until) |> halt()}
       _ -> {:cont, conn}
     end

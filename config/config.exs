@@ -56,11 +56,15 @@ config :qpbx, QPBX.Web.Captcha, provider: :pow
 config :qpbx, Oban,
   engine: Oban.Engines.Basic,
   repo: QPBX.Repo,
-  queues: [notify: 5, webhooks: 10],
+  queues: [notify: 5, webhooks: 10, calls: 5],
   # Completed jobs (which carry setup links) are deleted after a day.
   plugins: [
     {Oban.Plugins.Pruner, max_age: 86_400},
-    {Oban.Plugins.Cron, crontab: [{"17 3 * * *", QPBX.Integrations.Webhooks.Prune}]}
+    {Oban.Plugins.Cron,
+     crontab: [
+       {"17 3 * * *", QPBX.Integrations.Webhooks.Prune},
+       {"0 6 1 * *", QPBX.Telephony.UsageAlerts.Summary}
+     ]}
   ]
 
 # Configure the mailer

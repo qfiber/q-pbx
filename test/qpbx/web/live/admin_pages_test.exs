@@ -67,6 +67,27 @@ defmodule QPBX.Web.AdminPagesTest do
       assert Core.list_sessions(user) == []
     end
 
+    test "usage alert thresholds: on a plan, and a tenant's own (empty: the plan's)", %{
+      conn: conn
+    } do
+      plan = plan_fixture(%{name: "Usage"})
+      {:ok, view, _} = live(conn, ~p"/platform/plans/#{plan.id}")
+
+      assert view |> form("#plan-form", plan: %{usage_thresholds: "70, 120"}) |> render_submit() =~
+               "must be percentages from 1 to 100"
+
+      view |> form("#plan-form", plan: %{usage_thresholds: "90, 60"}) |> render_submit()
+      assert Core.get_plan!(plan.id).usage_thresholds == [60, 90]
+
+      t = tenant_fixture(plan_id: plan.id)
+      {:ok, view, html} = live(conn, ~p"/platform/tenants/#{t.id}")
+      assert html =~ ~s(placeholder="60, 90")
+      view |> form("#tenant-form", tenant: %{usage_thresholds: "25"}) |> render_submit()
+      assert Core.usage_thresholds(Core.get_tenant!(t.id)) == [25]
+      view |> form("#tenant-form", tenant: %{usage_thresholds: ""}) |> render_submit()
+      assert Core.usage_thresholds(Core.get_tenant!(t.id)) == [60, 90]
+    end
+
     test "adds a platform admin and sends a new setup link", %{conn: conn} do
       {:ok, view, _} = live(conn, ~p"/platform/admins")
 

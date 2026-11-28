@@ -18,6 +18,12 @@
 | `QPBX.Events.ExtensionRegistration` | `registrations` | 1 | `type` (registered, unregistered), `reason` (unregister, expired), `tenant_id`, `extension_id`, `extension`, `device` (the login), `contact`, `user_agent`, `at` | `QPBX.Edge` (Kamailio's reports) |
 | `QPBX.Events.AlertChanged` | `alerts` | 1 | `id`, `alert_id`, `tenant_id`, `event` (raised, repeated, acknowledged, resolved), `kind`, `category`, `severity`, `at` | `QPBX.Notify` |
 | `QPBX.Events.NotificationsChanged` | `notifications` | 1 | `account_type` (user, platform_admin), `account_id`, `at` | `QPBX.Notify` (a person's portal notifications changed: the bell) |
+| `QPBX.Events.EdgeBanned` | `edge_bans` | 1 | `ip`, `port`, `reason`, `domain`, `at` | `QPBX.Edge` (a new ban) |
+| `QPBX.Events.TrunkStatusChanged` | `trunk_status` | 1 | `trunk_id`, `tenant_id`, `name`, `up`, `reason`, `at` | `QPBX.Edge` (`TrunkMonitor`) |
+| `QPBX.Events.HealthChanged` | `health` | 1 | `component`, `status`, `previous`, `detail`, `at` | `QPBX.Web` (`Health`, a status held two runs) |
+| `QPBX.Events.UsageThresholdReached` | `usage` | 1 | `id`, `tenant_id`, `limit`, `percent`, `used`, `allowed` (minutes), `period_end`, `run_out`, `at` | `QPBX.Telephony` (`UsageAlerts`); also the `usage.threshold_reached` webhook |
+| `QPBX.Events.UsageSummary` | `usage_summary` | 1 | `tenant_id`, `month`, `totals`, `at` | `QPBX.Telephony` (monthly cron) |
+| `QPBX.Events.LoginAlert` | `logins` | 1 | `kind` (new_ip, failed_2fa, account_failures, ip_blocked), `account_type`, `account_id`, `tenant_id`, `ip`, `detail`, `at` | `QPBX.Core` (sessions, login limits) |
 | `QPBX.Events.WebhookDeadLettered` | `webhooks` | 1 | `tenant_id`, `endpoint_id`, `delivery_id`, `event_type`, `url`, `at` | `QPBX.Integrations` (a delivery given up after 24 hours) |
 | `QPBX.Events.LimitReached` | `limits` | 1 | `tenant_id`, `limit`, `detail`, `at` | `QPBX.Telephony` (a call refused by admission) |
 | `QPBX.Events.VoicemailReceived` | `voicemail` | 1 | `tenant_id`, `voicemail_id`, `extension_id`, `caller_number`, `caller_name`, `duration`, `at` | `QPBX.Telephony` (a message was left) |

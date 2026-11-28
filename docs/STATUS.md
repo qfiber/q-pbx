@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-8 done; next task 3-9. Phase 2 done.
+**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-9 done; next task 3-10. Phase 2 done.
 **Last updated:** 2026-11-28
 
 ## Phase 1 goal
@@ -40,6 +40,28 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 3-9 Alert sources (done, 2026-11-28): security (Kamailio bans: failed SIP logins become the
+  targeted tenant's brute-force alert, floods and scanners a platform SIP attack; office IPs
+  spared; fraud rules; portal logins from a new address, wrong 2FA codes, failures on an
+  account, blocked addresses), health (FreeSWITCH, Kamailio and PostgreSQL down, disk,
+  certificate, backups, job backlog from the health checks; trunks down from a new trunk
+  monitor reading Kamailio's dispatcher and registrations; crash loops from crash reports),
+  usage (thresholds per plan, 50/80/90/100 % by default, overridable per tenant, once per
+  period with minutes used and left, the period end and the run-out date; limits reached; a
+  monthly summary), operations (a phone unregistered for 15 minutes, a webhook given up),
+  personal (missed calls and voicemail to the extension's user); recovery resolves. Plans and
+  tenants edit the thresholds in the portal; `usage.threshold_reached` is a webhook type. 16
+  new tests (357 in all): one per source, the two-in-a-row rule for health and trunks,
+  thresholds firing once, the login events from Core, a crash loop, a phone back before and
+  after its alert, the threshold fields. Lab: `lab/done-when/phase3-sources.py` 6/6: real
+  calls crossed 50% of a 1-minute allowance (the alert says 0.7 of 1 used, 0.3 left); a
+  shared trunk's carrier stopped answering (trunk down after 70 s, resolved 30 s after it
+  answered again); FreeSWITCH stopped (critical after 15 s) and started (resolved); twelve
+  wrong SIP passwords from one phone got it banned and the tenant a brute-force alert naming
+  its domain. Found and fixed: Kamailio's OPTIONS pings counted its own timeout as an answer,
+  so a dead carrier was never marked inactive (a phase 2 setting); the phase 2 edge check
+  passes 23/23 with the fix.
 
 - 3-8 Notification service (done, 2026-11-28): alerts (kind, key, category, severity; open,
   acknowledged, resolved) with repeats of an open key counted and told at most every 15
@@ -521,7 +543,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 3-9 Alert sources (next).
+- 3-10 Call tests in CI (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next

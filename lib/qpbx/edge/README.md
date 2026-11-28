@@ -51,7 +51,17 @@ automatic firewall block; audited); `rpc/2` (any Kamailio JSON-RPC method), `rel
 (settings), `FirewallChanged` (allow
 lists). Every minute: allow lists (entries expire) and registrations (a restarted Kamailio
 has none). `CallState` (busy lamps), `ConfigChanged` "extensions" and `VoicemailChanged` (voicemail lights).
-**Events emitted:** `EdgeAlert`, `ExtensionRegistration`.
+**Events emitted:** `EdgeAlert`, `EdgeBanned` (every new ban: ip, port, reason; `domain` for
+failed logins, from Kamailio's reason "auth failures <domain>"), `ExtensionRegistration`,
+`TrunkStatusChanged`.
+
+**Trunk monitor (`QPBX.Edge.TrunkMonitor`, every 15 s):** an IP trunk is down when no address
+of its dispatcher set is active (`dispatcher.list` FLAGS starting with A), a registration
+trunk when its `uac.reg_dump` flags lack registered (4); a change seen two rounds in a row
+publishes `TrunkStatusChanged`; `trunk_status/0` (the `trunk_registrations` health check).
+Gotcha: `ds_ping_reply_codes` lists live answers code by code; never `class=4` or `class=5`,
+which include the 408 and 5xx the transaction layer makes when nothing answers (a dead
+carrier would stay active).
 
 **Registration reports:** Kamailio reports each device login's real changes to the app: after
 `save("location")` returns 1 (a new contact: `registered`) or 3 (removed: `unregistered`), and

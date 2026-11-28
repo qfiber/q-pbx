@@ -226,3 +226,8 @@ msgstr "يحتوي على فئة أو قناة غير معروفة"
 #, elixir-autogen, elixir-format
 msgid "pick at least one category"
 msgstr "اختر فئة واحدة على الأقل"
+
+#: lib/qpbx/web/error_messages.ex:32
+#, elixir-autogen, elixir-format
+msgid "must be percentages from 1 to 100"
+msgstr "يجب أن تكون نسبًا مئوية من 1 إلى 100"

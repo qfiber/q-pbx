@@ -7,6 +7,9 @@ defmodule QPBX.Web.Health do
   Overall status: `down` if a critical component (PostgreSQL, FreeSWITCH, Kamailio) is in
   error, `degraded` if anything else is in warning or error, otherwise `ok`. Components that
   are `not_configured` do not count.
+
+  A component whose status changes and stays changed for two runs in a row publishes
+  `QPBX.Events.HealthChanged` (the health alerts); `not_configured` is never news.
   """
   use GenServer
   alias QPBX.Web.Health.Checks
@@ -69,7 +72,9 @@ defmodule QPBX.Web.Health do
   @impl true
   def init(_opts) do
     :ets.new(@table, [:named_table, :protected, read_concurrency: true])
-    {:ok, nil, {:continue, :check}}
+    # told: the status last published (or first seen) per component; pending: a new status and
+    # how many runs it has held.
+    {:ok, %{told: %{}, pending: %{}}, {:continue, :check}}
   end
 
   @impl true
@@ -85,9 +90,44 @@ defmodule QPBX.Web.Health do
   def handle_info(:check, state), do: {:noreply, check(state)}
 
   defp check(state) do
-    :ets.insert(@table, {:result, run()})
+    result = run()
+    :ets.insert(@table, {:result, result})
     Process.send_after(self(), :check, Keyword.get(config(), :interval, 10_000))
-    state
+    changes(state, result.components)
+  end
+
+  @doc false
+  # Publishes components whose new status held two runs; the first status seen is the baseline.
+  def changes(state, components) do
+    Enum.reduce(components, state, fn
+      {_name, %{status: :not_configured}}, acc ->
+        acc
+
+      {name, %{status: status, detail: detail}}, acc ->
+        told = acc.told[name]
+
+        cond do
+          is_nil(told) and status == :ok ->
+            %{acc | told: Map.put(acc.told, name, status)}
+
+          told == status ->
+            %{acc | pending: Map.delete(acc.pending, name)}
+
+          match?({^status, _}, acc.pending[name]) ->
+            QPBX.Events.publish(%QPBX.Events.HealthChanged{
+              component: to_string(name),
+              status: to_string(status),
+              previous: told && to_string(told),
+              detail: detail,
+              at: DateTime.utc_now()
+            })
+
+            %{acc | told: Map.put(acc.told, name, status), pending: Map.delete(acc.pending, name)}
+
+          true ->
+            %{acc | pending: Map.put(acc.pending, name, {status, 1})}
+        end
+    end)
   end
 
   defp config, do: Application.get_env(:qpbx, __MODULE__, [])

@@ -7,6 +7,7 @@ defmodule QPBX.Web.Platform.TenantLive do
   use QPBX.Web, :live_view
   alias QPBX.Core
   alias QPBX.Core.{Plan, User}
+  alias QPBX.Web.Platform.PlansLive
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
@@ -62,6 +63,10 @@ defmodule QPBX.Web.Platform.TenantLive do
       params
       |> Map.take(~w(name plan_id timezone locale))
       |> Map.put("limit_overrides", overrides)
+      |> Map.put(
+        "usage_thresholds",
+        PlansLive.parse_percents(params["usage_thresholds"])
+      )
 
     case Core.update_tenant(socket.assigns.tenant, attrs, socket.assigns.current_account) do
       {:ok, tenant} ->
@@ -162,6 +167,16 @@ defmodule QPBX.Web.Platform.TenantLive do
           />
         </div>
 
+        <.input
+          name="tenant[usage_thresholds]"
+          id="tenant_usage_thresholds"
+          value={PlansLive.percents_text(Ecto.Changeset.get_field(@form.source, :usage_thresholds))}
+          label={gettext("Usage alerts at (%); empty: the plan's")}
+          placeholder={PlansLive.percents_text(@tenant.plan && @tenant.plan.usage_thresholds)}
+          dir="ltr"
+          errors={Enum.map(@form[:usage_thresholds].errors, &translate_error/1)}
+        />
+
         <h2 class="text-lg font-semibold mt-6">{gettext("Limits for this tenant")}</h2>
         <p class="text-sm opacity-70">
           {gettext(
@@ -242,5 +257,5 @@ defmodule QPBX.Web.Platform.TenantLive do
   defp role_label("tenant_admin"), do: gettext("Tenant admin")
   defp role_label(_), do: gettext("Tenant user")
 
-  defp limit_label(limit), do: QPBX.Web.Platform.PlansLive.limit_label(limit)
+  defp limit_label(limit), do: PlansLive.limit_label(limit)
 end

@@ -13,13 +13,24 @@ defmodule QPBX.Core.Tenant do
     field :timezone, :string
     field :locale, :string, default: "en"
     field :limit_overrides, :map, default: %{}
+    # nil: the plan's usage thresholds.
+    field :usage_thresholds, {:array, :integer}
     belongs_to :plan, Plan
     timestamps(type: :utc_datetime)
   end
 
   def changeset(tenant, attrs, base_domain) do
     tenant
-    |> cast(attrs, [:name, :slug, :timezone, :locale, :plan_id, :limit_overrides])
+    |> cast(attrs, [
+      :name,
+      :slug,
+      :timezone,
+      :locale,
+      :plan_id,
+      :limit_overrides,
+      :usage_thresholds
+    ])
+    |> Plan.validate_thresholds(:usage_thresholds)
     |> validate_required([:name, :slug, :timezone, :locale, :plan_id])
     |> validate_length(:name, max: 200)
     # A single DNS label: it becomes <slug>.<base_domain>.

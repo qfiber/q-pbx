@@ -44,8 +44,14 @@ and writes an audit entry in the same transaction.
   activity), `list_sessions/1`, `revoke_session/3`, `revoke_sessions/3` (`except:`),
   `end_session/1`, `session_idle_timeout/0`. Password and 2FA changes revoke all sessions.
   `QPBX.Core.SessionSweeper` ends idle/expired sessions every 30 s.
-- Login limits: `login_check/1`, `login_failed/2` (IP, optional account), `login_succeeded/1`
-  (`QPBX.Core.LoginGuard`; never locks accounts).
+- Login limits: `login_check/1`, `login_failed/3` (IP, optional account, `:password` or
+  `:totp`), `login_succeeded/1` (`QPBX.Core.LoginGuard`; never locks accounts). Publishes
+  `LoginAlert`: `failed_2fa`, `account_failures` (every 5th on one account), `ip_blocked`;
+  sessions publish `new_ip` for a login from an address not among the account's last 10
+  (`login_ips`; not on the first login).
+- Alert sources: `extension_user/1` (the user linked to an extension), `tenant_id_for_domain/1`,
+  `usage_thresholds/1` (the tenant's `usage_thresholds`, else its plan's; plans default to 50,
+  80, 90, 100).
 - Audit: `audit/4` (for changes made by other areas), `list_audit_logs/1` (`limit`, `tenant_id`,
   `before: {inserted_at, id}` for keyset paging), `list_my_audit_logs/3` (scope, limit, before).
 - SIP credentials: `list_sip_credentials/1`, `create_sip_credential/3` (returns the password

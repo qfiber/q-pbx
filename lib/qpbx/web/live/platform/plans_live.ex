@@ -109,6 +109,15 @@ defmodule QPBX.Web.Platform.PlansLive do
           label={gettext("Allowed destination classes")}
           options={Enum.map(Plan.destination_classes(), &{class_label(&1), &1})}
         />
+        <.input
+          name="plan[usage_thresholds]"
+          id="plan_usage_thresholds"
+          value={percents_text(Ecto.Changeset.get_field(@form.source, :usage_thresholds))}
+          label={gettext("Usage alerts at (% of the monthly outbound minutes)")}
+          placeholder="50, 80, 90, 100"
+          dir="ltr"
+          errors={Enum.map(@form[:usage_thresholds].errors, &translate_error/1)}
+        />
         <fieldset class="fieldset mb-2">
           <legend class="fieldset-legend">{gettext("Features")}</legend>
           <.input
@@ -135,8 +144,28 @@ defmodule QPBX.Web.Platform.PlansLive do
     Enum.any?(features, fn {k, v} -> to_string(k) == f and v == true end)
   end
 
+  @doc "\"50, 80\" to [50, 80]; anything not a whole number is kept, for the changeset to refuse."
+  def parse_percents(nil), do: nil
+  def parse_percents(""), do: nil
+
+  def parse_percents(text) when is_binary(text) do
+    for part <- String.split(text, [",", " ", ";"], trim: true) do
+      case Integer.parse(part) do
+        {n, ""} -> n
+        _ -> part
+      end
+    end
+  end
+
+  def parse_percents(list), do: list
+
+  def percents_text(nil), do: ""
+  def percents_text(list) when is_list(list), do: Enum.map_join(list, ", ", &to_string/1)
+  def percents_text(other), do: to_string(other)
+
   defp plan_params(params) do
     params
+    |> Map.update("usage_thresholds", nil, &(parse_percents(&1) || []))
     |> Map.update("allowed_destination_classes", [], &Enum.reject(&1, fn v -> v == "" end))
     |> Map.put("features", Map.new(Plan.features(), &{&1, params["feature_" <> &1] == "true"}))
   end

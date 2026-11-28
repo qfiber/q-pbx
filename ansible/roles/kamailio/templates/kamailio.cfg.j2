@@ -140,8 +140,10 @@ modparam("dispatcher", "ds_probing_threshold", 2)
 modparam("dispatcher", "ds_inactive_threshold", 2)
 modparam("dispatcher", "ds_probing_mode", 1)
 modparam("dispatcher", "ds_ping_from", "sip:ping@{{ qpbx_service_ipv4 }}")
-# A carrier answering OPTIONS with an error is still reachable.
-modparam("dispatcher", "ds_ping_reply_codes", "class=2;class=4;class=5")
+# A carrier answering OPTIONS with an error is still reachable. Not 408 and not 5xx: the
+# transaction layer makes those itself when nothing answers (a timeout, a failed send), and
+# accepting them would keep a dead carrier "active" forever. 501: OPTIONS not implemented.
+modparam("dispatcher", "ds_ping_reply_codes", "class=2;code=400;code=401;code=403;code=404;code=405;code=407;code=480;code=481;code=484;code=488;code=489;code=501")
 # Host names: resolved at load and refreshed every 10 minutes.
 modparam("dispatcher", "ds_dns_mode", 5)
 modparam("dispatcher", "setid_pvname", "$avp(ds_setid)")
@@ -352,11 +354,13 @@ route[AUTHFAIL] {
   }
   if ($var(n_port) >= $var(port_limit)) {
     $var(ban) = $si + "|" + $sp;
-    $var(reason) = "auth failures";
+    # The domain names the tenant whose logins were tried (QPBX.Edge.Bans: the alert).
+    $var(reason) = "auth failures " + $td;
     route(BAN);
   }
   if ($var(n) >= $var(s_fail_ip)) {
-    $var(reason) = "auth failures";
+    # The domain names the tenant whose logins were tried (QPBX.Edge.Bans: the alert).
+    $var(reason) = "auth failures " + $td;
     route(BAN_IP);
   }
 }

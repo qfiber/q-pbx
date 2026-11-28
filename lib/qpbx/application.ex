@@ -34,9 +34,11 @@ defmodule QPBX.Application do
       Application.get_env(:qpbx, :edge_workers, true) && QPBX.Edge.Reloader,
       Application.get_env(:qpbx, :edge_workers, true) && QPBX.Edge.Bans,
       Application.get_env(:qpbx, :edge_workers, true) && QPBX.Edge.Presence,
+      Application.get_env(:qpbx, :edge_workers, true) && QPBX.Edge.TrunkMonitor,
       QPBX.Telephony,
       # Off in tests too: they call QPBX.Integrations.Webhooks.dispatch/1 directly.
       Application.get_env(:qpbx, :edge_workers, true) && QPBX.Integrations.Webhooks.Dispatcher,
+      Application.get_env(:qpbx, :edge_workers, true) && QPBX.Notify.Sources,
       QPBX.Web.Health,
       QPBX.Web.SessionReaper,
       QPBX.Web.Captcha.PowStore,
