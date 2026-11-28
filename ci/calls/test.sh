@@ -12,6 +12,16 @@ work=$(mktemp -d)
 trap 'rm -rf "$work"; [[ ${KEEP:-0} == 1 ]] || podman rm -f "$name" >/dev/null 2>&1 || true' EXIT
 
 ssh-keygen -q -t ed25519 -N "" -f "$work/key"
+# Webhooks are HTTPS only: a throwaway CA the server trusts, and a certificate for the test
+# receiver run.py starts on the server at 127.0.0.90 (the one inside address allowed).
+openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-256 -nodes -days 2 -subj "/CN=Q-PBX CI CA" \
+  -keyout "$work/ca.key" -out "$work/ca.pem" 2>/dev/null
+openssl req -newkey ec -pkeyopt ec_paramgen_curve:P-256 -nodes -subj "/CN=127.0.0.90" \
+  -keyout "$work/receiver.key" -out "$work/receiver.csr" 2>/dev/null
+openssl x509 -req -in "$work/receiver.csr" -CA "$work/ca.pem" -CAkey "$work/ca.key" -CAcreateserial -days 2 \
+  -extfile <(echo "subjectAltName=IP:127.0.0.90") -out "$work/receiver.pem" 2>/dev/null
+python3 -c 'import json,sys; print(json.dumps({"qpbx_outbound_ca_pem": open(sys.argv[1]).read(), "qpbx_outbound_allow_cidrs": ["127.0.0.90/32"]}))' \
+  "$work/ca.pem" > "$work/vars.json"
 podman build -q -t qpbx-ci-server "$here" >/dev/null
 podman rm -f "$name" >/dev/null 2>&1 || true
 # Privileged and with systemd: nftables, the services' sandboxing and FreeSWITCH need it.
@@ -22,9 +32,9 @@ podman exec "$name" bash -c "chown debian: /home/debian/.ssh/authorized_keys && 
 
 ssh_opts=(-p 2222 -i "$work/key" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR)
 status=0
-(cd "$root/ansible" && QPBX_CI_KEY="$work/key" ANSIBLE_DEPRECATION_WARNINGS=False ansible-playbook -i inventories/ci site.yml) || status=$?
+(cd "$root/ansible" && QPBX_CI_KEY="$work/key" ANSIBLE_DEPRECATION_WARNINGS=False ansible-playbook -i inventories/ci site.yml -e "@$work/vars.json") || status=$?
 if [[ $status == 0 ]]; then
-  python3 "$here/run.py" debian@127.0.0.1 "${ssh_opts[@]}" || status=$?
+  QPBX_CALLS_RECEIVER="$work" python3 "$here/run.py" debian@127.0.0.1 "${ssh_opts[@]}" || status=$?
 fi
 if [[ $status != 0 ]]; then
   mkdir -p "$here/logs"

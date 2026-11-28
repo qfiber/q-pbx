@@ -5,19 +5,24 @@ phones from carriers by source address as it does in production. Setup and check
 `qpbx rpc`.
 
 Covers: registration (right and wrong password), a call between extensions, two tenants with
-the same extension numbers, an outbound call with carrier failover, a barred destination,
-an inbound call to a number (DID), voicemail, and the call records of all of it.
+the same extension numbers, an extension added through the API ringing at once, an outbound
+call with carrier failover, a barred destination, an inbound call to a number (DID),
+voicemail, the call records of all of it, and the usage alert the outbound call crosses.
+With QPBX_CALLS_RECEIVER (a folder with receiver.pem and receiver.key for 127.0.0.90, whose
+CA the server trusts; ci/calls/test.sh makes them): signed call and usage webhooks.
 
 usage: run.py <ssh destination> [ssh options...]
   CI:  run.py debian@127.0.0.1 -p 2222 -i KEY -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
 """
-import json, os, re, shlex, subprocess, sys, time
+import hashlib, hmac, json, os, re, shlex, subprocess, sys, time
 
 SSH = ["ssh", "-o", "IdentitiesOnly=yes", *sys.argv[2:], sys.argv[1]]
 HERE = os.path.dirname(os.path.abspath(__file__))
 RUN = format(int(time.time()), "x")
 DID = "+9723" + str(int(time.time()))[-7:]
 WORK = f"/tmp/qpbx-sipp-{RUN}"
+RECEIVER = os.environ.get("QPBX_CALLS_RECEIVER")
+HOOK = "https://127.0.0.90:8443/hook"
 results = []
 
 
@@ -86,6 +91,33 @@ def carriers_up(ips, wait=70):
     return False
 
 
+def api(method, path, body=None):
+    """The /v1 API through nginx on the server, with tenant A's key: (status, JSON or None)."""
+    host = S["host"]
+    data = f"-d {shlex.quote(json.dumps(body))}" if body is not None else ""
+    out = ssh(f"curl -sk --resolve {host}:443:127.0.0.1 -X {method} -H 'authorization: Bearer {S['key']}' "
+              f"-H 'content-type: application/json' {data} -w '\n%{{http_code}}' https://{host}{path}").stdout
+    body, _, status = out.rpartition("\n")
+    try:
+        return int(status), json.loads(body) if body else None
+    except ValueError:
+        return int(status or 0), None
+
+
+def hooks(want, wait=15):
+    """Webhook deliveries the receiver got so far (kept across calls): (type, data, signed)."""
+    for _ in range(wait):
+        for r in json.loads(ssh("curl -s --cacert " + f"{WORK}/ca.pem https://127.0.0.90:8443/_seen").stdout or "[]"):
+            h = {k.lower(): v for k, v in r["headers"].items()}
+            sig = "v1=" + hmac.new(SECRET.encode(), f"{h['x-qpbx-timestamp']}.{r['body']}".encode(), hashlib.sha256).hexdigest()
+            e = json.loads(r["body"])
+            HOOKS.append((e["type"], e["data"], hmac.compare_digest(sig, h.get("x-qpbx-signature", ""))))
+        if all(any(t == w for t, _, _ in HOOKS) for w in want):
+            break
+        time.sleep(1)
+    return HOOKS
+
+
 def done(p):
     """0 when the answering side handled its call, 1 when it saw none (timed out)."""
     p.communicate()
@@ -98,7 +130,7 @@ def call(ip, port, user, to, domain, password=None, talk_ms=1000, audio=False):
     auth = f"-au {user} -ap {shlex.quote(password)}" if password else ""
     scenario = "call_carrier" if not password else ("call_phone_audio" if audio else "call_phone")
     out = ssh(sipp(scenario, ip, port, user, {"to": to, "domain": domain},
-                   f"{auth} -d {talk_ms}", 40)).stdout
+                   f"{auth} -d {talk_ms}", 40 + talk_ms // 1000)).stdout
     log = ssh(f"cat {WORK}/{user}-{ip}.log 2>/dev/null; rm -f {WORK}/{user}-{ip}.log").stdout
     codes = re.findall(r"RESULT (\d{3})", log)
     return codes[-1] if codes else f"none (sipp exit {exit_code(out)})"
@@ -120,7 +152,7 @@ for pl <- Core.list_plans(), String.starts_with?(pl.name, "sipp-"), do: QPBX.Rep
 '''
 
 S = app(CLEANUP + f'''
-{{:ok, plan}} = Core.create_plan(%{{name: "sipp-{RUN}"}}, a)
+{{:ok, plan}} = Core.create_plan(%{{name: "sipp-{RUN}", outbound_minutes_per_month: 1, usage_thresholds: [50]}}, a)
 {{:ok, t1}} = Core.create_trunk(p, %{{name: "sipp-T1-{RUN}", auth_mode: "ip", addresses: [%{{host: "127.0.0.71", port: 5090}}]}}, a)
 {{:ok, t2}} = Core.create_trunk(p, %{{name: "sipp-T2-{RUN}", auth_mode: "ip", addresses: [%{{host: "127.0.0.72", port: 5090}}]}}, a)
 {{:ok, _}} = Core.create_number_class(p, %{{prefix: "+97259", class: "premium", note: "sipp"}}, a)
@@ -143,12 +175,27 @@ end
 e102 = Enum.find(Core.list_extensions(sa), &(&1.number == "102"))
 {{:ok, did}} = Core.create_did(p, %{{number: "{DID}", trunk_id: t1.id, tenant_id: ta.id}}, a)
 {{:ok, _}} = Core.set_did_destination(sa, Core.get_did!(sa, did.id), %{{destination_type: "extension", destination_id: e102.id}}, a)
-IO.puts("JSON" <> Jason.encode!(%{{da: ta.sip_domain, db: tb.sip_domain, ta: ta.id, pwa: pwa, pwb: pwb}}))
+{{:ok, _, key}} = Core.create_api_key(sa, %{{name: "sipp", scopes: ["read", "write", "admin"]}}, a)
+host = QPBX.Web.Endpoint.config(:url)[:host]
+IO.puts("JSON" <> Jason.encode!(%{{da: ta.sip_domain, db: tb.sip_domain, ta: ta.id, pwa: pwa, pwb: pwb, key: key, host: host}}))
 ''')
 time.sleep(8)  # Kamailio reloads domains, credentials and trunks
+HOOKS, SECRET = [], ""
+if RECEIVER:
+    for f in ("receiver.pem", "receiver.key", "ca.pem"):
+        subprocess.run(SSH + [f"cat > {WORK}/{f}"], input=open(os.path.join(RECEIVER, f)).read(), text=True, check=True)
+    subprocess.run(SSH + [f"cat > {WORK}/http_receiver.py"], input=open(os.path.join(HERE, "..", "..", "lab", "tools", "http_receiver.py")).read(), text=True, check=True)
+    ssh(f"cd {WORK} && (nohup python3 -I http_receiver.py 8443 receiver.pem receiver.key >/dev/null 2>&1 &)")
 
 A, B = S["da"], S["db"]
 try:
+    if RECEIVER:
+        st, body = api("POST", "/v1/webhooks", {"url": HOOK, "event_types": ["call.answered", "call.ended", "usage.threshold_reached"]})
+        SECRET = (body or {}).get("secret", "")
+        check("API: a webhook endpoint is added (secret shown once)", st == 201 and SECRET.startswith("whsec_"), st)
+    else:
+        print("SKIP  webhooks (no QPBX_CALLS_RECEIVER)")
+
     check("a phone registers", register("127.0.0.81", 5061, "101", S["pwa"]["101"], A) == 0)
     check("a wrong password is refused", register("127.0.0.89", 5061, "101", "wrong-password", A) != 0)
 
@@ -168,18 +215,55 @@ try:
     ea, eb = done(a102), done(b102)
     check("tenant B: 101 calls 102, answered by tenant B's 102 only", r == "200" and eb == 0 and ea != 0, f"{r}, answer exits {ea}, {eb}")
 
+    # An extension and its phone added through the API ring at once: no reload, no restart.
+    st, ext = api("POST", "/v1/extensions", {"number": "105", "name": "From the API"})
+    st2, dev = api("POST", f"/v1/extensions/{(ext or {}).get('data', {}).get('id')}/devices", {"label": "", "kind": "softphone"})
+    pw = (dev or {}).get("sip_password", "")
+    check("API: extension 105 and a phone for it created", st == 201 and st2 == 201 and pw, f"{st}, {st2}")
+    time.sleep(2)
+    reg = register("127.0.0.85", 5061, "105", pw, A)
+    a105 = answer("127.0.0.85", 5061, "a105", timeout=12)
+    time.sleep(1)
+    r = call("127.0.0.81", 5062, "101", "105", A, S["pwa"]["101"])
+    e = done(a105)
+    check("…it registers and 101's call to it is answered", reg == 0 and r == "200" and e == 0, f"register {reg}, {r}, answer exit {e}")
+
+    if RECEIVER:
+        got = hooks(["call.answered", "call.ended"])
+        calls = [(t, d) for t, d, ok in got if t.startswith("call.") and ok]
+        check("webhooks: call.answered and call.ended arrive, signed", {"call.answered", "call.ended"} <= {t for t, _ in calls} and all(ok for _, _, ok in got),
+              ", ".join(sorted({t for t, _, _ in got})))
+
     # Outbound: the first carrier fails (503), the second answers. Kamailio pings carriers
     # (OPTIONS every 20 s) and marked them down while nothing listened; wait until both are up.
     c1, c2 = answer("127.0.0.71", 5090, "carrier1", code=503, timeout=90), answer("127.0.0.72", 5090, "carrier2", timeout=90)
     up = carriers_up(["127.0.0.71", "127.0.0.72"])
     check("Kamailio sees both carriers up (OPTIONS answered)", up, "" if up else "still down after 70 s")
-    r = call("127.0.0.81", 5062, "101", "02-765-4321", A, S["pwa"]["101"])
+    # 32 seconds: past 50% of the plan's 1 outbound minute a month (the usage alert below).
+    r = call("127.0.0.81", 5062, "101", "02-765-4321", A, S["pwa"]["101"], talk_ms=32000)
     e1, e2 = done(c1), done(c2)
     ok = r == "200" and e1 == 0 and e2 == 0
     check("outbound: carrier 1 refuses (503), carrier 2 answers", ok, f"{r}, carrier exits {e1}, {e2}")
     if not ok:
         print("   carrier 1:", messages("carrier1", "127.0.0.71"), "\n   carrier 2:", messages("carrier2", "127.0.0.72"),
               "\n   caller:", messages("101", "127.0.0.81"))
+
+    # The usage alert that call crossed: minutes used and left.
+    alerts = []
+    for _ in range(10):
+        alerts = app(f'''
+t = QPBX.Core.get_tenant!("{S['ta']}")
+u = hd(QPBX.Core.list_users(%QPBX.Core.Scope{{kind: :platform}}, t))
+IO.puts("JSON" <> Jason.encode!(for a <- QPBX.Notify.list_alerts(QPBX.Core.scope_for(u)), a.kind == "usage_threshold", do: a.message))
+''')
+        if alerts:
+            break
+        time.sleep(1)
+    check("usage: the call crossed 50% of the monthly minutes, the tenant has the alert", alerts and "(50%)" in alerts[0] and "left" in alerts[0], alerts[0] if alerts else "none")
+    if RECEIVER:
+        u = [(d, ok) for t, d, ok in hooks(["usage.threshold_reached"]) if t == "usage.threshold_reached"]
+        check("webhooks: usage.threshold_reached arrives, signed, with the minutes", u and u[0][1] and u[0][0].get("percent") == 50 and u[0][0].get("allowed") == 1,
+              str(u[0][0]) if u else "none")
 
     # Call admission: a premium (high-cost) number is barred, no carrier sees it.
     c1 = answer("127.0.0.71", 5090, "carrier1", timeout=6)
@@ -215,7 +299,7 @@ IO.puts("JSON" <> Jason.encode!(Enum.map(rows, &[&1.direction, &1.disposition]))
     check("call records: internal, outbound, refused and inbound calls are there", all(w in cdrs for w in want) and len(cdrs) >= 5, str(cdrs))
 finally:
     app(CLEANUP + '\nIO.puts("JSON{}")')
-    ssh(f"rm -rf {WORK}")
+    ssh(f"pkill -f 'http_receiver.py 8443'; rm -rf {WORK}")
 
 failed = results.count(False)
 print(f"\n{len(results) - failed} passed, {failed} failed.")

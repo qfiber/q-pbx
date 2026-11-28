@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-9 done; next task 3-10. Phase 2 done.
+**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-10 done; next task 3-11. Phase 2 done.
 **Last updated:** 2026-11-28
 
 ## Phase 1 goal
@@ -40,6 +40,16 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 3-10 Call tests in CI (done, 2026-11-28): the SIPp suite (`ci/calls/run.py`) gains a webhook
+  endpoint added through the API and delivered to an HTTPS receiver on the server (a
+  throwaway CA made by `ci/calls/test.sh` and given to the playbook, the receiver's address
+  the one inside address allowed); extension 105 and its phone created through the API,
+  registering and answering a call at once; `call.answered` and `call.ended` webhooks with
+  valid signatures; the outbound failover call now talks 32 seconds, past 50% of the plan's
+  one minute, and the tenant gets the usage alert ("0.5 of 1 … 0.5 minutes are left") and the
+  signed `usage.threshold_reached` webhook. Run locally in the CI container: 17 passed, 0
+  failed. Without `QPBX_CALLS_RECEIVER` (against the lab) the webhook checks are skipped.
 
 - Logo updated (2026-11-28): new wordmark; same hexagons, so the favicons are unchanged.
 
@@ -545,7 +555,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 3-10 Call tests in CI (next).
+- 3-11 Leftovers (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next

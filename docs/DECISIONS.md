@@ -2,6 +2,13 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-28: Webhooks in the call tests (3-10)
+
+- **The CI receiver is HTTPS with a throwaway CA**, made per run by `ci/calls/test.sh` and given
+  to the playbook like an operator's `qpbx_outbound_ca_pem`, with only the receiver's address
+  allowed inside. Rejected: a plain HTTP exception for CI, since webhooks are HTTPS only with
+  no setting to turn that off.
+
 ## 2026-11-28: Alert sources (3-9)
 
 - **Sources publish events; one Notify process turns them into alerts** (`QPBX.Notify.Sources`),
