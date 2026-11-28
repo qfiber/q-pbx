@@ -90,7 +90,9 @@ Kamailio gets its real config.
   deliveries, voicemail, API keys, sessions, alerts, notifications; forms in titled sections
   (extension, my extension, mailbox, trunk, routes, protection, fraud, notification settings);
   call records and the audit log keep their server paging, restyled. Plans: a New plan button;
-  new and edit forms on their own pages. Local package builds reuse the voice prompts package
+  new and edit forms on their own pages. Plan editing, reported broken in the design review
+  (the edit form sat under the list), works since this change (confirmed in the portal; the
+  exact cause was not isolated). Local package builds reuse the voice prompts package
   already in `out/` (its version is pinned). 2 new tests (369 in all). Lab: screenshots
   reviewed, phase 1 check and 2-2 portal check passed.
 
@@ -897,9 +899,6 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
   prefix list (see "Planned features").
 
 ## Known bugs
-
-- Editing a plan in the portal does not work (reported 2026-11-28 in the design review);
-  deferred until the portal's final look is settled.
 
 - Kamailio logged one parse error on Meow's TLS connection (`bad header field [INVITE ...`)
   during the first Meow run, alongside FreeSWITCH's 488 refusals; not seen again after the
