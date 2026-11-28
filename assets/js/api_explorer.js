@@ -14,6 +14,8 @@ const el = (tag, attrs = {}, children = []) => {
   return node
 }
 
+const aliases = {"audio/x-wav": "audio/wav", "audio/wave": "audio/wav", "audio/vnd.wave": "audio/wav", "audio/mp3": "audio/mpeg"}
+
 const resolve = (spec, schema) =>
   schema && schema.$ref ? spec.components.schemas[schema.$ref.split("/").pop()] : schema
 
@@ -46,6 +48,14 @@ const operation = (spec, path, method, op) => {
     fields.push(el("label", {class: "block"}, [el("span", {class: "text-xs", text: label("Body")}), body]))
   }
 
+  // Binary bodies (greetings now, fax documents later): a file input, sent as it is.
+  let file = null
+  const binaryTypes = op.requestBody ? Object.keys(op.requestBody.content).filter((t) => t !== "application/json") : []
+  if (!jsonBody && binaryTypes.length) {
+    file = el("input", {type: "file", class: "file-input file-input-bordered file-input-sm w-full", accept: binaryTypes.join(",")})
+    fields.push(el("label", {class: "block"}, [el("span", {class: "text-xs", text: `${label("File")} (${binaryTypes.join(", ")})`}), file]))
+  }
+
   let idem = null
   if (method === "post") {
     idem = el("input", {class: "input input-bordered input-sm w-full"})
@@ -66,10 +76,13 @@ const operation = (spec, path, method, op) => {
 
     const headers = {authorization: "Bearer " + document.getElementById("api-key").value.trim()}
     if (body) headers["content-type"] = "application/json"
+    const chosen = file && file.files[0]
+    // Browsers name some types differently (audio/x-wav): the API's own name for them.
+    if (chosen) headers["content-type"] = aliases[chosen.type] || chosen.type
     if (idem && idem.value) headers["idempotency-key"] = idem.value
 
     try {
-      const res = await fetch(url, {method: method.toUpperCase(), headers, body: body ? body.value : undefined})
+      const res = await fetch(url, {method: method.toUpperCase(), headers, body: body ? body.value : chosen || undefined})
       const text = await res.text()
       let shown = text
       try { shown = JSON.stringify(JSON.parse(text), null, 2) } catch (_) {}

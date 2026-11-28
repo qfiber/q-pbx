@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-10 done; next task 3-11. Phase 2 done.
+**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-11 done; next task 3-12. Phase 2 done.
 **Last updated:** 2026-11-28
 
 ## Phase 1 goal
@@ -40,6 +40,14 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 3-11 Leftovers (done, 2026-11-28): the API explorer sends binary bodies: an operation whose
+  body is not JSON (greetings now, fax documents later) gets a file input with the accepted
+  types, and the file goes as it is (browser type names such as `audio/x-wav` mapped to the
+  API's). Lab: `lab/done-when/phase3-explorer.mjs` 7/7 in Chrome (a WAV greeting uploaded
+  from the page, then listed; no CSP violations). Stale entries removed from the known bugs
+  (login limits, Kamailio SNI, the office IPs page and session revocation all exist now) and
+  from the login limits' description (brute-force alerts exist since 3-9).
 
 - 3-10 Call tests in CI (done, 2026-11-28): the SIPp suite (`ci/calls/run.py`) gains a webhook
   endpoint added through the API and delivered to an HTTPS receiver on the server (a
@@ -555,7 +563,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 3-11 Leftovers (next).
+- 3-12 Done-when verification (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next
@@ -806,12 +814,6 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
 
 - Arabic portal texts need review by a native speaker
   (for example "التحويلات الداخلية" for extensions).
-- No login rate limit or lockout yet; brute-force alerts are phase 3 (Argon2 slows guessing).
-- Per-tenant certificates are issued but Kamailio does not select them by SNI yet (phase 2,
-  with its real TLS config); the platform certificate is served for every name meanwhile.
-- Tenant office IPs (tenant firewall entries) have an API but no tenant portal page yet;
-  platform admins add them today.
-- Sessions are signed cookies; they expire but cannot be revoked server-side before expiry.
 
 ## Done-when results (phase 2)
 

@@ -2,8 +2,8 @@ defmodule QPBX.Core.LoginGuard do
   @moduledoc """
   Failed-login limits per client IP: 5 failures block the IP for 1 hour; 5 more after that
   block it for 24 hours. Strikes are forgotten after 24 hours without a failure. Accounts are
-  never locked: 5 failures on one account write an alert entry to the audit log instead (real
-  alerts arrive with notifications in phase 3). Counters live in the database, so they hold
+  never locked: every 5th failure on one account writes an audit entry and raises a brute-force
+  alert (`LoginAlert`), as does a blocked IP. Counters live in the database, so they hold
   across restarts and across servers.
   """
   import Ecto.Query

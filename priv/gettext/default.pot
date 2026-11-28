@@ -43,7 +43,7 @@ msgstr ""
 msgid "Code"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/tenant_live.ex:153
+#: lib/qpbx/web/live/platform/tenant_live.ex:154
 #: lib/qpbx/web/live/platform/tenants_live.ex:103
 #, elixir-autogen, elixir-format
 msgid "Company name"
@@ -70,8 +70,8 @@ msgstr ""
 #: lib/qpbx/web/live/account/notifications_live.ex:158
 #: lib/qpbx/web/live/platform/admins_live.ex:94
 #: lib/qpbx/web/live/platform/admins_live.ex:129
-#: lib/qpbx/web/live/platform/tenant_live.ex:212
-#: lib/qpbx/web/live/platform/tenant_live.ex:248
+#: lib/qpbx/web/live/platform/tenant_live.ex:207
+#: lib/qpbx/web/live/platform/tenant_live.ex:243
 #: lib/qpbx/web/live/platform/tenants_live.ex:127
 #: lib/qpbx/web/live/tenant/users_live.ex:152
 #: lib/qpbx/web/live/tenant/users_live.ex:212
@@ -124,7 +124,7 @@ msgstr ""
 msgid "International"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/tenant_live.ex:164
+#: lib/qpbx/web/live/platform/tenant_live.ex:165
 #: lib/qpbx/web/live/platform/tenants_live.ex:119
 #: lib/qpbx/web/live/platform/tenants_live.ex:144
 #, elixir-autogen, elixir-format
@@ -202,8 +202,8 @@ msgstr ""
 #: lib/qpbx/web/live/platform/admins_live.ex:128
 #: lib/qpbx/web/live/platform/plans_live.ex:71
 #: lib/qpbx/web/live/platform/plans_live.ex:95
-#: lib/qpbx/web/live/platform/tenant_live.ex:211
-#: lib/qpbx/web/live/platform/tenant_live.ex:244
+#: lib/qpbx/web/live/platform/tenant_live.ex:206
+#: lib/qpbx/web/live/platform/tenant_live.ex:239
 #: lib/qpbx/web/live/platform/tenants_live.ex:123
 #: lib/qpbx/web/live/platform/tenants_live.ex:137
 #: lib/qpbx/web/live/platform/trunks_live.ex:110
@@ -261,7 +261,7 @@ msgstr ""
 msgid "Password"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/tenant_live.ex:157
+#: lib/qpbx/web/live/platform/tenant_live.ex:158
 #: lib/qpbx/web/live/platform/tenants_live.ex:111
 #: lib/qpbx/web/live/platform/tenants_live.ex:143
 #, elixir-autogen, elixir-format
@@ -352,7 +352,7 @@ msgid "Set up your account"
 msgstr ""
 
 #: lib/qpbx/web/live/platform/admins_live.ex:85
-#: lib/qpbx/web/live/platform/tenant_live.ex:144
+#: lib/qpbx/web/live/platform/tenant_live.ex:145
 #: lib/qpbx/web/live/platform/tenants_live.ex:91
 #, elixir-autogen, elixir-format
 msgid "Setup link for %{email} (also emailed). It works once and expires in 48 hours:"
@@ -373,14 +373,14 @@ msgstr ""
 msgid "Tenant %{name} created. A setup link was emailed to %{email}."
 msgstr ""
 
-#: lib/qpbx/web/live/platform/tenant_live.ex:262
+#: lib/qpbx/web/live/platform/tenant_live.ex:257
 #: lib/qpbx/web/live/tenant/home_live.ex:43
 #: lib/qpbx/web/live/tenant/users_live.ex:228
 #, elixir-autogen, elixir-format
 msgid "Tenant admin"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/tenant_live.ex:263
+#: lib/qpbx/web/live/platform/tenant_live.ex:258
 #: lib/qpbx/web/live/tenant/home_live.ex:44
 #: lib/qpbx/web/live/tenant/users_live.ex:228
 #, elixir-autogen, elixir-format
@@ -406,7 +406,7 @@ msgid "This setup link is invalid or has expired. Ask your administrator for a n
 msgstr ""
 
 #: lib/qpbx/web/live/account/notifications_live.ex:206
-#: lib/qpbx/web/live/platform/tenant_live.ex:160
+#: lib/qpbx/web/live/platform/tenant_live.ex:161
 #: lib/qpbx/web/live/platform/tenants_live.ex:115
 #, elixir-autogen, elixir-format
 msgid "Time zone"
@@ -435,8 +435,8 @@ msgstr ""
 
 #: lib/qpbx/web/live/platform/plans_live.ex:73
 #: lib/qpbx/web/live/platform/plans_live.ex:76
-#: lib/qpbx/web/live/platform/tenant_live.ex:259
-#: lib/qpbx/web/live/platform/tenant_live.ex:260
+#: lib/qpbx/web/live/platform/tenant_live.ex:254
+#: lib/qpbx/web/live/platform/tenant_live.ex:255
 #, elixir-autogen, elixir-format
 msgid "Unlimited"
 msgstr ""
@@ -478,7 +478,7 @@ msgstr ""
 #: lib/qpbx/web/live/platform/firewall_live.ex:135
 #: lib/qpbx/web/live/platform/numbering_live.ex:195
 #: lib/qpbx/web/live/platform/numbering_live.ex:234
-#: lib/qpbx/web/live/platform/tenant_live.ex:253
+#: lib/qpbx/web/live/platform/tenant_live.ex:248
 #: lib/qpbx/web/live/tenant/office_ips_live.ex:97
 #, elixir-autogen, elixir-format
 msgid "Add"
@@ -1408,7 +1408,7 @@ msgstr ""
 #: lib/qpbx/web/live/platform/fraud_live.ex:93
 #: lib/qpbx/web/live/platform/numbering_live.ex:160
 #: lib/qpbx/web/live/platform/protection_live.ex:108
-#: lib/qpbx/web/live/platform/tenant_live.ex:206
+#: lib/qpbx/web/live/platform/tenant_live.ex:201
 #: lib/qpbx/web/live/platform/trunks_live.ex:248
 #: lib/qpbx/web/live/tenant/extension_live.ex:252
 #: lib/qpbx/web/live/tenant/mailbox_live.ex:131
@@ -1427,7 +1427,7 @@ msgstr ""
 #: lib/qpbx/web/live/platform/dids_live.ex:60
 #: lib/qpbx/web/live/platform/fraud_live.ex:29
 #: lib/qpbx/web/live/platform/numbering_live.ex:57
-#: lib/qpbx/web/live/platform/tenant_live.ex:73
+#: lib/qpbx/web/live/platform/tenant_live.ex:74
 #: lib/qpbx/web/live/tenant/extension_live.ex:46
 #: lib/qpbx/web/live/tenant/mailbox_live.ex:39
 #: lib/qpbx/web/live/tenant/my_extension_live.ex:90
@@ -2189,7 +2189,7 @@ msgstr ""
 msgid "Remove %{email}? They can no longer sign in."
 msgstr ""
 
-#: lib/qpbx/web/live/platform/tenant_live.ex:213
+#: lib/qpbx/web/live/platform/tenant_live.ex:208
 #: lib/qpbx/web/live/tenant/users_live.ex:153
 #: lib/qpbx/web/live/tenant/users_live.ex:213
 #, elixir-autogen, elixir-format
@@ -2212,7 +2212,7 @@ msgid "The company needs at least one tenant admin."
 msgstr ""
 
 #: lib/qpbx/web/components/layouts.ex:99
-#: lib/qpbx/web/live/platform/tenant_live.ex:209
+#: lib/qpbx/web/live/platform/tenant_live.ex:204
 #: lib/qpbx/web/live/tenant/users_live.ex:14
 #: lib/qpbx/web/live/tenant/users_live.ex:142
 #, elixir-autogen, elixir-format
@@ -2230,7 +2230,7 @@ msgid "Your admin adds devices and gives out their passwords."
 msgstr ""
 
 #: lib/qpbx/web/live/platform/admins_live.ex:60
-#: lib/qpbx/web/live/platform/tenant_live.ex:118
+#: lib/qpbx/web/live/platform/tenant_live.ex:119
 #: lib/qpbx/web/live/tenant/users_live.ex:90
 #, elixir-autogen, elixir-format
 msgid "A setup link was emailed to %{email}."
@@ -2246,12 +2246,12 @@ msgstr ""
 msgid "Add a platform admin"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/tenant_live.ex:241
+#: lib/qpbx/web/live/platform/tenant_live.ex:236
 #, elixir-autogen, elixir-format
 msgid "Add a tenant admin"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/tenant_live.ex:137
+#: lib/qpbx/web/live/platform/tenant_live.ex:138
 #, elixir-autogen, elixir-format
 msgid "All tenants"
 msgstr ""
@@ -2281,18 +2281,18 @@ msgstr ""
 msgid "Every change to your company's settings, newest first."
 msgstr ""
 
-#: lib/qpbx/web/live/platform/tenant_live.ex:187
+#: lib/qpbx/web/live/platform/tenant_live.ex:182
 #, elixir-autogen, elixir-format
 msgid "Leave a field empty to use the plan's value (shown as the hint). 0 means none allowed."
 msgstr ""
 
-#: lib/qpbx/web/live/platform/tenant_live.ex:185
+#: lib/qpbx/web/live/platform/tenant_live.ex:180
 #, elixir-autogen, elixir-format
 msgid "Limits for this tenant"
 msgstr ""
 
 #: lib/qpbx/web/live/platform/admins_live.ex:110
-#: lib/qpbx/web/live/platform/tenant_live.ex:226
+#: lib/qpbx/web/live/platform/tenant_live.ex:221
 #: lib/qpbx/web/live/tenant/users_live.ex:181
 #, elixir-autogen, elixir-format
 msgid "New setup link"
@@ -2326,28 +2326,28 @@ msgid "Removed account"
 msgstr ""
 
 #: lib/qpbx/web/live/platform/admins_live.ex:104
-#: lib/qpbx/web/live/platform/tenant_live.ex:220
+#: lib/qpbx/web/live/platform/tenant_live.ex:215
 #: lib/qpbx/web/live/tenant/users_live.ex:175
 #, elixir-autogen, elixir-format
 msgid "Send %{email} a new setup link? It lets them choose a new password and authenticator."
 msgstr ""
 
 #: lib/qpbx/web/live/platform/admins_live.ex:118
-#: lib/qpbx/web/live/platform/tenant_live.ex:234
+#: lib/qpbx/web/live/platform/tenant_live.ex:229
 #: lib/qpbx/web/live/tenant/users_live.ex:190
 #, elixir-autogen, elixir-format
 msgid "Sign %{email} out everywhere?"
 msgstr ""
 
 #: lib/qpbx/web/live/platform/admins_live.ex:120
-#: lib/qpbx/web/live/platform/tenant_live.ex:236
+#: lib/qpbx/web/live/platform/tenant_live.ex:231
 #: lib/qpbx/web/live/tenant/users_live.ex:192
 #, elixir-autogen, elixir-format
 msgid "Sign out everywhere"
 msgstr ""
 
 #: lib/qpbx/web/live/platform/admins_live.ex:49
-#: lib/qpbx/web/live/platform/tenant_live.ex:107
+#: lib/qpbx/web/live/platform/tenant_live.ex:108
 #: lib/qpbx/web/live/tenant/users_live.ex:102
 #, elixir-autogen, elixir-format
 msgid "Signed out of %{count} sessions."
@@ -2386,7 +2386,7 @@ msgstr[1] ""
 msgid "API explorer"
 msgstr ""
 
-#: lib/qpbx/web/api/controllers/spec_html.ex:26
+#: lib/qpbx/web/api/controllers/spec_html.ex:27
 #: lib/qpbx/web/components/audit_table.ex:34
 #, elixir-autogen, elixir-format
 msgid "API key"
@@ -2476,7 +2476,7 @@ msgstr ""
 msgid "Not yet"
 msgstr ""
 
-#: lib/qpbx/web/api/controllers/spec_html.ex:18
+#: lib/qpbx/web/api/controllers/spec_html.ex:19
 #, elixir-autogen, elixir-format
 msgid "Q-PBX API explorer"
 msgstr ""
@@ -2522,7 +2522,7 @@ msgstr ""
 msgid "The request could not be sent."
 msgstr ""
 
-#: lib/qpbx/web/api/controllers/spec_html.ex:20
+#: lib/qpbx/web/api/controllers/spec_html.ex:21
 #, elixir-autogen, elixir-format
 msgid "Try the API with a key from the portal (API keys page). The key stays in this page and is sent only to this server."
 msgstr ""
@@ -3082,7 +3082,12 @@ msgstr ""
 msgid "Usage alerts at (% of the monthly outbound minutes)"
 msgstr ""
 
-#: lib/qpbx/web/live/platform/tenant_live.ex:177
+#: lib/qpbx/web/live/platform/tenant_live.ex:174
 #, elixir-autogen, elixir-format
 msgid "Usage alerts at (%); empty: the plan's"
+msgstr ""
+
+#: lib/qpbx/web/api/controllers/spec_html.ex:17
+#, elixir-autogen, elixir-format
+msgid "File"
 msgstr ""

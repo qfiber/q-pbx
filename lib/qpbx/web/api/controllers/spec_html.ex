@@ -14,6 +14,7 @@ defmodule QPBX.Web.Api.SpecHTML do
       data-label-idempotency={gettext("Idempotency-Key (optional)")}
       data-label-scope={gettext("Scope")}
       data-label-error={gettext("The request could not be sent.")}
+      data-label-file={gettext("File")}
     >
       <h1 class="text-2xl font-semibold">{gettext("Q-PBX API explorer")}</h1>
       <p class="mt-2 text-sm opacity-80">

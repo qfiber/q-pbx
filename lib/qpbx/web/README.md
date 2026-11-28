@@ -71,8 +71,8 @@ them. A device's SIP password is shown once, after creation or reset.
 - Voicemail audio: `POST /v1/voicemails/:id/audio-link` gives a `Phoenix.Token` link valid 5
   minutes, `GET /v1/voicemail-audio/:token` (`VoicemailAudioController`, no key) serves it.
 - Public: `GET /v1/openapi.json` and `GET /v1/docs` (the explorer: this app's own script
-  `assets/js/api_explorer.js`, portal CSP, DOM built without `innerHTML`; uploads, whose body
-  is not JSON, are not sent from it). `QPBX.Web.Api.Spec.unkeyed/0` lists the `/v1`
+  `assets/js/api_explorer.js`, portal CSP, DOM built without `innerHTML`; an operation with a
+  binary body, such as a greeting, gets a file input and sends the file as it is). `QPBX.Web.Api.Spec.unkeyed/0` lists the `/v1`
   controllers outside the key pipeline.
 - Parity: `test/qpbx/web/api/parity_test.exs` maps every portal page event to its API route;
   a new portal action without one fails it.
