@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-7 done; next task 3-8. Phase 2 done.
+**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-8 done; next task 3-9. Phase 2 done.
 **Last updated:** 2026-11-28
 
 ## Phase 1 goal
@@ -40,6 +40,27 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 3-8 Notification service (done, 2026-11-28): alerts (kind, key, category, severity; open,
+  acknowledged, resolved) with repeats of an open key counted and told at most every 15
+  minutes ("37 more since 14:02"); the catalogue's audiences (platform admins, the tenant's
+  admins, the user); each person's channels per category (portal, email; email carries
+  warning and critical), mandatory categories set by platform admins, quiet hours (critical
+  excepted) and at most 20 emails an hour per address; shared recipients and alert webhooks
+  per tenant and for the platform (signed and retried like webhooks; generic or Alertmanager
+  format); English and Arabic emails with an acknowledge link (a page with a button), "back to
+  normal" when resolved, hard bounces caught at send time; the portal bell with a live unread
+  count, `/app|platform/notifications` (list, read, acknowledge, own settings) and
+  `/app|platform/alerts` (filters, acknowledge, resolve, who was told and resend, test,
+  channels, mandatory categories); API `/v1/alerts`, `/v1/notifications/:id/resend`,
+  `/v1/alert-channels`, `/v1/alert-rules`. 17 new tests (341 in all): grouping, audiences,
+  preferences and mandatory categories, quiet hours, the rate cap, email in both languages,
+  the acknowledge link, bounces, shared channels and webhook bodies, retries and resend, the
+  bell updating live, the pages, the API. Lab: `lab/done-when/phase3-alerts.py` (real SMTP to a
+  catcher on the backup VM, signed alert webhooks in both formats to the HTTPS receiver, a hard
+  bounce, acknowledge from the email link through nginx, resolved): 14/14 after a fix; the
+  first run found `GET /v1/alerts/:id` answering 500 (a bare record given to the reply helper,
+  as in 3-5), now handled by the helper itself.
 
 - 3-7 Click-to-call and call control (done, 2026-11-28): `POST /v1/calls` (the `calls`
   scope) and a Call box on My extension ring the extension's phones (showing the number), then
@@ -500,7 +521,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 3-8 Notification service (next).
+- 3-9 Alert sources (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next

@@ -8,10 +8,14 @@ defmodule QPBX.Web.Api.ParityTest do
 
   # Page events that only change the form on screen.
   @ui_only ~w(validate validate_class validate_emergency validate_device validate_greeting
-              dismiss hide_secret edit cancel open refresh)
+              validate_channel dismiss hide_secret edit cancel open refresh filter)
 
   # A signed-in person's own sessions: an API key is not a person.
-  @personal %{"account/sessions_live" => ~w(revoke revoke_others)}
+  @personal %{
+    "account/sessions_live" => ~w(revoke revoke_others),
+    # A person's own bell and settings: an API key is not a person.
+    "account/notifications_live" => ~w(read read_all save_settings)
+  }
 
   @parity %{
     "account/api_keys_live" => %{
@@ -24,6 +28,17 @@ defmodule QPBX.Web.Api.ParityTest do
       "sign_out" => "POST /v1/platform-admins/:id/sign-out"
     },
     "platform/audit_live" => %{"filter" => "GET /v1/audit"},
+    "account/notifications_live" => %{"acknowledge" => "POST /v1/alerts/:id/acknowledge"},
+    "account/alerts_live" => %{
+      "acknowledge" => "POST /v1/alerts/:id/acknowledge",
+      "resolve" => "POST /v1/alerts/:id/resolve",
+      "resend" => "POST /v1/notifications/:id/resend",
+      "test" => "POST /v1/alerts/test",
+      "add_channel" => "POST /v1/alert-channels",
+      "toggle_channel" => "PATCH /v1/alert-channels/:id",
+      "delete_channel" => "DELETE /v1/alert-channels/:id",
+      "mandatory" => "PUT /v1/alert-rules"
+    },
     "platform/dids_live" => %{
       "save" => "POST /v1/numbers",
       "assign" => "PATCH /v1/numbers/:id",

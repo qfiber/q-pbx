@@ -124,6 +124,7 @@ defmodule QPBX.Web.Tenant.WebhookLive do
       flash={@flash}
       locale={@locale}
       current_account={@current_account}
+      unread={assigns[:unread]}
       idle_timeout={@idle_timeout}
     >
       <.header>

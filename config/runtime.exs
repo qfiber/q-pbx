@@ -168,6 +168,9 @@ if config_env() == :prod do
 
   host = System.get_env("PHX_HOST") || "example.com"
 
+  # Links in notifications (acknowledge, the alert in the portal).
+  config :qpbx, :portal_url, "https://#{host}"
+
   # nginx terminates TLS and proxies to the app on localhost only.
   config :qpbx, QPBX.Web.Endpoint,
     url: [host: host, port: 443, scheme: "https"],

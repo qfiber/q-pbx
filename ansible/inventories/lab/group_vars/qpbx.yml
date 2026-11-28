@@ -3,7 +3,10 @@ qpbx_domain: pbx.lab.test
 qpbx_management_ips: ["192.168.10.236/32"]
 qpbx_cert_mode: selfsigned
 qpbx_mail_from: noreply@pbx.lab.test
-qpbx_smtp_host: localhost
+# Mail goes to the lab's catcher on the backup VM (lab/tools/smtp_sink.py, started by the
+# checks that read mail); between checks nothing listens there and mail is retried.
+qpbx_smtp_host: 192.168.10.84
+qpbx_smtp_port: 2525
 # Backups to the second lab VM. The password stays on this machine, outside the repository
 # (lab/create-vm.sh does not make it; see docs/DEVELOPING.md).
 # The lab's test receivers run on the backup VM, over HTTPS with a certificate from the lab's

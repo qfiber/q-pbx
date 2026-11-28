@@ -133,6 +133,7 @@ defmodule QPBX.Web.Tenant.MyExtensionLive do
       flash={@flash}
       locale={@locale}
       current_account={@current_account}
+      unread={assigns[:unread]}
       idle_timeout={@idle_timeout}
     >
       <.header>{gettext("My extension")}</.header>

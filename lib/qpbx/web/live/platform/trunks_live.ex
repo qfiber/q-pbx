@@ -94,6 +94,7 @@ defmodule QPBX.Web.Platform.TrunksLive do
       flash={@flash}
       locale={@locale}
       current_account={@current_account}
+      unread={assigns[:unread]}
       idle_timeout={@idle_timeout}
     >
       <.header>
@@ -126,6 +127,7 @@ defmodule QPBX.Web.Platform.TrunksLive do
       flash={@flash}
       locale={@locale}
       current_account={@current_account}
+      unread={assigns[:unread]}
       idle_timeout={@idle_timeout}
     >
       <.header>

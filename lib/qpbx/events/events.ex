@@ -11,6 +11,8 @@ defmodule QPBX.Events do
       ExtensionRegistration,
       WebhookDeadLettered,
       ApiKeysRevoked,
+      NotificationsChanged,
+      AlertChanged,
       ConfigChanged,
       FraudAlert,
       LimitReached,

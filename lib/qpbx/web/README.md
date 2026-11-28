@@ -98,6 +98,19 @@ the key shown once), list by prefix with last use, revoke.
 how to check a signature) and `/app/webhooks/:id` (`WebhookLive`: change, turn off, new secret,
 remove; the delivery log with each attempt and answer, send again), tenant admins.
 
+**Notifications:** the bell (layout attr `unread`, assigned by `Auth`'s `on_mount` for every
+signed-in page and kept current through `NotificationsChanged`; every LiveView passes
+`unread={assigns[:unread]}`). `Account.NotificationsLive` (`/app/notifications`,
+`/platform/notifications`): the person's notifications (read, acknowledge) and settings
+(channels per category, quiet hours, time zone). `Account.AlertsLive` (`/app/alerts` tenant
+admins, `/platform/alerts`): alerts with filters, acknowledge, resolve, who was told and resend,
+a test notification, shared recipients and alert webhooks; platform: mandatory categories.
+`AlertAckController`: `GET /alerts/ack/:link` (a page with a button: mail scanners open links)
+and `POST` (acknowledges; no login, the token is the permission). API: `/v1/alerts` (+
+`/:id`, `/acknowledge`, `/resolve`, `/notifications`, `test`), `/v1/notifications/:id/resend`,
+`/v1/alert-channels` (admin), `/v1/alert-rules` (platform). A person's own settings and bell
+are portal-only (a key is not a person).
+
 **My extension:** `/app/me` (`:tenant_user` live session, every tenant user): a Call box
 (click-to-call from the user's own extension), the user's own extension's voicemail, recent calls, forwarding and DND, and devices (read only).
 
@@ -130,7 +143,7 @@ request, LiveView event and every 30 s) and `live_socket_id` (`sessions:<id>`);
 `idle_timeout={@idle_timeout}` to `Layouts.app` for the idle warning (JS hook `IdleWarning`).
 
 **Events emitted:** none (an API key's changes are audited by Core). **Events consumed:**
-`SessionsRevoked`, `ApiKeysRevoked`, and in `EventChannel` the stream's sources (`CallEvent`,
+`SessionsRevoked`, `ApiKeysRevoked`, `NotificationsChanged` (the bell), and in `EventChannel` the stream's sources (`CallEvent`,
 `ExtensionRegistration`, `VoicemailReceived`, `LimitReached`).
 
 **Real client IP:** `QPBX.Web.RealIP` (first plug in the endpoint) takes `X-Real-IP` only from

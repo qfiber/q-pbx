@@ -26,7 +26,9 @@ defmodule QPBX.Web.ErrorMessages do
       dgettext_noop("errors", "must start with https://"),
       dgettext_noop("errors", "points to an internal address"),
       dgettext_noop("errors", "has a host name that does not resolve"),
-      dgettext_noop("errors", "is not a valid URL")
+      dgettext_noop("errors", "is not a valid URL"),
+      dgettext_noop("errors", "pick at least one category"),
+      dgettext_noop("errors", "has an unknown category or channel")
     ]
   end
 end

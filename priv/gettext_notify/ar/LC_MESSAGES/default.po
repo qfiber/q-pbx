@@ -46,3 +46,43 @@ msgstr "رسالة صوتية جديدة من %{caller}"
 #, elixir-autogen, elixir-format
 msgid "an unknown caller"
 msgstr "متصل غير معروف"
+
+#: lib/qpbx/notify/alert_email.ex:92
+#, elixir-autogen, elixir-format
+msgid "%{count} more since %{time} (UTC)."
+msgstr "%{count} أخرى منذ %{time} (UTC)."
+
+#: lib/qpbx/notify/alert_email.ex:65
+#, elixir-autogen, elixir-format
+msgid "Acknowledge: %{link}"
+msgstr "للإقرار: %{link}"
+
+#: lib/qpbx/notify/alert_email.ex:83
+#, elixir-autogen, elixir-format
+msgid "Back to normal: %{title}"
+msgstr "عاد إلى الوضع الطبيعي: %{title}"
+
+#: lib/qpbx/notify/alert_email.ex:100
+#, elixir-autogen, elixir-format
+msgid "Critical"
+msgstr "حرج"
+
+#: lib/qpbx/notify/alert_email.ex:102
+#, elixir-autogen, elixir-format
+msgid "Info"
+msgstr "معلومة"
+
+#: lib/qpbx/notify/alert_email.ex:84
+#, elixir-autogen, elixir-format
+msgid "This alert is resolved: %{title}"
+msgstr "تم حل هذا التنبيه: %{title}"
+
+#: lib/qpbx/notify/alert_email.ex:101
+#, elixir-autogen, elixir-format
+msgid "Warning"
+msgstr "تحذير"
+
+#: lib/qpbx/notify/alert_email.ex:75
+#, elixir-autogen, elixir-format
+msgid "Your notification settings are in the portal: %{url}"
+msgstr "إعدادات الإشعارات في البوابة: %{url}"

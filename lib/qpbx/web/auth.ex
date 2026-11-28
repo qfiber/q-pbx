@@ -163,6 +163,7 @@ defmodule QPBX.Web.Auth do
           )
           |> Phoenix.LiveView.attach_hook(:session_events, :handle_event, &check_on_event/3)
           |> Phoenix.LiveView.attach_hook(:session_timer, :handle_info, &check_on_timer/2)
+          |> bell(account)
 
         {:cont, socket}
 
@@ -170,6 +171,28 @@ defmodule QPBX.Web.Auth do
         {:halt, Phoenix.LiveView.redirect(socket, to: login_path(kind))}
     end
   end
+
+  # The notification bell: the unread count, kept current while the page is open.
+  defp bell(socket, account) do
+    if Phoenix.LiveView.connected?(socket),
+      do: QPBX.Events.subscribe(QPBX.Events.NotificationsChanged)
+
+    socket
+    |> Phoenix.Component.assign(unread: QPBX.Notify.unread_count(account))
+    |> Phoenix.LiveView.attach_hook(:bell, :handle_info, &bell_update/2)
+  end
+
+  defp bell_update({:event, %QPBX.Events.NotificationsChanged{account_id: id}}, socket) do
+    if id == socket.assigns.current_account.id,
+      do:
+        {:halt,
+         Phoenix.Component.assign(socket,
+           unread: QPBX.Notify.unread_count(socket.assigns.current_account)
+         )},
+      else: {:halt, socket}
+  end
+
+  defp bell_update(_msg, socket), do: {:cont, socket}
 
   # Every user action re-checks the session (and counts as activity).
   defp check_on_event("keepalive", _params, socket) do

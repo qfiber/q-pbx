@@ -68,6 +68,7 @@ defmodule QPBX.Web.Tenant.OfficeIpsLive do
       flash={@flash}
       locale={@locale}
       current_account={@current_account}
+      unread={assigns[:unread]}
       idle_timeout={@idle_timeout}
     >
       <.header>

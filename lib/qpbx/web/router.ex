@@ -75,6 +75,19 @@ defmodule QPBX.Web.Router do
     post "/api-keys", ApiKeyController, :create
     delete "/api-keys/:id", ApiKeyController, :delete
     get "/audit", AuditController, :index
+    get "/alerts", AlertController, :index
+    post "/alerts/test", AlertController, :test
+    get "/alerts/:id", AlertController, :show
+    post "/alerts/:id/acknowledge", AlertController, :acknowledge
+    post "/alerts/:id/resolve", AlertController, :resolve
+    get "/alerts/:id/notifications", AlertController, :deliveries
+    post "/notifications/:id/resend", AlertController, :resend
+    get "/alert-channels", AlertController, :channels
+    post "/alert-channels", AlertController, :create_channel
+    patch "/alert-channels/:id", AlertController, :update_channel
+    delete "/alert-channels/:id", AlertController, :delete_channel
+    get "/alert-rules", AlertController, :rules
+    put "/alert-rules", AlertController, :put_rules
 
     # Platform
     get "/tenants", TenantController, :index
@@ -198,6 +211,10 @@ defmodule QPBX.Web.Router do
 
     get "/setup/:token", SetupController, :show
     put "/setup/:token", SetupController, :update
+
+    # The acknowledge link in alert emails (the token is the permission).
+    get "/alerts/ack/:link", AlertAckController, :show
+    post "/alerts/ack/:link", AlertAckController, :confirm
   end
 
   scope "/platform", QPBX.Web.Platform do
@@ -224,6 +241,11 @@ defmodule QPBX.Web.Router do
       scope "/", alias: false do
         live "/account", QPBX.Web.Account.SessionsLive, :index, as: :platform_account
         live "/api-keys", QPBX.Web.Account.ApiKeysLive, :index, as: :platform_api_keys
+
+        live "/notifications", QPBX.Web.Account.NotificationsLive, :index,
+          as: :platform_notifications
+
+        live "/alerts", QPBX.Web.Account.AlertsLive, :index, as: :platform_alerts
       end
     end
   end
@@ -252,6 +274,7 @@ defmodule QPBX.Web.Router do
 
       scope "/", alias: false do
         live "/api-keys", QPBX.Web.Account.ApiKeysLive, :index, as: :tenant_api_keys
+        live "/alerts", QPBX.Web.Account.AlertsLive, :index, as: :tenant_alerts
       end
     end
 
@@ -262,6 +285,9 @@ defmodule QPBX.Web.Router do
       # Shared page: full module name, not the surrounding scope's alias.
       scope "/", alias: false do
         live "/account", QPBX.Web.Account.SessionsLive, :index, as: :tenant_account
+
+        live "/notifications", QPBX.Web.Account.NotificationsLive, :index,
+          as: :tenant_notifications
       end
     end
   end

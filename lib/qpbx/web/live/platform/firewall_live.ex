@@ -77,6 +77,7 @@ defmodule QPBX.Web.Platform.FirewallLive do
       flash={@flash}
       locale={@locale}
       current_account={@current_account}
+      unread={assigns[:unread]}
       idle_timeout={@idle_timeout}
     >
       <.header>

@@ -32,8 +32,8 @@ defmodule QPBX.Web.Api.Helpers do
   end
 
   @doc """
-  Replies to a Core result: `{:ok, rec}` with the record (`status`), `:ok` or `{:ok, _}` with
-  `nil` render as 204, errors through `QPBX.Web.Api.Fallback`.
+  Replies to a Core result: `{:ok, rec}` or a bare record with the record (`status`), `:ok`
+  or `{:ok, _}` with 204, `nil` as not found, errors through `QPBX.Web.Api.Fallback`.
   """
   def reply(conn, result, status \\ 200)
   def reply(conn, :ok, _), do: send_resp(conn, 204, "")
@@ -41,6 +41,10 @@ defmodule QPBX.Web.Api.Helpers do
   def reply(conn, {:ok, rec}, status), do: data(conn, rec, status)
   def reply(conn, {:ok, rec, _}, status), do: data(conn, rec, status)
   def reply(conn, nil, _), do: Fallback.call(conn, {:error, :not_found})
+  # A getter's record as it is (not wrapped in :ok).
+  def reply(conn, %{__struct__: s} = rec, status) when s != Ecto.Changeset,
+    do: data(conn, rec, status)
+
   def reply(conn, error, _), do: Fallback.call(conn, error)
 
   @doc "Spec parameter for a query filter."

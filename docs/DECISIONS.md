@@ -2,6 +2,36 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-28: Notification service (3-8)
+
+- **One alert per open key:** repeats while an alert is not resolved are counted on it, and
+  recipients hear of them at most every 15 minutes, grouped. A partial unique index keeps two
+  raises of the same key from making two alerts.
+- **The catalogue is code** (kind: category, severity, audience); sources raise by kind. Only
+  the mandatory categories (a platform admin's choice) are stored.
+- **A person's email carries warning and critical alerts;** info alerts stay in the portal.
+  Rejected: per-severity choices for each person (a form that saves unchanged would start
+  emailing every info alert). Shared recipients set their own minimum severity, so billing@
+  can get info by email.
+- **Quiet hours hold back email only** (critical alerts excepted); the portal entry is always
+  made. At most 20 emails an hour to one address.
+- **One `notifications` table for what each recipient was told** on each channel (portal
+  entries included, with `read_at`), instead of the spec's separate `notifications` and
+  `notification_deliveries`: one row is one delivery. Templates are Gettext texts in code
+  (no `notification_templates` table); usage thresholds arrive with 3-9.
+- **The acknowledge link is a page with a button,** not an action on opening: mail scanners
+  open links. Its token is random per email (only a hash stored), so Notify does not need the
+  web layer's signing secret.
+- **Alertmanager format for operators' receivers;** acknowledgements are not sent in it
+  (Alertmanager has none).
+- **Preferences are portal-only;** the API manages alerts and shared channels (a key is not a
+  person).
+- **The lab has a mail catcher** on the backup VM (`lab/tools/smtp_sink.py`, lab SMTP points
+  there) so checks read the real email; recipients at `bounce.test` are refused, to test hard
+  bounces.
+- **The API's reply helper accepts a bare record:** returning a getter's struct had answered
+  500 twice (3-5 and 3-8); the helper now renders it.
+
 ## 2026-11-28: Click-to-call and call control (3-7)
 
 - **Click-to-call is an ordinary call from the extension:** its phones ring first (showing

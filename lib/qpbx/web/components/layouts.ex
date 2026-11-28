@@ -29,6 +29,8 @@ defmodule QPBX.Web.Layouts do
   attr :locale, :string, default: "en"
   attr :current_account, :map, default: nil
 
+  attr :unread, :integer, default: nil, doc: "unread notifications (the bell); nil: no bell"
+
   attr :idle_timeout, :integer,
     default: nil,
     doc: "seconds; shows the idle warning on signed-in pages"
@@ -71,6 +73,9 @@ defmodule QPBX.Web.Layouts do
           <.link navigate={~p"/platform/audit"} class="btn btn-ghost btn-sm" id="nav-audit">
             {gettext("Audit log")}
           </.link>
+          <.link navigate={~p"/platform/alerts"} class="btn btn-ghost btn-sm" id="nav-alerts">
+            {gettext("Alerts")}
+          </.link>
           <.link navigate={~p"/platform/api-keys"} class="btn btn-ghost btn-sm" id="nav-api-keys">
             {gettext("API keys")}
           </.link>
@@ -108,6 +113,9 @@ defmodule QPBX.Web.Layouts do
           <.link navigate={~p"/app/number-format"} class="btn btn-ghost btn-sm" id="nav-number-format">
             {gettext("Number format")}
           </.link>
+          <.link navigate={~p"/app/alerts"} class="btn btn-ghost btn-sm" id="nav-alerts">
+            {gettext("Alerts")}
+          </.link>
           <.link navigate={~p"/app/webhooks"} class="btn btn-ghost btn-sm" id="nav-webhooks">
             {gettext("Webhooks")}
           </.link>
@@ -126,6 +134,16 @@ defmodule QPBX.Web.Layouts do
           id={"locale-#{code}"}
         >
           {name}
+        </.link>
+        <.link
+          :if={@current_account && @unread}
+          navigate={notifications_path(@current_account)}
+          class="btn btn-ghost btn-sm"
+          id="bell"
+          aria-label={gettext("Notifications")}
+        >
+          <.icon name="hero-bell" class="size-5" />
+          <span :if={@unread > 0} class="badge badge-error badge-sm" id="bell-count">{@unread}</span>
         </.link>
         <.link
           :if={@current_account}
@@ -176,6 +194,9 @@ defmodule QPBX.Web.Layouts do
   defp tenant_admin?(_), do: false
 
   defp tenant_user?(account), do: match?(%QPBX.Core.User{}, account)
+
+  defp notifications_path(%QPBX.Core.PlatformAdmin{}), do: ~p"/platform/notifications"
+  defp notifications_path(_), do: ~p"/app/notifications"
 
   defp account_path(%QPBX.Core.PlatformAdmin{}), do: ~p"/platform/account"
   defp account_path(_), do: ~p"/app/account"

@@ -237,6 +237,97 @@ defmodule QPBX.Web.Api.ResourcesTest do
       assert {204, nil} = api(k, :delete, "/v1/fraud/blocks/#{Ecto.UUID.generate()}")
     end
 
+    test "alerts: list and filter, acknowledge, resolve, delivery log, resend, test; channels; mandatory categories",
+         %{ptok: pk, tok: k, t: t, scope: scope, plat: plat} do
+      {:ok, a} =
+        QPBX.Notify.raise_alert(%{
+          kind: "fraud_block",
+          key: "f1",
+          tenant_id: t.id,
+          title: "Blocked",
+          message: "m"
+        })
+
+      assert {200, %{"data" => [%{"id" => id, "state" => "open"}]}} =
+               api(k, :get, "/v1/alerts?severity=critical")
+
+      assert id == a.id
+      assert {200, %{"data" => []}} = api(k, :get, "/v1/alerts?state=resolved")
+
+      assert {200, %{"data" => %{"state" => "acknowledged"}}} =
+               api(k, :post, "/v1/alerts/#{id}/acknowledge")
+
+      assert {200,
+              %{"data" => %{"id" => ^id, "state" => "acknowledged", "acknowledged_by" => by}}} =
+               api(k, :get, "/v1/alerts/#{id}")
+
+      assert by =~ "API key"
+
+      assert {422, _} = api(k, :post, "/v1/alerts/#{id}/acknowledge")
+      assert {200, %{"data" => log}} = api(k, :get, "/v1/alerts/#{id}/notifications")
+      email = Enum.find(log, &(&1["channel"] == "email"))
+      refute Map.has_key?(email, "ack_token_hash")
+
+      assert {201, %{"data" => %{"status" => "pending"}}} =
+               api(k, :post, "/v1/notifications/#{email["id"]}/resend")
+
+      assert {200, %{"data" => %{"state" => "resolved"}}} =
+               api(k, :post, "/v1/alerts/#{id}/resolve")
+
+      assert {201, %{"data" => %{"kind" => "test", "category" => "health"}}} =
+               api(k, :post, "/v1/alerts/test", %{category: "health"})
+
+      assert {422, _} = api(k, :post, "/v1/alerts/test", %{category: "weather"})
+
+      other = key(Core.scope_for(user_fixture(tenant_fixture())), ~w(read write admin))
+      assert {404, _} = api(other, :get, "/v1/alerts/#{id}")
+      assert {404, _} = api(other, :post, "/v1/notifications/#{email["id"]}/resend")
+      assert {200, %{"data" => platform_view}} = api(pk, :get, "/v1/alerts")
+      assert Enum.any?(platform_view, &(&1["id"] == id))
+
+      old = Application.get_env(:qpbx, QPBX.Integrations)
+      Application.put_env(:qpbx, QPBX.Integrations, [])
+      on_exit(fn -> Application.put_env(:qpbx, QPBX.Integrations, old || []) end)
+
+      assert {201, %{"data" => %{"id" => cid}, "secret" => "whsec_" <> _}} =
+               api(k, :post, "/v1/alert-channels", %{
+                 kind: "webhook",
+                 address: "https://1.1.1.1/a",
+                 categories: ["security"],
+                 format: "alertmanager"
+               })
+
+      assert {201, %{"secret" => nil}} =
+               api(k, :post, "/v1/alert-channels", %{
+                 kind: "email",
+                 address: "it@acme.test",
+                 categories: ["usage"]
+               })
+
+      assert {422, _} =
+               api(k, :post, "/v1/alert-channels", %{
+                 kind: "webhook",
+                 address: "https://192.168.1.1/",
+                 categories: ["usage"]
+               })
+
+      assert {200, %{"data" => [_, _]}} = api(k, :get, "/v1/alert-channels")
+
+      assert {200, %{"data" => %{"enabled" => false}}} =
+               api(k, :patch, "/v1/alert-channels/#{cid}", %{enabled: false})
+
+      assert {404, _} = api(other, :delete, "/v1/alert-channels/#{cid}")
+      assert {204, nil} = api(k, :delete, "/v1/alert-channels/#{cid}")
+      assert {403, _} = api(key(scope, ~w(read write)), :get, "/v1/alert-channels")
+
+      assert {403, _} = api(k, :put, "/v1/alert-rules", %{categories: ["security"]})
+
+      assert {200, %{"data" => ["security"]}} =
+               api(pk, :put, "/v1/alert-rules", %{categories: ["security"]})
+
+      assert {200, %{"data" => ["security"]}} = api(key(plat, ["read"]), :get, "/v1/alert-rules")
+    end
+
     test "platform admins: list, add, setup link, sign out; needs the admin scope", %{
       ptok: k,
       plat: plat

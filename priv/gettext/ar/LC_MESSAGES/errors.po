@@ -216,3 +216,13 @@ msgstr "اختر حدثًا واحدًا على الأقل"
 #, elixir-autogen, elixir-format
 msgid "points to an internal address"
 msgstr "يشير إلى عنوان داخلي"
+
+#: lib/qpbx/web/error_messages.ex:31
+#, elixir-autogen, elixir-format
+msgid "has an unknown category or channel"
+msgstr "يحتوي على فئة أو قناة غير معروفة"
+
+#: lib/qpbx/web/error_messages.ex:30
+#, elixir-autogen, elixir-format
+msgid "pick at least one category"
+msgstr "اختر فئة واحدة على الأقل"
