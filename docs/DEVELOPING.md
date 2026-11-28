@@ -106,6 +106,8 @@ uses two roles (`qpbx_owner` for migrations, `qpbx` for the app); development us
 | `node lab/done-when/phase3-stream.mjs <vm-ip>` | 3-6 lab check: the live event stream through nginx (two tenants, a real call, a type filter, revocation) |
 | `lab/done-when/phase3-click.py <vm-ip>` | 3-7 lab check: click-to-call, transfer and hang up through the API with real phones; an outside number; admission refusing a forbidden class |
 | `lab/done-when/phase3-alerts.py <vm-ip> <receiver-ip>` | 3-8 lab check: alerts end to end (real email to the catcher `lab/tools/smtp_sink.py` and a bounce, signed alert webhooks generic and Alertmanager, acknowledge from the email link, resolved) |
+| `lab/done-when/phase3.py <vm-ip> <receiver-ip>` | Phase 3 done-when: every phase 3 lab check, then the spec's four conditions (about 20 minutes) |
+| `lab/done-when/phase3-usage.py <vm-ip> <receiver-ip>` | 3-12 lab check: a real call crosses 80% of a tenant's minutes; the email, the alert webhook and the usage webhook, with the minutes left |
 | `lab/done-when/phase3-sources.py <vm-ip>` | 3-9 lab check: alert sources with real failures (a trunk's carrier stops answering, FreeSWITCH stopped, a usage threshold crossed by real calls, a phone banned for wrong passwords), each raised and resolved |
 | `node lab/done-when/phase3-explorer.mjs <vm-ip>` | 3-1 lab check: the API explorer in Chrome (sends requests with a typed key, uploads a greeting from a file, no CSP violations) |
 | `lab/done-when/phase2-tenants.py <vm-ip>` | Two tenants with the same numbers, no crossover in or out; changes apply without restarting Kamailio or FreeSWITCH |

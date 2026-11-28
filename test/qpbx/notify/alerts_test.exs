@@ -51,9 +51,11 @@ defmodule QPBX.Notify.AlertsTest do
     assert to(user) == [] and to(padmin) == []
     assert [_] = all_enqueued(worker: AlertEmail)
 
-    # Info alerts go to the portal only by default.
-    {:ok, _} = raise_alert(t, "usage_threshold", "usage:50")
+    # Info alerts go to the portal only by default; usage reports also by email.
+    {:ok, _} = raise_alert(t, "test", "test:1")
     assert length(to(admin)) == 2 and length(to(admin, "email")) == 1
+    {:ok, _} = raise_alert(t, "usage_threshold", "usage:80")
+    assert length(to(admin)) == 3 and length(to(admin, "email")) == 2
 
     # Platform alerts reach platform admins, never tenant admins.
     {:ok, _} =
@@ -64,8 +66,9 @@ defmodule QPBX.Notify.AlertsTest do
         message: "failed"
       })
 
-    assert [%{event: "raised"}] = to(padmin)
-    assert length(to(admin)) == 2
+    # (The test kind reached platform admins too.)
+    assert [%{event: "raised"}, %{event: "raised"}] = to(padmin)
+    assert length(to(admin)) == 3
   end
 
   test "repeats of an open key are grouped: one notice per 15 minutes with the count", %{
@@ -104,18 +107,18 @@ defmodule QPBX.Notify.AlertsTest do
 
     {:ok, _} = raise_alert(t, "fraud_block", "f:1")
     assert to(admin) == [] and to(admin, "email") == []
-    # Email only for usage: a critical usage alert arrives by email, an info one nowhere (a
-    # person's email carries warning and critical alerts).
+    # Email only for usage: a critical usage alert and an info threshold both arrive by email
+    # (usage reports are what the email is for), nothing in the portal.
     {:ok, _} = raise_alert(t, "limit_reached", "u:1")
     assert to(admin) == []
     assert [_] = to(admin, "email")
     {:ok, _} = raise_alert(t, "usage_threshold", "u:2")
-    assert to(admin) == [] and length(to(admin, "email")) == 1
+    assert to(admin) == [] and length(to(admin, "email")) == 2
 
     :ok = Notify.set_mandatory_categories(Core.scope_for(padmin), ["security"], padmin)
     {:ok, _} = raise_alert(t, "fraud_block", "f:2")
     assert [_] = to(admin)
-    assert [_, _] = to(admin, "email")
+    assert [_, _, _] = to(admin, "email")
 
     assert {:error, cs} = Notify.save_my_preference(admin, %{channels: %{"security" => ["sms"]}})
     assert %{channels: [_]} = errors_on(cs)

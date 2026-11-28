@@ -2,6 +2,15 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-28: Usage reports by email at any severity (3-12)
+
+- **Usage thresholds and the monthly summary go to a person's email even at info.** The spec
+  gives thresholds severity info (warning from 90%) and its done-when expects the email at
+  80%; 3-8's rule (a person's email carries warning and critical only) kept it in the portal.
+  Thresholds exist to warn people by email, so usage reports are the exception; other info
+  alerts (missed calls, test alerts) still stay in the portal. Rejected: raising 80% to
+  warning (the spec sets the severities) and emailing every info alert (3-8's reasons stand).
+
 ## 2026-11-28: Webhooks in the call tests (3-10)
 
 - **The CI receiver is HTTPS with a throwaway CA**, made per run by `ci/calls/test.sh` and given

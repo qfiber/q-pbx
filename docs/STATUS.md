@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-11 done; next task 3-12. Phase 2 done.
+**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-12 done, the four done-when conditions met; next task 3-13. Phase 2 done.
 **Last updated:** 2026-11-28
 
 ## Phase 1 goal
@@ -40,6 +40,13 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 3-12 Done-when verification (done, 2026-11-28): `lab/done-when/phase3.py` runs every phase
+  3 lab check and the spec's four conditions; all met (results below). New check
+  `lab/done-when/phase3-usage.py` for the usage condition. Found and fixed: an 80% usage
+  alert is info (the spec's severity), and a person's email carried warning and critical
+  only, so the tenant admin got the webhook but no email; usage reports (thresholds, the
+  monthly summary) now go to a person's email at any severity (DECISIONS).
 
 - 3-11 Leftovers (done, 2026-11-28): the API explorer sends binary bodies: an operation whose
   body is not JSON (greetings now, fax documents later) gets a file input with the accepted
@@ -563,7 +570,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 3-12 Done-when verification (next).
+- 3-13 Portal design pass (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next
@@ -814,6 +821,21 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
 
 - Arabic portal texts need review by a native speaker
   (for example "التحويلات الداخلية" for extensions).
+
+## Done-when results (phase 3)
+
+Run on 2026-11-28 against the lab VM (`lab/done-when/phase3.py 192.168.10.25 192.168.10.84`,
+the HTTPS receiver and SMTP catcher on the backup VM), 13 minutes in all; every phase 3
+check passed: api 47/47, webhooks 10/10, usage 5/5, outbound 16/16, alerts 14/14, explorer
+7/7, events 14/14, stream 9/9, click 12/12, sources 6/6, SIPp 14/14 (its webhook checks run
+in CI only).
+
+| Condition | Result | Proof |
+| --- | --- | --- |
+| Every resource so far is manageable through the API | Met | `phase3-api.py` 47/47 (every resource kind through nginx, a device added through the API registering over SIP); the parity test maps every portal action to an API route |
+| `call.*` webhooks arrive signed within 1 second | Met | `phase3-webhooks.py` 10/10 for real calls: signatures valid, in order; **24 to 56 ms** from event to receiver over 6 deliveries |
+| A tenant crossing 80% of its minutes gets the email and the alert webhook with minutes remaining | Met | `phase3-usage.py` 5/5: a real 52-second call on a 1-minute plan; the email "[Info] 80% of outbound minutes used" to the tenant admin ("0.1 minutes are left until 2026-11-30"), the signed alert webhook 0.1 s after the call ended, the signed `usage.threshold_reached` webhook |
+| A webhook aimed at an internal address is refused | Met | `phase3-outbound.py` 16/16 (inside names, addresses, IPv4-mapped and redirects refused), `phase3-alerts.py` (an alert webhook at 127.0.0.1 refused) |
 
 ## Done-when results (phase 2)
 

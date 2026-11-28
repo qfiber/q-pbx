@@ -11,7 +11,7 @@ defmodule QPBX.Notify.Alerts do
     on the channels each person chose for the category (default by severity; a mandatory
     category always reaches the defaults), plus the tenant's and the platform's shared
     recipients and alert webhooks for the category and severity. A person's email carries
-    warning and critical alerts (info stays in the portal). Email is held back in quiet
+    warning and critical alerts and usage reports (`Catalogue.person_email?/2`). Email is held back in quiet
     hours (not for critical alerts) and beyond #{20} emails an hour to one address; the portal
     entry is always made.
   """
@@ -243,7 +243,7 @@ defmodule QPBX.Notify.Alerts do
     defaults = Catalogue.default_channels()
     chosen = (pref && Map.get(pref.channels, alert.category)) || defaults
     chosen = if mandatory, do: Enum.uniq(chosen ++ defaults), else: chosen
-    if Catalogue.person_email?(alert.severity), do: chosen, else: chosen -- ["email"]
+    if Catalogue.person_email?(alert.kind, alert.severity), do: chosen, else: chosen -- ["email"]
   end
 
   defp shared(%Alert{tenant_id: tid} = alert) do

@@ -105,6 +105,7 @@ subprocess.run(["sh", os.path.join(HERE, "..", "tools", "lab-ca.sh"), RX], captu
 for name, src in [("qpbx-receiver.py", os.path.join(HERE, "..", "tools", "http_receiver.py")), ("qpbx-smtp-sink.py", os.path.join(HERE, "..", "tools", "smtp_sink.py")),
                   ("qpbx-receiver.pem", f"{LAB}/lab-ca/receiver.pem"), ("qpbx-receiver.key", f"{LAB}/lab-ca/receiver.key")]:
     subprocess.run(SSH + [f"debian@{RX}", f"umask 077; cat > /tmp/{name}"], input=open(src).read(), text=True)
+rx("pkill -f qpbx-receiver.py; pkill -f qpbx-smtp-sink.py")  # leftovers of an interrupted run
 web = subprocess.Popen(SSH + [f"debian@{RX}", f"exec python3 -u /tmp/qpbx-receiver.py {PORT} /tmp/qpbx-receiver.pem /tmp/qpbx-receiver.key"])
 smtp = subprocess.Popen(SSH + [f"debian@{RX}", f"rm -rf {MAILDIR}; exec python3 -u /tmp/qpbx-smtp-sink.py {SMTP} {MAILDIR}"])
 

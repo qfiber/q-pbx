@@ -19,7 +19,8 @@ audio, decrypted while the email is built). Queue `notify`.
   everyone told of the alert ("back to normal").
 - People: the kind's audience (`:platform_admins`, `:tenant_admins` of its tenant,
   `:user`); each person's channels per category (`portal`, `email`; default both). A person's
-  email carries warning and critical alerts only; info stays in the portal. Categories platform
+  email carries warning and critical alerts, and usage reports (thresholds, the monthly summary)
+  at any severity; other info stays in the portal. Categories platform
   admins made mandatory always reach the defaults. Quiet hours (local hours in the person's
   time zone: their setting, else the tenant's, else UTC) hold back email except for critical
   alerts. At most 20 emails an hour to one address; held-back emails are logged `skipped`

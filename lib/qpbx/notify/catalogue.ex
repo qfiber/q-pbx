@@ -48,13 +48,15 @@ defmodule QPBX.Notify.Catalogue do
 
   @doc """
   A person's channels when they chose none: the portal and email. A person's email carries
-  warning and critical alerts only (info stays in the portal); shared recipients choose their
-  own minimum severity.
+  warning and critical alerts, and usage reports at any severity (a threshold crossed, the
+  monthly summary: what the email is for); other info stays in the portal. Shared recipients
+  choose their own minimum severity.
   """
   def default_channels, do: ~w(portal email)
 
-  @doc "True when a person's email channel carries alerts of this severity."
-  def person_email?(severity), do: severity in ~w(critical warning)
+  @doc "True when a person's email channel carries this alert (its kind and severity)."
+  def person_email?(kind, severity),
+    do: severity in ~w(critical warning) or kind in ~w(usage_threshold usage_summary)
 
   @doc "True when `severity` is at least `min`."
   def at_least?(severity, min), do: rank(severity) >= rank(min)
