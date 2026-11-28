@@ -7,5 +7,5 @@ qpbx_smtp_host: localhost
 # Backups to the second lab VM. The password stays on this machine, outside the repository
 # (lab/create-vm.sh does not make it; see docs/DEVELOPING.md).
 qpbx_backup_enabled: true
-qpbx_backup_host: 192.168.10.85
+qpbx_backup_host: 192.168.10.84
 qpbx_backup_password: "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'HOME') ~ '/.local/share/qpbx-lab/backup-password') }}"

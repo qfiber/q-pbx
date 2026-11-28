@@ -77,7 +77,10 @@ Kamailio gets its real config.
   tampered link refused, the CSV export, users, routes, the tenant's audit log) and
   `lab/done-when/phase3-explorer.mjs` 5/5 in Chrome (87 operations listed, no CSP violations).
   Seen on the way: after the lab VMs were restarted the backup VM came up on 192.168.10.84
-  instead of .85 (DHCP), so the lab server's backups cannot reach it until that is fixed.
+  instead of .85 (DHCP); the lab inventory now uses .84 (2026-11-28). That
+  showed a playbook bug, fixed: the backup role pinned the target's host key only when its
+  known_hosts file was missing, so a moved target failed strict checking; it now scans an
+  address once when the file has no entry for it. Database and files backups to .84 verified.
 
 - 3-1 API foundation (done, 2026-11-28): API keys per tenant and for the platform
   (`api_keys`: SHA-256 of a `qpbx_` key shown once, scopes read/write/calls/fax/admin, expiry

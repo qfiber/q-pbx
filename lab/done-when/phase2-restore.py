@@ -115,7 +115,7 @@ finally:
     # The test VM's key stays authorized on the backup target only while the VM exists.
     pub = ssh(ip, "sudo cat /etc/qpbx-backup/id_ed25519.pub").stdout.split()
     if os.environ.get("KEEP") != "1" and len(pub) >= 2:
-        ssh("192.168.10.85", f"sudo sed -i '\\|{pub[1]}|d' /etc/ssh/qpbx-backup.authorized_keys")
+        ssh("192.168.10.84", f"sudo sed -i '\\|{pub[1]}|d' /etc/ssh/qpbx-backup.authorized_keys")
     if os.environ.get("KEEP") != "1":
         subprocess.run([f"{ROOT}/lab/create-vm.sh", "destroy"], env=env, capture_output=True)
     app(SRC, f'''

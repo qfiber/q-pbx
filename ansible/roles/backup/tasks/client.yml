@@ -4,10 +4,23 @@
     name: [pgbackrest, restic]
     state: present
 
+# Trusted on first use, per address: a target that moves to a new address is scanned once
+# there (the old entry stays; it is only ever matched for the old address).
 - name: Target host key (trusted on first use)
-  ansible.builtin.shell: ssh-keyscan -p {{ qpbx_backup_port }} -t ed25519,ecdsa,rsa {{ qpbx_backup_host }} > /etc/qpbx-backup/known_hosts
+  ansible.builtin.shell: |
+    set -o pipefail
+    name="{{ qpbx_backup_host if qpbx_backup_port | int == 22 else '[' ~ qpbx_backup_host ~ ']:' ~ qpbx_backup_port }}"
+    touch /etc/qpbx-backup/known_hosts
+    if ssh-keygen -F "$name" -f /etc/qpbx-backup/known_hosts >/dev/null; then
+      echo known
+    else
+      ssh-keyscan -p {{ qpbx_backup_port }} -t ed25519,ecdsa,rsa {{ qpbx_backup_host }} | grep -v '^#' >> /etc/qpbx-backup/known_hosts
+      echo added
+    fi
   args:
-    creates: /etc/qpbx-backup/known_hosts
+    executable: /bin/bash
+  register: backup_known_host
+  changed_when: "'added' in backup_known_host.stdout"
 
 - name: Known hosts readable by postgres
   ansible.builtin.file:

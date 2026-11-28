@@ -62,9 +62,10 @@ held) to `/internal/kamailio/registration` on 127.0.0.1:4000 with `X-QPBX-Secret
 (`kamailio_event_secret` in `/etc/qpbx/secrets.json`; `/etc/kamailio/db.cfg` for Kamailio,
 `QPBX_KAMAILIO_EVENT_SECRET` for the app, `event_secret/0`). `registration_report/1`
 (`QPBX.Edge.RegistrationEvents`) finds the extension (the login's part before the first dash,
-at the To domain) and publishes `ExtensionRegistration`. Gotcha: Kamailio keeps registrations
-in memory, so after a Kamailio restart phones are gone without an `unregistered` until they
-register again (then `registered`).
+at the To domain) and publishes `ExtensionRegistration`. Expected behaviour: Kamailio keeps
+registrations in memory; while it is down nothing rings anyway, and after a restart phones
+register again within seconds (`registered` again). A phone that never comes back gets no
+`unregistered`: the Kamailio restart alert (3-9) is the signal that earlier states are stale.
 
 **What Kamailio does with a new request:**
 - From FreeSWITCH (127.0.0.1:5080): with `X-QPBX-Trunk-Edge: <edge id>` to that trunk (IP
