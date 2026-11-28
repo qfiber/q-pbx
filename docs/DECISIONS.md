@@ -2,6 +2,25 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-28: Outbound request safety (3-4)
+
+- **One client in the integrations area** (`QPBX.Integrations.request/3`), the first piece of
+  that area: webhooks (3-5) live there, and notifications (3-8) will call it. Rejected: a
+  separate top-level area (the module map has none for it).
+- **Mint directly, not Req/Finch:** connecting to the checked address while verifying the
+  certificate for the name needs `Mint.HTTP.connect(..., hostname:)`; a pooled client would
+  resolve the name again on its own. One connection per request (these calls are few).
+- **One inside answer refuses the whole name** (a name with public and private answers is a
+  rebinding trick, not a mistake).
+- **Plain HTTP and trusted inside networks are installation settings in the inventory**
+  (`qpbx_outbound_allow_http`, `qpbx_outbound_allow_cidrs`), not a portal toggle: they lower
+  a security boundary, so they need server access, not only a platform admin login. This
+  narrows the approval's "a platform admin can allow them": to be confirmed. The
+  lab allows plain HTTP and the backup VM (its test receivers).
+- **Backup target host keys are pinned per address:** a target that moves is scanned once at
+  its new address (trust on first use, as before), instead of failing until someone deletes
+  the file by hand.
+
 ## 2026-11-28: Call and registration events (3-3)
 
 - **One call event type with a `type` field** (`CallEvent`: started, ringing, answered,

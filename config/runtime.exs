@@ -32,6 +32,15 @@ if config_env() == :prod do
 
   config :qpbx, :health_token, System.get_env("QPBX_HEALTH_TOKEN")
 
+  # Requests to tenant-chosen addresses (QPBX.Integrations.OutboundHTTP): plain HTTP only when
+  # allowed; inside addresses only in the listed networks.
+  config :qpbx, QPBX.Integrations,
+    allow_http: System.get_env("QPBX_OUTBOUND_ALLOW_HTTP") == "true",
+    allow_cidrs:
+      System.get_env("QPBX_OUTBOUND_ALLOW_CIDRS", "")
+      |> String.split(",", trim: true)
+      |> Enum.map(&String.trim/1)
+
   config :qpbx, QPBX.Edge,
     jsonrpc_url: System.get_env("QPBX_KAMAILIO_JSONRPC_URL", "http://127.0.0.1:5071/RPC"),
     # Kamailio sends it with its registration reports (POST /internal/kamailio/registration).

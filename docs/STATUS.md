@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-3 done; next task 3-4. Phase 2 done.
+**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-4 done; next task 3-5. Phase 2 done.
 **Last updated:** 2026-11-28
 
 ## Phase 1 goal
@@ -40,6 +40,27 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 3-4 Outbound request safety (done, 2026-11-28): `QPBX.Integrations.request/3`, the one HTTP
+  client for tenant-chosen addresses (new integrations area): HTTPS only unless the
+  installation allows plain HTTP, no credentials in URLs; the name resolved here and every
+  answer checked against inside ranges (loopback, private, shared, link-local, multicast,
+  reserved, documentation, and IPv6 forms carrying IPv4: mapped, compatible, NAT64, 6to4,
+  Teredo); one inside answer refuses the name; the connection pinned to the checked address
+  (Host, SNI and certificate checked for the name); every redirect checked again (303 and
+  POST-after-301/302 become GET, authorization dropped across hosts); limits on connect time,
+  total time and response size; telemetry. Installation settings `qpbx_outbound_allow_http`
+  and `qpbx_outbound_allow_cidrs` (the lab: plain HTTP and the backup VM). 10 new tests
+  (306 in all) against local HTTP and HTTPS servers: inside addresses in every spelling, a
+  name with a mixed answer, redirect chains to inside addresses, loops, 303/307, the
+  authorization header across hosts, size and time limits, the certificate checked for the
+  name while connecting to the pinned address. Lab: `lab/done-when/phase3-outbound.py` 15/15
+  from the server with real DNS and certificates (a public HTTPS site answered; expired and
+  wrong-name certificates refused; the receiver on the backup VM reached; 127.0.0.1,
+  `localhost`, `2130706433`, `[::1]`, `[::ffff:127.0.0.1]`, 169.254.169.254, the server's own
+  and the router's LAN address, and `localtest.me` (a public name for 127.0.0.1) refused; the
+  receiver's redirects to loopback and to the metadata address refused). Open: whether plain
+  HTTP should also be a portal setting (it is an inventory setting now; see DECISIONS).
 
 - 3-3 Call events (done, 2026-11-28): the call process publishes `CallEvent` (version 1) in
   order: `started` (direction internal, inbound or outbound), `ringing` (the far end rings:
@@ -427,7 +448,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 3-4 Outbound request safety (next).
+- 3-5 Webhooks (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next

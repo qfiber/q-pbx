@@ -40,6 +40,12 @@ qpbx_aws_access_key_id: ""    # keep in Ansible Vault
 qpbx_aws_secret_access_key: ""
 qpbx_kms_key_backed_up: false
 
+# Requests to addresses tenants choose (webhooks, alert webhooks): plain HTTP is refused unless
+# allowed here, and inside addresses (private, loopback, link-local...) always are, except
+# networks listed in qpbx_outbound_allow_cidrs (receivers the operator trusts, e.g. in a lab).
+qpbx_outbound_allow_http: false
+qpbx_outbound_allow_cidrs: []
+
 # Portal session idle timeout in seconds (at most 900; higher values are capped).
 qpbx_session_idle_timeout: 900
 

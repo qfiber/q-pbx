@@ -101,6 +101,7 @@ uses two roles (`qpbx_owner` for migrations, `qpbx` for the app); development us
 | `lab/done-when/phase2.py <vm-ip> <host-ip>` | Phase 2 done-when: every phase 2 lab check, then the spec's five conditions (add `MEOW_TEST=… MEOW_HOME=…` for the Meow client) |
 | `lab/done-when/phase3-api.py <vm-ip>` | 3-1 and 3-2 lab check: the `/v1` API through nginx (keys, scopes, isolation, idempotency, pages, rate limit, OpenAPI, explorer; every resource kind, a device added through the API registering over SIP) |
 | `lab/done-when/phase3-events.py <vm-ip>` | 3-3 lab check: call and registration events for real SIP traffic (`--skip-expiry` saves the two-minute wait) |
+| `lab/done-when/phase3-outbound.py <vm-ip> <receiver-ip>` | 3-4 lab check: the outbound client from the server (real DNS and certificates; inside names, addresses and redirects refused); the receiver (`lab/tools/http_receiver.py`) runs on the backup VM |
 | `node lab/done-when/phase3-explorer.mjs <vm-ip>` | 3-1 lab check: the API explorer in Chrome (sends requests with a typed key, no CSP violations) |
 | `lab/done-when/phase2-tenants.py <vm-ip>` | Two tenants with the same numbers, no crossover in or out; changes apply without restarting Kamailio or FreeSWITCH |
 | `lab/done-when/phase2-restore.py <vm-ip>` | 2-10 lab check: timed restore of the lab server onto a fresh VM |
@@ -147,7 +148,8 @@ from the commit (FreeSWITCH from a cache keyed on `packaging/freeswitch/`).
 running Ansible, or the run stops before touching the firewall), `qpbx_cert_mode`, SMTP
 settings, the human check (`qpbx_captcha_provider`: `pow`, `turnstile`, `friendly_captcha`,
 `captcha_eu` or `none`, with site key and secret for the outside services), and for `wildcard` mode `qpbx_acme_dns_provider` and `qpbx_acme_dns_env` (keep these in
-Ansible Vault). Collections: `ansible-galaxy collection install -r ansible/requirements.yml`.
+Ansible Vault). Requests to tenant-chosen addresses (webhooks): `qpbx_outbound_allow_http`
+(default false) and `qpbx_outbound_allow_cidrs` (inside networks you trust; default none). Collections: `ansible-galaxy collection install -r ansible/requirements.yml`.
 On the server, `qpbx eval '...'` runs release commands (for example
 `QPBX.Release.create_platform_admin("you@example.com", "You")`).
 
