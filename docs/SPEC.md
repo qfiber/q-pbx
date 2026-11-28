@@ -282,7 +282,7 @@ These are the call features Q-PBX will have. Queues, conferencing and paging com
 
 **Call routing building blocks**
 
-- **IVR / auto attendant:** prompts (upload or TTS), digit options, timeout and invalid handling, direct dial to extensions, nested menus.
+- **IVR / auto attendant:** prompts (uploaded recordings, plus the system prompts), digit options, timeout and invalid handling, direct dial to extensions, nested menus. No text-to-speech: a synthetic voice is not wanted for callers (decided 2026-11-28).
   - **Visual call-flow editor (in 1.0, phase 4):** each DID's routing (time conditions, IVR menus and their options, ring groups, voicemail) shown as a diagram that can be edited by drag and drop, next to the forms. Built on the same LiveView canvas that the phase 8 flow builder extends.
 - **Time conditions:** weekly schedules per tenant time zone, holiday calendars, manual override toggle ("office closed now").
 - **Ring groups:** ring all, sequential, round robin; per-member timeouts; external numbers as members; final destination on no answer.

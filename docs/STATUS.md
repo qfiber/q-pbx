@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-13 done, the four done-when conditions met; phase 3 complete. Next: phase 4. Phase 2 done.
+**Current phase:** 4 — routing, recording, basic fax, Meow and migration (the 1.0 release): breakdown approved 2026-11-28; next task 4-1. Phases 1 to 3 done.
 **Last updated:** 2026-11-28
 
 ## Phase 1 goal
@@ -658,7 +658,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- Phase 4 (next): routing, recording, basic fax, Meow and migration (the 1.0 release); its task breakdown to be written and approved first.
+- 4-1 Destinations and prompts (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next
@@ -735,6 +735,49 @@ Kamailio gets its real config.
   ModSecurity), FreeSWITCH modules added (G.729, Opus/MP3 recording, loopback, CDR spool; all
   load in the lab), languages moved to one config list, firewall and plan forms now clear
   after a save (live validation added).
+
+## Phase 4 task breakdown (approved 2026-11-28)
+
+From `docs/SPEC.md`, phase 4: IVR, time conditions, holidays, ring groups, feature codes,
+parking, recording policies and file storage; the visual call-flow editor; fax boxes,
+fax-to-email, sending from the portal and API, T.38 modes per trunk; Meow QR login and mobile
+wake-up through the push gateway adapter; the FreePBX 17 importer; AppArmor in enforce mode;
+a load test.
+
+**Done when:** a full call path (DID, time condition, IVR, ring group, recording) works and
+appears correctly in CDRs and webhooks, 20 consecutive 5-page faxes each way succeed, a Meow
+mobile app killed in the background rings within 3 seconds, and one real tenant imported from
+FreePBX has run in production for two weeks without a critical alert.
+
+| # | Task | Scope | Proof |
+| --- | --- | --- | --- |
+| 4-1 | Destinations and prompts | One destination kind used wherever a call can go (extension, ring group, IVR, time condition, voicemail, fax box, outside number, hang up): numbers, IVR options and timeouts point at one; a prompt library per tenant (WAV or MP3 uploaded, converted, stored encrypted) plus the English system prompts | Unit tests; a number pointed at each kind |
+| 4-2 | Ring groups | Ring all, one after another, round robin; time per member; outside numbers as members; where the call goes when nobody answers | ESL tests; SIPp |
+| 4-3 | Time conditions and holidays | Weekly schedules in the tenant's time zone, holiday calendars, an "office closed now" switch (portal, API, feature code) | Unit tests across zones and daylight saving; SIPp |
+| 4-4 | IVR | Prompt, digit options, timeout and invalid-entry handling, direct dial to extensions, nested menus | ESL tests; SIPp with DTMF |
+| 4-5 | Feature codes | The default set, editable per tenant: voicemail, do not disturb, forwarding, pickup, park and retrieve, recording on demand, the office-closed switch, the `*43` echo test | A test per code; SIPp |
+| 4-6 | Call parking | Park slots, a busy lamp per slot, back to whoever parked after a timeout | Lab with the Grandstream phone and Meow |
+| 4-7 | Recording | Always, never or on demand per tenant, extension or route; Opus or MP3, encrypted, kept as the plan says; played and downloaded in the portal and API, linked from the CDR; `recording.ready` webhook | Tests; a real call recorded in the lab |
+| 4-8 | Visual call-flow editor | Each number's routing as a diagram, edited by drag and drop next to the forms (the canvas phase 8's flow builder extends) | LiveView tests; review in the browser |
+| 4-9 | Fax receiving | Fax boxes; `rxfax` to PDF, stored and logged; fax-to-email; a fax inbox in the portal and API; `fax.received` | Tests; lab fax |
+| 4-10 | Fax sending | PDF or images uploaded (portal, API, explorer), converted in a separate limited OS process, sent with `txfax`, retries, a report; `fax.sent` and `fax.failed`; pages against the plan; T.38 modes per trunk and ECM | Tests; lab faxes both ways |
+| 4-11 | Push | The `Push` behaviour with the push gateway adapter (from Meow's existing integration), notification pushes, its setting on the settings page | Tests with a fake gateway |
+| 4-12 | Meow | QR login from the portal; RFC 8599 push parameters on REGISTER; Kamailio holds an INVITE, wakes the app through the gateway and delivers the call once it registers | Lab: Meow killed on a phone rings within 3 s |
+| 4-13 | FreePBX 17 importer | Extensions, DIDs, ring groups, IVRs, voicemail boxes and greetings; a dry run that reports what carries over, then the import | Tests against a sample FreePBX backup |
+| 4-14 | Hardening and capacity | AppArmor in enforce mode; a load test that confirms the sizing (100+ concurrent calls); call quality alerts from RTCP if cheap | Lab numbers recorded |
+| 4-15 | Call tests in CI | SIPp for IVR digits, ring groups, time conditions, recording, and fax both ways (FreeSWITCH to FreeSWITCH) | CI green |
+| 4-16 | Leftovers | Whatever phase 4 turns up | — |
+| 4-17 | Done-when in the lab | The full call path, 20 faxes each way, the Meow wake-up timed | Results recorded here |
+| 4-18 | Go-live | The first real tenant imported and run in production for two weeks | Two weeks without a critical alert |
+
+Decisions with the approval (2026-11-28): no text-to-speech (uploaded prompts and the system
+prompts only; spec changed); order: calls (4-1 to 4-8), then fax, then push and Meow, then the
+importer and go-live. Lab: the Grandstream phone and Meow on a real phone are available; no fax
+machine, so the 20 faxes run FreeSWITCH to FreeSWITCH in the lab and with a real fax machine
+or carrier on the cloud server; no real carrier until the cloud server (carriers lock by IP).
+Later, on the cloud server: the push gateway keys (from the Meow production server, or new
+ones; the adapter is built and tested against a fake gateway first), the real carrier, the
+first tenant and its FreePBX backup (4-13's real run, 4-18).
 
 ## Phase 3 task breakdown (approved 2026-11-27)
 

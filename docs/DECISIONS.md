@@ -2,6 +2,15 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-28: Phase 4 plan
+
+- **No text-to-speech for IVR prompts:** a synthetic voice is not wanted for callers; uploaded
+  recordings and the system prompts only. Rejected: a local or outside TTS engine.
+- **Order:** calls first (destinations, ring groups, time conditions, IVR, feature codes,
+  parking, recording, the call-flow editor), then fax, then push and Meow, then the importer
+  and go-live; the parts that need the cloud server (real carrier, push keys, the first
+  tenant) are built and tested against simulations first and finished there.
+
 ## 2026-11-28: Which repeats tell people again
 
 - **Only events repeat their notice** (another attack, another fraud hit), at most every 15
