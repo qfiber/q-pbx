@@ -6,9 +6,10 @@ defmodule QPBX.Web.Api.ParityTest do
   """
   use ExUnit.Case, async: true
 
-  # Page events that only change the form on screen.
+  # Page events that only change the form on screen, or read again what is shown (`check`:
+  # the health checks run now; their results are at /health/details for code).
   @ui_only ~w(validate validate_class validate_emergency validate_device validate_greeting
-              validate_channel dismiss hide_secret edit cancel open refresh filter)
+              validate_channel dismiss hide_secret edit cancel open refresh filter check)
 
   # A signed-in person's own sessions: an API key is not a person.
   @personal %{

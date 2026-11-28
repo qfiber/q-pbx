@@ -15,7 +15,7 @@ defmodule QPBX.Web.Dashboard do
   }
 
   attr :id, :string, required: true
-  attr :navigate, :string, required: true
+  attr :navigate, :string, default: nil, doc: "the page behind the number; nil: not a link"
   attr :icon, :string, required: true
   attr :tone, :atom, default: :accent
   attr :label, :string, required: true
@@ -31,30 +31,41 @@ defmodule QPBX.Web.Dashboard do
     assigns = assign(assigns, :tile, @tones[assigns.tone])
 
     ~H"""
-    <.link
-      navigate={@navigate}
-      id={@id}
-      class={[
-        "group block rounded-[12px] border bg-base-100 p-4 sm:p-5 shadow-card transition",
-        "hover:-translate-y-0.5 hover:shadow-card-hover focus-visible:outline-2 focus-visible:outline-secondary",
-        if(@alert, do: "border-error/60", else: "border-hairline")
-      ]}
-    >
-      <div class="flex items-start justify-between gap-3">
-        <div class={["size-9 sm:size-10 rounded-[8px] grid place-items-center", @tile]}>
-          <.icon name={@icon} class="size-5" />
-        </div>
-        <.icon
-          name="hero-arrow-up-right"
-          class="size-4 text-muted opacity-0 transition group-hover:opacity-100 rtl:-scale-x-100"
-        />
-      </div>
-      <p class="mt-3 sm:mt-4 text-sm text-muted leading-snug">{@label}</p>
-      <p class="mt-0.5 text-2xl sm:text-3xl font-semibold tracking-tight tabular-nums" dir="ltr">
-        {@value}
-      </p>
-      <div :if={@inner_block != []} class="mt-1 text-xs text-muted">{render_slot(@inner_block)}</div>
+    <.link :if={@navigate} navigate={@navigate} id={@id} class={card_class(@alert, true)}>
+      <.stat_body {assigns} />
     </.link>
+    <div :if={!@navigate} id={@id} class={card_class(@alert, false)}>
+      <.stat_body {assigns} />
+    </div>
+    """
+  end
+
+  defp card_class(alert, link?) do
+    [
+      "group block rounded-[12px] border bg-base-100 p-4 sm:p-5 shadow-card",
+      link? &&
+        "transition hover:-translate-y-0.5 hover:shadow-card-hover focus-visible:outline-2 focus-visible:outline-secondary",
+      if(alert, do: "border-error/60", else: "border-hairline")
+    ]
+  end
+
+  defp stat_body(assigns) do
+    ~H"""
+    <div class="flex items-start justify-between gap-3">
+      <div class={["size-9 sm:size-10 rounded-[8px] grid place-items-center", @tile]}>
+        <.icon name={@icon} class="size-5" />
+      </div>
+      <.icon
+        :if={@navigate}
+        name="hero-arrow-up-right"
+        class="size-4 text-muted opacity-0 transition group-hover:opacity-100 rtl:-scale-x-100"
+      />
+    </div>
+    <p class="mt-3 sm:mt-4 text-sm text-muted leading-snug">{@label}</p>
+    <p class="mt-0.5 text-2xl sm:text-3xl font-semibold tracking-tight tabular-nums" dir="ltr">
+      {@value}
+    </p>
+    <div :if={@inner_block != []} class="mt-1 text-xs text-muted">{render_slot(@inner_block)}</div>
     """
   end
 

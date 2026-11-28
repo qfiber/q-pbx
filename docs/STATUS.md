@@ -41,6 +41,14 @@ Kamailio gets its real config.
 
 ## Done
 
+- 3-13 follow-up (2026-11-28, from review): the light theme chosen by hand now wins on a
+  computer set to dark (daisyUI's "follow the system" rule came after the light theme; the
+  dark theme is declared first again; checked in Chrome with a dark system); a server health
+  page (`/platform/health`, under Monitoring): each of the 8 checks with what it checks, its
+  result and the last run, and "Check now"; the dashboard's health card and components panel
+  open it; live calls and phones online are plain cards (no page behind them). 2 new tests
+  (363 in all).
+
 - 3-13 Portal design pass (done, 2026-11-28): Meow's colours (light and dark), IBM Plex Sans
   and Vazirmatn; a night sidebar with the pages grouped by task, sliding in on phones, the
   current page marked; page headers, tables and forms as cards; a new sign-in page (night
@@ -824,6 +832,9 @@ None. Answers are recorded in `docs/DECISIONS.md` (2026-11-27).
   prefix list (see "Planned features").
 
 ## Known bugs
+
+- Editing a plan in the portal does not work (reported 2026-11-28 in the design review);
+  deferred until the portal's final look is settled.
 
 - Kamailio logged one parse error on Meow's TLS connection (`bad header field [INVITE ...`)
   during the first Meow run, alongside FreeSWITCH's 488 refusals; not seen again after the

@@ -59,6 +59,13 @@ async function signIn(link) {
 
 try {
   const anon = await browser.newPage();
+  // A dark system with the light theme chosen by hand: the page must be light.
+  await anon.emulateMediaFeatures([{ name: "prefers-color-scheme", value: "dark" }]);
+  await anon.goto(`${base}/login`, { waitUntil: "networkidle0" });
+  await anon.evaluate(() => document.documentElement.setAttribute("data-theme", "light"));
+  const bg = await anon.evaluate(() => getComputedStyle(document.body.firstElementChild).backgroundColor);
+  console.log(`light theme on a dark system: ${bg === "rgb(238, 242, 245)" ? "light" : "NOT light (" + bg + ")"}`);
+  await anon.emulateMediaFeatures([{ name: "prefers-color-scheme", value: "light" }]);
   await anon.goto(`${base}/login`, { waitUntil: "networkidle0" });
   for (const size of ["desktop", "phone"]) for (const theme of ["light", "dark"]) await shot(anon, "login", size, theme);
   await anon.goto(`${base}/locale/ar`, { waitUntil: "networkidle0" });
@@ -66,7 +73,7 @@ try {
   await shot(anon, "login-ar", "desktop", "light");
 
   const admin = await signIn(adminLink);
-  for (const path of ["/platform", "/platform/trunks", "/platform/plans"]) {
+  for (const path of ["/platform", "/platform/health", "/platform/trunks", "/platform/plans"]) {
     await admin.goto(base + path, { waitUntil: "networkidle0" });
     const name = "platform" + path.replace("/platform", "").replace(/\//g, "-");
     await shot(admin, name, "desktop", "light");

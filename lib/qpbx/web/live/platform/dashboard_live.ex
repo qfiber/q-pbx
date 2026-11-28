@@ -64,7 +64,7 @@ defmodule QPBX.Web.Platform.DashboardLive do
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <.stat
             id="stat-health"
-            navigate={~p"/platform/alerts"}
+            navigate={~p"/platform/health"}
             icon="hero-heart"
             tone={health_tone(@health.status)}
             label={gettext("Server health")}
@@ -85,7 +85,6 @@ defmodule QPBX.Web.Platform.DashboardLive do
           </.stat>
           <.stat
             id="stat-live"
-            navigate={~p"/platform/tenants"}
             icon="hero-phone-arrow-up-right"
             tone={:accent}
             label={gettext("Live calls")}
@@ -95,7 +94,6 @@ defmodule QPBX.Web.Platform.DashboardLive do
           </.stat>
           <.stat
             id="stat-online"
-            navigate={~p"/platform/tenants"}
             icon="hero-signal"
             tone={:ok}
             label={gettext("Phones online")}
@@ -157,8 +155,8 @@ defmodule QPBX.Web.Platform.DashboardLive do
           <.panel
             id="health"
             title={gettext("Components")}
-            navigate={~p"/platform/alerts"}
-            more={gettext("Alerts")}
+            navigate={~p"/platform/health"}
+            more={gettext("Details")}
           >
             <div :for={{name, c} <- @components} class="flex items-center gap-3 px-5 py-3 text-sm">
               <.dot status={to_string(c.status)} />
@@ -199,13 +197,5 @@ defmodule QPBX.Web.Platform.DashboardLive do
   defp health_label("degraded"), do: gettext("Degraded")
   defp health_label(_), do: gettext("Down")
 
-  defp component(:postgres), do: "PostgreSQL"
-  defp component(:freeswitch), do: "FreeSWITCH"
-  defp component(:kamailio), do: "Kamailio"
-  defp component(:disk), do: gettext("Disk space")
-  defp component(:certificate), do: gettext("Certificates")
-  defp component(:backups), do: gettext("Backups")
-  defp component(:oban_backlog), do: gettext("Background jobs")
-  defp component(:trunk_registrations), do: gettext("Trunks")
-  defp component(other), do: to_string(other)
+  defp component(name), do: QPBX.Web.Platform.HealthLive.component(name)
 end

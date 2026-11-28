@@ -17,44 +17,12 @@
   themes: false;
 }
 
+/* The dark theme comes first: its "follow the system" rule must sit before the light theme's
+   [data-theme=light] rule (same weight; the later one wins), or a dark system overrides the
+   light theme chosen by hand. */
 /* Colours: Meow's web palette (the same brand teal, accent cyan and amber, AA-checked), as
    daisyUI themes. Brand teal is for actions and selection, cyan for links and icons, amber
    for the one call to action in view. */
-@plugin "../vendor/daisyui-theme" {
-  name: "light";
-  default: true;
-  prefersdark: false;
-  color-scheme: "light";
-  --color-base-100: #ffffff;
-  --color-base-200: #eef2f5;
-  --color-base-300: #dde4ea;
-  --color-base-content: #0e1a21;
-  --color-primary: #174355;
-  --color-primary-content: #ffffff;
-  --color-secondary: #066c8d;
-  --color-secondary-content: #ffffff;
-  --color-accent: #f5a524;
-  --color-accent-content: #0e1a21;
-  --color-neutral: #0c2733;
-  --color-neutral-content: #f2f7fa;
-  --color-info: #066c8d;
-  --color-info-content: #ffffff;
-  --color-success: #18674d;
-  --color-success-content: #ffffff;
-  --color-warning: #f5a524;
-  --color-warning-content: #0e1a21;
-  --color-error: #a92d37;
-  --color-error-content: #ffffff;
-  --radius-selector: 6px;
-  --radius-field: 8px;
-  --radius-box: 12px;
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-  --border: 1px;
-  --depth: 1;
-  --noise: 0;
-}
-
 @plugin "../vendor/daisyui-theme" {
   name: "dark";
   default: false;
@@ -80,6 +48,41 @@
   --color-warning-content: #0e1a21;
   --color-error: #ee969d;
   --color-error-content: #1e2427;
+  --radius-selector: 6px;
+  --radius-field: 8px;
+  --radius-box: 12px;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+@plugin "../vendor/daisyui-theme" {
+  name: "light";
+  default: true;
+  prefersdark: false;
+  color-scheme: "light";
+  --color-base-100: #ffffff;
+  --color-base-200: #eef2f5;
+  --color-base-300: #dde4ea;
+  --color-base-content: #0e1a21;
+  --color-primary: #174355;
+  --color-primary-content: #ffffff;
+  --color-secondary: #066c8d;
+  --color-secondary-content: #ffffff;
+  --color-accent: #f5a524;
+  --color-accent-content: #0e1a21;
+  --color-neutral: #0c2733;
+  --color-neutral-content: #f2f7fa;
+  --color-info: #066c8d;
+  --color-info-content: #ffffff;
+  --color-success: #18674d;
+  --color-success-content: #ffffff;
+  --color-warning: #f5a524;
+  --color-warning-content: #0e1a21;
+  --color-error: #a92d37;
+  --color-error-content: #ffffff;
   --radius-selector: 6px;
   --radius-field: 8px;
   --radius-box: 12px;

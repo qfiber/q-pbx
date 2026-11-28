@@ -69,9 +69,31 @@ defmodule QPBX.Web.DashboardTest do
     assert has_element?(view, "#stat-health")
     assert has_element?(view, "#health")
 
+    # Numbers without a page behind them are not links.
+    assert has_element?(view, "div#stat-live") and has_element?(view, "div#stat-online")
+    refute has_element?(view, "a#stat-live")
+
     assert view
            |> element("#stat-tenants")
            |> render_click()
            |> follow_redirect(conn, ~p"/platform/tenants")
+  end
+
+  test "the health page: every check with what it checks, its result; check now", %{conn: conn} do
+    {conn, _} = signed_in(conn, platform_admin_fixture(), ~p"/platform/login")
+    {:ok, view, html} = live(conn, ~p"/platform/health")
+    assert html =~ "Server health"
+    assert has_element?(view, "#component-postgres", "The database answers a query.")
+    assert has_element?(view, "#component-disk", "Free space")
+    html = view |> element("#check-now") |> render_click()
+    assert html =~ "Checked just now."
+    assert has_element?(view, "#component-postgres", "OK")
+  end
+
+  test "a light theme chosen by hand wins over a dark system: dark's rule comes first" do
+    css = File.read!("assets/css/app.css")
+    {dark, _} = :binary.match(css, ~s(name: "dark";))
+    {light, _} = :binary.match(css, ~s(name: "light";))
+    assert dark < light
   end
 end

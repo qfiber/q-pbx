@@ -317,6 +317,7 @@ defmodule QPBX.Web.Layouts do
        ]},
       {gettext("Monitoring"),
        [
+         {gettext("Server health"), ~p"/platform/health", "nav-health", "hero-heart"},
          {gettext("Alerts"), ~p"/platform/alerts", "nav-alerts", "hero-bell-alert"},
          {gettext("Audit log"), ~p"/platform/audit", "nav-audit", "hero-document-text"}
        ]},

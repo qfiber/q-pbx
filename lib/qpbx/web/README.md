@@ -138,7 +138,8 @@ to `QPBX.Edge.registration_report/1` (204, or 422 for an unknown extension).
 password; answers `QPBX.Telephony.dialplan_xml/1`. nginx returns 404 for `/internal/`.
 
 **Design:** colours from Meow's web palette as daisyUI themes in `assets/css/app.css` (light
-and dark; brand teal for actions, cyan for links and icons, amber for the one call to action),
+and dark, the dark theme declared first so a light theme chosen by hand beats a dark system;
+brand teal for actions, cyan for links and icons, amber for the one call to action),
 plus the roles daisyUI has no name for (`night`, `hairline`, `muted`, pale icon tiles) as
 Tailwind colours. Fonts: IBM Plex Sans, Vazirmatn for Arabic (`priv/static/fonts`, SIL OFL).
 `Layouts.app`: a night sidebar with the pages grouped by task (platform: overview, customers,
@@ -151,7 +152,9 @@ Without an account `Layouts.app` is a plain page (the alert acknowledge page).
 English and Arabic).
 
 **Dashboards:** `/app` (`Tenant.HomeLive`) and `/platform` (`Platform.DashboardLive`), cards
-from `QPBX.Web.Dashboard` that each open their page, refreshed every 15 seconds. Tenant admins:
+from `QPBX.Web.Dashboard` that open their page (live calls and phones online have none: plain
+cards), refreshed every 15 seconds. `/platform/health` (`Platform.HealthLive`): every health
+check with what it checks, its result and the last run; "Check now" runs them at once. Tenant admins:
 live calls, calls today, outbound minutes this month against the cap, phones online, open
 alerts, new voicemail, users, numbers, the latest calls and open alerts; a tenant user: their
 extension, voicemail and unread notifications. Platform: server health with each component,

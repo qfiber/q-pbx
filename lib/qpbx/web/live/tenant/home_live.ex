@@ -114,7 +114,6 @@ defmodule QPBX.Web.Tenant.HomeLive do
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <.stat
             id="stat-live"
-            navigate={~p"/app/calls"}
             icon="hero-phone-arrow-up-right"
             tone={:accent}
             label={gettext("Live calls")}
@@ -148,7 +147,6 @@ defmodule QPBX.Web.Tenant.HomeLive do
           </.stat>
           <.stat
             id="stat-online"
-            navigate={~p"/app/extensions"}
             icon="hero-signal"
             tone={:ok}
             label={gettext("Phones online")}

@@ -222,6 +222,7 @@ defmodule QPBX.Web.Router do
 
     live_session :platform_admin, on_mount: {QPBX.Web.Auth, :platform_admin} do
       live "/", DashboardLive, :index
+      live "/health", HealthLive, :index
       live "/tenants", TenantsLive, :index
       live "/tenants/new", TenantsLive, :new
       live "/tenants/:id", TenantLive, :show
