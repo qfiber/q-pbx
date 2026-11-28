@@ -119,6 +119,12 @@ defmodule QPBX.Web.UsersPagesTest do
 
     assert %{dnd: true, forward_busy: "102"} = Core.get_extension!(scope, e101.id)
 
+    # The Call button: refused targets are explained; 101 has no phone yet, so nothing rings.
+    assert view |> form("#call-form", call: %{to: "abc"}) |> render_submit() =~
+             "not a number Q-PBX can call"
+
+    assert view |> form("#call-form", call: %{to: "102"}) |> render_submit() =~ "no phone to ring"
+
     # Admin pages stay closed to tenant users.
     assert {:error, {:redirect, %{to: "/app"}}} = live(conn, ~p"/app/users")
   end

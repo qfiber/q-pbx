@@ -77,7 +77,8 @@ defmodule QPBX.Web.Api.ParityTest do
     "tenant/my_extension_live" => %{
       "save" => "PATCH /v1/extensions/:id",
       "heard" => "POST /v1/voicemails/:id/save",
-      "delete_voicemail" => "DELETE /v1/voicemails/:id"
+      "delete_voicemail" => "DELETE /v1/voicemails/:id",
+      "call" => "POST /v1/calls"
     },
     "tenant/number_format_live" => %{
       "save" => "PUT /v1/number-format",

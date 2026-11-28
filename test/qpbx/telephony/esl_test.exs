@@ -212,6 +212,91 @@ defmodule QPBX.Telephony.ESLTest do
       assert id102 == e102.id
     end
 
+    test "click-to-call: rings the extension, then calls the target from it; live calls; hang up and transfer",
+         %{fs: fs, tenant: t} do
+      scope = Core.scope_for(hd(Core.list_users(%Core.Scope{kind: :platform}, t)))
+      e101 = Enum.find(Core.list_extensions(scope), &(&1.number == "101"))
+      QPBX.Events.subscribe(QPBX.Events.CallEvent)
+
+      task = Task.async(fn -> QPBX.Telephony.originate(scope, e101.id, "102", @actor) end)
+      cmd = recv_command(fs, Process.delete(:fs_rest) || "")
+      send_frame(fs, "Content-Type: command/reply\nReply-Text: +OK Job-UUID: j1\n\n")
+      assert {:ok, call_id} = Task.await(task)
+
+      # The extension's device rings first, showing the target; the leg carries our tags.
+      assert "bgapi originate {" <> _ = cmd
+      assert cmd =~ "origination_uuid=#{call_id}"
+
+      assert cmd =~ "qpbx_tenant=#{t.id}" and cmd =~ "qpbx_auth_user=101-desk" and
+               cmd =~ "qpbx_destination=102"
+
+      assert cmd =~ "origination_caller_id_number=102"
+      assert cmd =~ "sofia/qpbx/101-desk@#{t.sip_domain}" and String.ends_with?(cmd, "&park()")
+
+      # 101 answered: the parked leg is a call from 101 to 102, like 101 dialling it.
+      event(fs, %{
+        "Event-Name" => "CHANNEL_PARK",
+        "Unique-ID" => call_id,
+        "variable_qpbx_call" => "true",
+        "variable_qpbx_source" => "device",
+        "variable_qpbx_tenant" => t.id,
+        "variable_qpbx_auth_user" => "101-desk",
+        "variable_qpbx_destination" => "102",
+        "Caller-Caller-ID-Number" => "102",
+        "Caller-Destination-Number" => "101-desk"
+      })
+
+      assert %{app: "set"} = recv_sendmsg(fs, call_id)
+      assert %{app: "bridge", arg: dial} = recv_sendmsg(fs, call_id)
+      assert dial =~ "sofia/qpbx/102-desk@"
+
+      assert_receive {:event,
+                      %QPBX.Events.CallEvent{
+                        type: "started",
+                        call_id: ^call_id,
+                        from: "101",
+                        to: "102",
+                        direction: "internal"
+                      }}
+
+      assert [%{call_id: ^call_id, from: "101", to: "102", answered: false}] =
+               QPBX.Telephony.list_live_calls(scope)
+
+      # Another tenant can neither see nor touch it.
+      other = Core.scope_for(user_fixture(tenant_fixture()))
+      assert QPBX.Telephony.list_live_calls(other) == []
+      assert {:error, :not_found} = QPBX.Telephony.hangup_call(other, call_id, @actor)
+      assert {:error, :not_found} = QPBX.Telephony.transfer_call(other, call_id, "102", @actor)
+
+      assert {:error, :bad_target} =
+               QPBX.Telephony.transfer_call(scope, call_id, "102 & reload", @actor)
+
+      task = Task.async(fn -> QPBX.Telephony.transfer_call(scope, call_id, "*43", @actor) end)
+
+      assert recv_command(fs, Process.delete(:fs_rest) || "") ==
+               "api uuid_transfer #{call_id} *43 XML public"
+
+      send_frame(fs, "Content-Type: api/response\nContent-Length: 3\n\n+OK")
+      assert :ok = Task.await(task)
+
+      # Ended at once (uuid_kill): a hangup message would wait behind the running bridge.
+      task = Task.async(fn -> QPBX.Telephony.hangup_call(scope, call_id, @actor) end)
+
+      assert recv_command(fs, Process.delete(:fs_rest) || "") ==
+               "api uuid_kill #{call_id} NORMAL_CLEARING"
+
+      send_frame(fs, "Content-Type: api/response\nContent-Length: 3\n\n+OK")
+      assert :ok = Task.await(task)
+
+      # Refused before anything rings.
+      assert {:error, :bad_target} = QPBX.Telephony.originate(scope, e101.id, "abc", @actor)
+
+      assert {:error, :not_found} =
+               QPBX.Telephony.originate(scope, Ecto.UUID.generate(), "102", @actor)
+
+      assert {:error, :not_found} = QPBX.Telephony.originate(other, e101.id, "102", @actor)
+    end
+
     test "a transfer re-routes the parked channel instead of hanging up; a 302 is followed",
          %{fs: fs, tenant: t} do
       QPBX.Events.subscribe(QPBX.Events.CallEvent)

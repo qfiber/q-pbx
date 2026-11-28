@@ -51,6 +51,32 @@ defmodule QPBX.Web.Tenant.MyExtensionLive do
   end
 
   @impl true
+  # Click-to-call: the user's own phones ring, then the number is dialled from the extension.
+  def handle_event("call", %{"call" => %{"to" => to}}, socket) do
+    %{current_scope: scope, current_account: me, ext: ext} = socket.assigns
+    to = NumberInput.normalize(%{"to" => to}, scope, ["to"])["to"]
+
+    case Telephony.originate(scope, ext.id, to, me) do
+      {:ok, _} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :info,
+           gettext("Your phone is ringing: answer it to call %{number}.", number: to)
+         )}
+
+      {:error, :no_devices} ->
+        {:noreply, put_flash(socket, :error, gettext("Your extension has no phone to ring."))}
+
+      {:error, :bad_target} ->
+        {:noreply, put_flash(socket, :error, gettext("That is not a number Q-PBX can call."))}
+
+      {:error, _} ->
+        {:noreply,
+         put_flash(socket, :error, gettext("The call could not be started. Try again."))}
+    end
+  end
+
   def handle_event("save", %{"extension" => params}, socket) do
     %{current_scope: scope, current_account: actor} = socket.assigns
 
@@ -121,6 +147,11 @@ defmodule QPBX.Web.Tenant.MyExtensionLive do
         <p class="text-lg" id="my-number">
           {gettext("Extension %{number}", number: @ext.number)} · {@ext.name}
         </p>
+
+        <.form for={%{}} as={:call} id="call-form" phx-submit="call" class="mt-4 flex items-end gap-2">
+          <.input name="call[to]" value="" label={gettext("Call a number")} dir="ltr" required />
+          <.button variant="primary" id="call-button">{gettext("Call")}</.button>
+        </.form>
 
         <h2 class="text-lg font-semibold mt-6">{gettext("Voicemail")}</h2>
         <p :if={@voicemails == []} id="no-voicemail">{gettext("No messages.")}</p>

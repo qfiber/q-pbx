@@ -441,6 +441,18 @@ defmodule QPBX.Telephony.Router do
     end
   end
 
+  @doc """
+  Click-to-call's first leg: the extension's devices (rung at once) and one of its device
+  logins (the parked leg calls as that device). `{:ok, legs, login}` or `{:error, reason}`.
+  """
+  def click_legs(t, ext_id) do
+    case Enum.find(t.extensions, &(&1.id == ext_id)) do
+      nil -> {:error, :not_found}
+      %{devices: []} -> {:error, :no_devices}
+      ext -> {:ok, Enum.join(device_legs(ext, t), ","), hd(ext.devices).sip_credential.username}
+    end
+  end
+
   @doc "The extension a device belongs to (its number and domain, for the caller's busy lamp)."
   def caller_extension(nil, _auth_user), do: nil
 

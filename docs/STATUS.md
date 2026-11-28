@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-6 done; next task 3-7. Phase 2 done.
+**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-7 done; next task 3-8. Phase 2 done.
 **Last updated:** 2026-11-28
 
 ## Phase 1 goal
@@ -40,6 +40,21 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 3-7 Click-to-call and call control (done, 2026-11-28): `POST /v1/calls` (the `calls`
+  scope) and a Call box on My extension ring the extension's phones (showing the number), then
+  call the number from it as if the phone had dialled it (routing, admission, records and
+  `call.*` events unchanged); `GET /v1/calls/live`, `POST /v1/calls/:id/hangup` (`uuid_kill`)
+  and `/transfer` (blind, the caller's side). Targets validated before FreeSWITCH sees them.
+  2 new tests (324 in all) plus a fake FreeSWITCH test of the whole flow (the originate
+  command and its tags, the answered leg routed as 101 calling 102, listing, refusals for
+  another tenant and bad targets, transfer and hang-up commands), request tests and the
+  portal button. Lab: `lab/done-when/phase3-click.py` 12/12 with real phones through the API:
+  101 rang first showing 102, then 102 rang from 101; the live call listed; transferred to
+  103 (103 rang); hung up (nothing left live); a click to an outside number reached the test
+  carrier; one to an international number the plan does not allow rang 101, then admission
+  refused it (the carrier got nothing). Found in the lab: hanging up with a hangup message
+  waited behind the running bridge; it now uses `uuid_kill`.
 
 - 3-6 WebSocket event stream (done, 2026-11-28): `/v1/socket`, a Phoenix channel `events`
   for a tenant's API key with the read scope, the key in the handshake header (never the
@@ -485,7 +500,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 3-7 Click-to-call and call control (next).
+- 3-8 Notification service (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next

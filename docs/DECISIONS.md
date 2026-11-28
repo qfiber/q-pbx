@@ -2,6 +2,20 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-28: Click-to-call and call control (3-7)
+
+- **Click-to-call is an ordinary call from the extension:** its phones ring first (showing
+  the number), and once answered the parked leg is routed exactly as if the phone had dialled
+  the number, so admission, records, events and routing need nothing new. The leg is tagged
+  with channel variables only Q-PBX can set (no SIP request can).
+- **Hang up uses `uuid_kill`;** a hangup message waits behind the running bridge.
+- **Blind transfer moves the caller's side** (the call id's channel); the other side is
+  released. Moving the far side would need a second call process for a leg Q-PBX did not
+  route. Hold, park, recording and barge come with their features (phases 4 and 6).
+- **Only numbers reach FreeSWITCH:** targets are validated before any command is built.
+- **A click that is not answered leaves no event yet** (FreeSWITCH's failed job is logged);
+  the caller sees no call.* events for it.
+
 ## 2026-11-28: Live event stream (3-6)
 
 - **The key goes in the WebSocket handshake header** (`Sec-WebSocket-Protocol`, Phoenix's

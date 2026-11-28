@@ -25,11 +25,13 @@ defmodule QPBX.Telephony.Call do
   def init(event) do
     call = %{
       uuid: event["Unique-ID"],
-      source: source(event["variable_sip_h_X-QPBX-Source"]),
-      tenant_id: event["variable_sip_h_X-QPBX-Tenant"],
-      auth_user: event["variable_sip_h_X-QPBX-Auth-User"],
+      # Kamailio's tags on a call from outside; qpbx_* variables on a leg Q-PBX originated
+      # (click-to-call), which no SIP request can set.
+      source: source(event["variable_sip_h_X-QPBX-Source"] || event["variable_qpbx_source"]),
+      tenant_id: event["variable_sip_h_X-QPBX-Tenant"] || event["variable_qpbx_tenant"],
+      auth_user: event["variable_sip_h_X-QPBX-Auth-User"] || event["variable_qpbx_auth_user"],
       trunk_id: event["variable_sip_h_X-QPBX-Trunk"],
-      destination: event["Caller-Destination-Number"] || "",
+      destination: event["variable_qpbx_destination"] || event["Caller-Destination-Number"] || "",
       caller: event["Caller-Caller-ID-Number"],
       caller_name: event["Caller-Caller-ID-Name"]
     }
@@ -56,7 +58,8 @@ defmodule QPBX.Telephony.Call do
       direction: nil,
       ringing: false,
       rung: [],
-      answered: false
+      answered: false,
+      started_at: DateTime.utc_now()
     }
 
     {:ok, state, {:continue, :route}}
@@ -91,6 +94,24 @@ defmodule QPBX.Telephony.Call do
       :ok -> {:noreply, run(action, s)}
       {:reject, cause} -> {:noreply, run(%{op: :reject, cause: cause}, s)}
     end
+  end
+
+  @doc false
+  # Calls.summary/1: what the live-calls API shows.
+  @impl true
+  def handle_call(:summary, _from, s) do
+    summary = %{
+      call_id: s.call.uuid,
+      tenant_id: s.tenant_id,
+      direction: s.direction,
+      from: s.call.caller,
+      to: s.call.destination,
+      extension_id: s.caller_ext && s.caller_ext.id,
+      answered: s.answered,
+      started_at: s.started_at
+    }
+
+    {:reply, summary, s}
   end
 
   @impl true

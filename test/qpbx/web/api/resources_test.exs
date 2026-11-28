@@ -509,6 +509,32 @@ defmodule QPBX.Web.Api.ResourcesTest do
       assert {204, nil} = api(k, :delete, "/v1/webhooks/#{id}")
     end
 
+    test "live calls: click-to-call checks before anything rings; list, hang up and transfer need a live call",
+         %{tok: k, scope: scope} do
+      {:ok, ext} = Core.create_extension(scope, %{number: "101", name: "Dana"}, @actor)
+      calls = key(scope, ["calls"])
+
+      assert {403, %{"error" => %{"code" => "missing_scope"}}} =
+               api(k, :post, "/v1/calls", %{extension_id: ext.id, to: "102"})
+
+      assert {400, _} = api(calls, :post, "/v1/calls", %{to: "102"})
+
+      assert {422, %{"error" => %{"code" => "bad_target"}}} =
+               api(calls, :post, "/v1/calls", %{extension_id: ext.id, to: "102; reload"})
+
+      assert {422, %{"error" => %{"code" => "no_devices"}}} =
+               api(calls, :post, "/v1/calls", %{extension_id: ext.id, to: "102"})
+
+      assert {404, _} =
+               api(calls, :post, "/v1/calls", %{extension_id: Ecto.UUID.generate(), to: "102"})
+
+      assert {200, %{"data" => []}} = api(calls, :get, "/v1/calls/live")
+      assert {404, _} = api(calls, :post, "/v1/calls/#{Ecto.UUID.generate()}/hangup")
+
+      assert {404, _} =
+               api(calls, :post, "/v1/calls/#{Ecto.UUID.generate()}/transfer", %{to: "103"})
+    end
+
     test "calls: records by cursor, CSV export, daily usage", %{tok: k, t: t} do
       now = DateTime.utc_now() |> DateTime.truncate(:second)
 

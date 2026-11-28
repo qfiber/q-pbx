@@ -162,6 +162,10 @@ defmodule QPBX.Web.Router do
     delete "/office-ips/:id", FirewallController, :delete_office_ip
     get "/calls", CallController, :index
     get "/calls/export", CallController, :export
+    post "/calls", LiveCallController, :create
+    get "/calls/live", LiveCallController, :index
+    post "/calls/:id/hangup", LiveCallController, :hangup
+    post "/calls/:id/transfer", LiveCallController, :transfer
     get "/usage/daily", CallController, :usage
     get "/webhooks", WebhookController, :index
     post "/webhooks", WebhookController, :create

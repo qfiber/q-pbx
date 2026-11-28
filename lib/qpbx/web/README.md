@@ -63,7 +63,8 @@ them. A device's SIP password is shown once, after creation or reset.
   (+ `blocks`), `platform-admins`; either kind: `me`, `api-keys` (admin), `audit`,
   `numbers` (read), `number-format`; tenant `extensions` (+ `devices`, `mailbox`,
   `greetings`), `voicemails` (+ `audio-link`), `users` (admin), `routes`, `office-ips`,
-  `calls` (+ `export` CSV), `usage/daily`, `webhooks` (admin: + `rotate-secret`,
+  `calls` (+ `export` CSV; `POST /v1/calls` click-to-call, `calls/live`, `calls/:id/hangup`,
+  `calls/:id/transfer`: the `calls` scope), `usage/daily`, `webhooks` (admin: + `rotate-secret`,
   `deliveries`; `webhook-deliveries/:id`, `/resend`). Numbers are E.164 in the API (no local formats).
   A device's SIP password and a new key's token are in the creating response only; setup
   links are only emailed, never returned.
@@ -97,8 +98,8 @@ the key shown once), list by prefix with last use, revoke.
 how to check a signature) and `/app/webhooks/:id` (`WebhookLive`: change, turn off, new secret,
 remove; the delivery log with each attempt and answer, send again), tenant admins.
 
-**My extension:** `/app/me` (`:tenant_user` live session, every tenant user): the user's own
-extension's voicemail, recent calls, forwarding and DND, and devices (read only).
+**My extension:** `/app/me` (`:tenant_user` live session, every tenant user): a Call box
+(click-to-call from the user's own extension), the user's own extension's voicemail, recent calls, forwarding and DND, and devices (read only).
 
 **Voicemail audio:** `GET /app/voicemail/:id/audio` (`VoicemailController`): the decrypted
 message for a signed-in tenant admin of its tenant, or for the tenant user whose own extension

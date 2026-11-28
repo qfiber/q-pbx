@@ -20,6 +20,9 @@ defmodule QPBX.Telephony.ESL.Connection do
   @doc "Runs an API command; `{:ok, body}` or `{:error, reason}`."
   def api(command), do: call({:send, Frame.command("api " <> command)})
 
+  @doc "Starts an API command in the background (`{:ok, \"+OK Job-UUID: ...\"}`); FreeSWITCH reports its result as BACKGROUND_JOB."
+  def bgapi(command), do: call({:send, Frame.command("bgapi " <> command)})
+
   @doc "Runs a dialplan application on a channel (async); the result arrives as CHANNEL_EXECUTE_COMPLETE with Application-UUID = `event_uuid`."
   def execute(uuid, app, arg, event_uuid) do
     headers = [

@@ -79,6 +79,17 @@ defmodule QPBX.Telephony do
   @doc "Calls in progress."
   defdelegate active_calls(), to: Calls, as: :count
 
+  ## Click-to-call and live calls (tenant scope; see QPBX.Telephony.ClickToCall)
+
+  @doc "Rings the extension, then calls `to` from it: `{:ok, call_id}`."
+  defdelegate originate(scope, extension_id, to, actor), to: QPBX.Telephony.ClickToCall
+  defdelegate list_live_calls(scope), to: QPBX.Telephony.ClickToCall, as: :list
+  defdelegate hangup_call(scope, call_id, actor), to: QPBX.Telephony.ClickToCall, as: :hangup
+
+  defdelegate transfer_call(scope, call_id, to, actor),
+    to: QPBX.Telephony.ClickToCall,
+    as: :transfer
+
   @doc "The supervision tree of call control (started by the application)."
   def child_spec(_) do
     # The event socket only where FreeSWITCH runs (config `esl: true`, production).

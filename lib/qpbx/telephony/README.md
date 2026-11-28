@@ -131,6 +131,18 @@ cause, duration, billsec from the hangup event), then `missed` when it rang exte
 nobody answered (calls to carriers are never missed). A call no tenant claimed publishes
 nothing. A 302 redirect is not a transfer.
 
+**Click-to-call and live calls (`ClickToCall`, tenant scope):** `originate/4` (scope,
+extension id, target, actor; `{:ok, call_id}`): `bgapi originate` rings the extension's devices
+(30 s, showing the target) with `qpbx_*` channel variables (tenant, source device, a device
+login, destination; no SIP request can set those); answered, the leg parks and `Call` routes it
+as that device dialling the target, so admission, records and `call.*` apply; the call id is
+the leg's `origination_uuid`. Not answered: FreeSWITCH's failed BACKGROUND_JOB is logged.
+`list_live_calls/1` (`Calls.summaries/0`: each call process's summary), `hangup_call/3`
+(`uuid_kill`: a hangup message would wait behind the running bridge), `transfer_call/4`
+(`uuid_transfer <id> <target> XML public`: the caller's side is re-parked and re-routed, the
+other side released). Targets: extension numbers, E.164, feature codes, or local forms through
+the tenant's number rule; anything else is refused before FreeSWITCH sees it. Audited.
+
 **Events consumed:** `ConfigChanged`, `SipCredentialsChanged`, `TenantsChanged` (cache).
 **Emitted:** `CallState`, `CallEvent`, `LimitReached`, `FraudAlert`, `VoicemailReceived`,
 `VoicemailChanged`.
