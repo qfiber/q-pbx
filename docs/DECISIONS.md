@@ -2,6 +2,21 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-28: Portal design (3-13)
+
+- **Meow's web palette and rules** (brand teal for actions, cyan for links and icons, amber
+  scarce, every region with an edge, gradients only on night bands), as daisyUI themes, so
+  qFiber's products look like one family. Fonts IBM Plex Sans and Vazirmatn (SIL OFL, served
+  by the app; the CSP allows fonts from the app only).
+- **A grouped sidebar instead of a row of buttons:** pages grouped by what people come to do.
+  It is a plain fixed panel with a checkbox for phones, not daisyUI's drawer, which put the
+  pinned sidebar off screen in right-to-left pages.
+- **Dashboards as home pages, every card a link** to the page behind its number. The tenant
+  list moved to `/platform/tenants`. Phones online come from Kamailio's memory at render
+  time (no table of registrations; Kamailio is the source).
+- **Forms on a page are cards by a layout rule** (`.page > form`) rather than editing every
+  page, so related settings read as a group everywhere at once.
+
 ## 2026-11-28: Usage reports by email at any severity (3-12)
 
 - **Usage thresholds and the monthly summary go to a person's email even at info.** The spec

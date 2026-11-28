@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-12 done, the four done-when conditions met; next task 3-13. Phase 2 done.
+**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-13 done, the four done-when conditions met; phase 3 complete. Next: phase 4. Phase 2 done.
 **Last updated:** 2026-11-28
 
 ## Phase 1 goal
@@ -40,6 +40,19 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 3-13 Portal design pass (done, 2026-11-28): Meow's colours (light and dark), IBM Plex Sans
+  and Vazirmatn; a night sidebar with the pages grouped by task, sliding in on phones, the
+  current page marked; page headers, tables and forms as cards; a new sign-in page (night
+  panel with the hexagon and sound rings, the form in a card) for login, 2FA and setup;
+  dashboards for tenant admins, tenant users and platform admins, every card opening its page
+  (the tenant list is now `/platform/tenants`). Found and fixed: a trunk deleted while down
+  kept its "trunk down" alert open (the monitor now reports it up, "removed"). 4 new tests
+  (361 in all): the dashboards, registered devices from Kamailio's dump, the removed trunk.
+  Reviewed in screenshots from the lab (`lab/done-when/portal-shots.mjs`): sign-in, both
+  dashboards, extensions, users, my extension, plans and trunks, at desktop and phone widths,
+  light and dark, English and Arabic. Not reworked page by page: the individual pages keep
+  their content and order; they changed through the shared layout, components and form cards.
 
 - 3-12 Done-when verification (done, 2026-11-28): `lab/done-when/phase3.py` runs every phase
   3 lab check and the spec's four conditions; all met (results below). New check
@@ -570,7 +583,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 3-13 Portal design pass (next).
+- Phase 4 (next): routing, recording, basic fax, Meow and migration (the 1.0 release); its task breakdown to be written and approved first.
   (Meow end to end) waits for call control (2-5).
 
 ## Next

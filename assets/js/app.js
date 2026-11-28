@@ -97,9 +97,24 @@ const liveSocket = new LiveSocket("/live", Socket, {
 })
 
 // Show progress bar on live navigation and form submits
-topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
+// The sidebar link for the current page: the longest link the path starts with ("/app" and
+// "/platform", the home pages, only on an exact match).
+const markNav = () => {
+  const path = location.pathname
+  let best = null
+  for (const a of document.querySelectorAll("#side-nav a")) {
+    a.removeAttribute("aria-current")
+    const href = a.getAttribute("href")
+    const hit = a.hasAttribute("data-exact") ? path === href : path === href || path.startsWith(href + "/")
+    if (hit && (!best || href.length > best.getAttribute("href").length)) best = a
+  }
+  if (best) best.setAttribute("aria-current", "page")
+}
+
+topbar.config({barColors: {0: "#3cc4ea", 1: "#f5a524"}, shadowColor: "rgba(0, 0, 0, .3)"})
 window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
-window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
+window.addEventListener("phx:page-loading-stop", _info => { topbar.hide(); markNav() })
+document.addEventListener("DOMContentLoaded", markNav)
 
 // connect if there are any LiveViews on the page
 liveSocket.connect()

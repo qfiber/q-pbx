@@ -5,7 +5,7 @@ defmodule QPBX.Web.LogoTest do
 
   test "the login page shows the logo, and every page links the favicons", %{conn: conn} do
     html = conn |> get(~p"/login") |> html_response(200)
-    assert html =~ ~s(class="qpbx-logo h-20 w-auto")
+    assert html =~ ~s(class="qpbx-logo h-9 sm:h-10 w-auto")
     assert html =~ ~s(id="home-logo")
     assert html =~ ~s(href="/images/logo-mark.svg")
     assert html =~ ~s(href="/favicon.ico")

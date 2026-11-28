@@ -90,6 +90,26 @@ defmodule QPBX.Edge do
 
   ## Bans
 
+  @doc """
+  The devices registered now, as `{sip_user, domain}`, from Kamailio's memory (an empty list
+  when Kamailio does not answer). A dashboard count, not a record.
+  """
+  def registered_devices do
+    case rpc("ul.dump", ["brief"]) do
+      {:ok, %{"Domains" => domains}} ->
+        # "brief" lists %{"AoR" => ...}; the full dump wraps it in "Info".
+        for %{"Domain" => %{"AoRs" => aors}} <- domains,
+            entry <- aors,
+            aor = entry["AoR"] || get_in(entry, ["Info", "AoR"]),
+            is_binary(aor),
+            [user, domain] <- [String.split(aor, "@", parts: 2)],
+            do: {user, domain}
+
+      _ ->
+        []
+    end
+  end
+
   @doc "Active bans, newest first."
   def list_bans do
     now = DateTime.utc_now()

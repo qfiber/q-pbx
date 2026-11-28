@@ -46,7 +46,7 @@ defmodule QPBX.Web.Platform.TenantsLive do
            )
          )
          |> assign(tenants: Core.list_tenants(), setup_link: %{email: admin.email, url: url})
-         |> push_patch(to: ~p"/platform")}
+         |> push_patch(to: ~p"/platform/tenants")}
 
       {:error, step, cs} ->
         errors = Enum.map(cs.errors, fn {field, error} -> {error_key(step, field), error} end)

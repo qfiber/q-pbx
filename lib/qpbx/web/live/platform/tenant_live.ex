@@ -23,7 +23,7 @@ defmodule QPBX.Web.Platform.TenantLive do
          |> load(Core.get_tenant!(id))}
 
       :error ->
-        {:ok, push_navigate(socket, to: ~p"/platform")}
+        {:ok, push_navigate(socket, to: ~p"/platform/tenants")}
     end
   end
 
@@ -134,7 +134,7 @@ defmodule QPBX.Web.Platform.TenantLive do
         {@tenant.name}
         <:subtitle><span dir="ltr">{@tenant.sip_domain}</span></:subtitle>
         <:actions>
-          <.link navigate={~p"/platform"} class="btn btn-ghost btn-sm">
+          <.link navigate={~p"/platform/tenants"} class="btn btn-ghost btn-sm">
             {gettext("All tenants")}
           </.link>
         </:actions>

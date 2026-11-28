@@ -16,7 +16,7 @@ msgstr ""
 msgid "API requests per minute"
 msgstr ""
 
-#: lib/qpbx/web/components/core_components.ex:372
+#: lib/qpbx/web/components/core_components.ex:378
 #, elixir-autogen, elixir-format
 msgid "Actions"
 msgstr ""
@@ -26,8 +26,8 @@ msgstr ""
 msgid "Allowed destination classes"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:232
-#: lib/qpbx/web/components/layouts.ex:244
+#: lib/qpbx/web/components/layouts.ex:403
+#: lib/qpbx/web/components/layouts.ex:415
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
 msgstr ""
@@ -37,8 +37,8 @@ msgstr ""
 msgid "CRM"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:48
-#: lib/qpbx/web/controllers/auth_html.ex:82
+#: lib/qpbx/web/controllers/auth_html.ex:57
+#: lib/qpbx/web/controllers/auth_html.ex:91
 #, elixir-autogen, elixir-format
 msgid "Code"
 msgstr ""
@@ -64,7 +64,7 @@ msgstr ""
 msgid "Create tenant"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:19
+#: lib/qpbx/web/controllers/auth_html.ex:22
 #: lib/qpbx/web/live/account/alerts_live.ex:332
 #: lib/qpbx/web/live/account/alerts_live.ex:373
 #: lib/qpbx/web/live/account/notifications_live.ex:158
@@ -79,7 +79,7 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:42
+#: lib/qpbx/web/controllers/auth_html.ex:51
 #, elixir-autogen, elixir-format
 msgid "Enter the 6-digit code from your authenticator app."
 msgstr ""
@@ -112,11 +112,6 @@ msgstr ""
 msgid "Flow builder"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/home_live.ex:10
-#, elixir-autogen, elixir-format
-msgid "Home"
-msgstr ""
-
 #: lib/qpbx/web/live/platform/numbering_live.ex:242
 #: lib/qpbx/web/live/platform/plans_live.ex:205
 #: lib/qpbx/web/live/tenant/routes_live.ex:207
@@ -143,14 +138,14 @@ msgstr ""
 msgid "Local"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:12
-#: lib/qpbx/web/controllers/auth_html.ex:31
+#: lib/qpbx/web/controllers/auth_html.ex:13
+#: lib/qpbx/web/controllers/auth_html.ex:36
 #: lib/qpbx/web/controllers/session_controller.ex:51
 #, elixir-autogen, elixir-format
 msgid "Log in"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:163
+#: lib/qpbx/web/components/layouts.ex:149
 #, elixir-autogen, elixir-format
 msgid "Log out"
 msgstr ""
@@ -219,7 +214,7 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:108
+#: lib/qpbx/web/controllers/auth_html.ex:117
 #, elixir-autogen, elixir-format
 msgid "New password (at least 12 characters)"
 msgstr ""
@@ -235,12 +230,12 @@ msgstr ""
 msgid "New tenant"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:90
+#: lib/qpbx/web/controllers/auth_html.ex:99
 #, elixir-autogen, elixir-format
 msgid "Not now"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:74
+#: lib/qpbx/web/controllers/auth_html.ex:83
 #, elixir-autogen, elixir-format
 msgid "Or enter this key by hand:"
 msgstr ""
@@ -255,7 +250,7 @@ msgstr ""
 msgid "Outbound minutes per month"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:26
+#: lib/qpbx/web/controllers/auth_html.ex:30
 #: lib/qpbx/web/live/tenant/extension_live.ex:153
 #, elixir-autogen, elixir-format
 msgid "Password"
@@ -273,7 +268,7 @@ msgstr ""
 msgid "Plan %{name} created."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:50
+#: lib/qpbx/web/components/layouts.ex:286
 #: lib/qpbx/web/live/platform/plans_live.ex:12
 #: lib/qpbx/web/live/platform/plans_live.ex:68
 #: lib/qpbx/web/live/platform/tenants_live.ex:101
@@ -281,7 +276,7 @@ msgstr ""
 msgid "Plans"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:12
+#: lib/qpbx/web/controllers/auth_html.ex:13
 #, elixir-autogen, elixir-format
 msgid "Platform admin login"
 msgstr ""
@@ -308,7 +303,7 @@ msgstr ""
 msgid "Recording storage (GB)"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:115
+#: lib/qpbx/web/controllers/auth_html.ex:124
 #, elixir-autogen, elixir-format
 msgid "Repeat the password"
 msgstr ""
@@ -324,7 +319,7 @@ msgstr ""
 msgid "SIP domain name"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:120
+#: lib/qpbx/web/controllers/auth_html.ex:129
 #, elixir-autogen, elixir-format
 msgid "Save password"
 msgstr ""
@@ -334,18 +329,18 @@ msgstr ""
 msgid "Saving..."
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:68
+#: lib/qpbx/web/controllers/auth_html.ex:77
 #, elixir-autogen, elixir-format
 msgid "Scan this code with an authenticator app, then enter the 6-digit code it shows."
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:66
+#: lib/qpbx/web/controllers/auth_html.ex:75
 #: lib/qpbx/web/controllers/totp_controller.ex:79
 #, elixir-autogen, elixir-format
 msgid "Set up two-factor authentication"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:100
+#: lib/qpbx/web/controllers/auth_html.ex:109
 #: lib/qpbx/web/controllers/setup_controller.ex:57
 #, elixir-autogen, elixir-format
 msgid "Set up your account"
@@ -358,12 +353,7 @@ msgstr ""
 msgid "Setup link for %{email} (also emailed). It works once and expires in 48 hours:"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/home_live.ex:30
-#, elixir-autogen, elixir-format
-msgid "Signed in as %{name}"
-msgstr ""
-
-#: lib/qpbx/web/components/layouts.ex:239
+#: lib/qpbx/web/components/layouts.ex:410
 #, elixir-autogen, elixir-format
 msgid "Something went wrong!"
 msgstr ""
@@ -374,20 +364,19 @@ msgid "Tenant %{name} created. A setup link was emailed to %{email}."
 msgstr ""
 
 #: lib/qpbx/web/live/platform/tenant_live.ex:257
-#: lib/qpbx/web/live/tenant/home_live.ex:43
 #: lib/qpbx/web/live/tenant/users_live.ex:228
 #, elixir-autogen, elixir-format
 msgid "Tenant admin"
 msgstr ""
 
 #: lib/qpbx/web/live/platform/tenant_live.ex:258
-#: lib/qpbx/web/live/tenant/home_live.ex:44
 #: lib/qpbx/web/live/tenant/users_live.ex:228
 #, elixir-autogen, elixir-format
 msgid "Tenant user"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:48
+#: lib/qpbx/web/components/layouts.ex:285
+#: lib/qpbx/web/live/platform/dashboard_live.ex:81
 #: lib/qpbx/web/live/platform/tenants_live.ex:15
 #: lib/qpbx/web/live/platform/tenants_live.ex:76
 #, elixir-autogen, elixir-format
@@ -412,23 +401,23 @@ msgstr ""
 msgid "Time zone"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:87
+#: lib/qpbx/web/controllers/auth_html.ex:96
 #, elixir-autogen, elixir-format
 msgid "Turn on 2FA"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:41
+#: lib/qpbx/web/controllers/auth_html.ex:50
 #: lib/qpbx/web/controllers/totp_controller.ex:31
 #, elixir-autogen, elixir-format
 msgid "Two-factor authentication"
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/home_live.ex:36
+#: lib/qpbx/web/live/tenant/home_live.ex:110
 #, elixir-autogen, elixir-format
 msgid "Two-factor authentication is off."
 msgstr ""
 
-#: lib/qpbx/web/live/tenant/home_live.ex:33
+#: lib/qpbx/web/live/tenant/home_live.ex:109
 #, elixir-autogen, elixir-format
 msgid "Two-factor authentication is on."
 msgstr ""
@@ -441,12 +430,12 @@ msgstr ""
 msgid "Unlimited"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:54
+#: lib/qpbx/web/controllers/auth_html.ex:63
 #, elixir-autogen, elixir-format
 msgid "Verify"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:227
+#: lib/qpbx/web/components/layouts.ex:398
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
 msgstr ""
@@ -533,7 +522,7 @@ msgstr ""
 msgid "Expires (UTC, optional)"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:53
+#: lib/qpbx/web/components/layouts.ex:300
 #: lib/qpbx/web/live/platform/firewall_live.ex:10
 #: lib/qpbx/web/live/platform/firewall_live.ex:84
 #, elixir-autogen, elixir-format
@@ -616,11 +605,6 @@ msgstr ""
 msgid "Session ended."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:154
-#, elixir-autogen, elixir-format
-msgid "Sessions"
-msgstr ""
-
 #: lib/qpbx/web/live/account/sessions_live.ex:44
 #, elixir-autogen, elixir-format
 msgid "Sessions end after %{minutes} minutes without activity and 12 hours after login."
@@ -646,7 +630,7 @@ msgstr ""
 msgid "Signed out of %{count} other sessions."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:187
+#: lib/qpbx/web/components/layouts.ex:168
 #, elixir-autogen, elixir-format
 msgid "Stay signed in"
 msgstr ""
@@ -656,7 +640,7 @@ msgstr ""
 msgid "This browser"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:186
+#: lib/qpbx/web/components/layouts.ex:167
 #, elixir-autogen, elixir-format
 msgid "You will be signed out soon because of inactivity."
 msgstr ""
@@ -678,13 +662,13 @@ msgstr ""
 msgid "The automatic check did not pass. Please try again."
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:129
+#: lib/qpbx/web/controllers/auth_html.ex:138
 #: lib/qpbx/web/login_protection.ex:58
 #, elixir-autogen, elixir-format
 msgid "Too many attempts"
 msgstr ""
 
-#: lib/qpbx/web/controllers/auth_html.ex:131
+#: lib/qpbx/web/controllers/auth_html.ex:140
 #, elixir-autogen, elixir-format
 msgid "Too many failed attempts from your network. Try again after %{time} (UTC)."
 msgstr ""
@@ -1036,7 +1020,7 @@ msgstr ""
 msgid "Extension %{number} deleted."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:90
+#: lib/qpbx/web/components/layouts.ex:330
 #: lib/qpbx/web/live/tenant/extensions_live.ex:10
 #: lib/qpbx/web/live/tenant/extensions_live.ex:54
 #, elixir-autogen, elixir-format
@@ -1231,7 +1215,7 @@ msgstr ""
 msgid "Number (e.g. 100)"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:114
+#: lib/qpbx/web/components/layouts.ex:340
 #: lib/qpbx/web/live/tenant/number_format_live.ex:8
 #: lib/qpbx/web/live/tenant/number_format_live.ex:65
 #, elixir-autogen, elixir-format
@@ -1243,17 +1227,19 @@ msgstr ""
 msgid "Number prefixes in E.164, comma-separated (e.g. +972, +9725); empty for all"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:62
+#: lib/qpbx/web/components/layouts.ex:292
 #: lib/qpbx/web/live/platform/numbering_live.ex:14
 #: lib/qpbx/web/live/platform/numbering_live.ex:137
 #, elixir-autogen, elixir-format
 msgid "Numbering"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:59
-#: lib/qpbx/web/components/layouts.ex:105
+#: lib/qpbx/web/components/layouts.ex:291
+#: lib/qpbx/web/components/layouts.ex:338
+#: lib/qpbx/web/live/platform/dashboard_live.ex:149
 #: lib/qpbx/web/live/platform/dids_live.ex:14
 #: lib/qpbx/web/live/platform/dids_live.ex:85
+#: lib/qpbx/web/live/tenant/home_live.ex:193
 #: lib/qpbx/web/live/tenant/numbers_live.ex:15
 #: lib/qpbx/web/live/tenant/numbers_live.ex:81
 #, elixir-autogen, elixir-format
@@ -1265,7 +1251,7 @@ msgstr ""
 msgid "Numbers can be typed the local way, for example 02-123-4567."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:111
+#: lib/qpbx/web/components/layouts.ex:346
 #: lib/qpbx/web/live/tenant/office_ips_live.ex:14
 #: lib/qpbx/web/live/tenant/office_ips_live.ex:75
 #, elixir-autogen, elixir-format
@@ -1287,7 +1273,7 @@ msgstr ""
 msgid "Only tenant admins can open this page."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:108
+#: lib/qpbx/web/components/layouts.ex:339
 #: lib/qpbx/web/live/tenant/routes_live.ex:17
 #: lib/qpbx/web/live/tenant/routes_live.ex:115
 #, elixir-autogen, elixir-format
@@ -1515,7 +1501,8 @@ msgstr ""
 msgid "Trunk deleted."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:56
+#: lib/qpbx/web/components/layouts.ex:290
+#: lib/qpbx/web/live/platform/dashboard_live.ex:209
 #: lib/qpbx/web/live/platform/trunks_live.ex:8
 #: lib/qpbx/web/live/platform/trunks_live.ex:101
 #, elixir-autogen, elixir-format
@@ -1629,7 +1616,7 @@ msgstr ""
 msgid "Rate limit"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:65
+#: lib/qpbx/web/components/layouts.ex:296
 #: lib/qpbx/web/live/platform/protection_live.ex:12
 #: lib/qpbx/web/live/platform/protection_live.ex:65
 #, elixir-autogen, elixir-format
@@ -1702,7 +1689,7 @@ msgstr ""
 msgid "Blocked tenants"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:68
+#: lib/qpbx/web/components/layouts.ex:298
 #: lib/qpbx/web/live/platform/fraud_live.ex:12
 #: lib/qpbx/web/live/platform/fraud_live.ex:50
 #, elixir-autogen, elixir-format
@@ -1948,7 +1935,7 @@ msgstr ""
 msgid "Upload greeting"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:93
+#: lib/qpbx/web/components/layouts.ex:333
 #: lib/qpbx/web/live/tenant/extension_live.ex:141
 #: lib/qpbx/web/live/tenant/my_extension_live.ex:157
 #: lib/qpbx/web/live/tenant/voicemail_live.ex:9
@@ -1988,7 +1975,7 @@ msgstr ""
 msgid "Answered"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:96
+#: lib/qpbx/web/components/layouts.ex:334
 #: lib/qpbx/web/live/tenant/calls_live.ex:15
 #: lib/qpbx/web/live/tenant/calls_live.ex:68
 #: lib/qpbx/web/live/tenant/calls_live.ex:140
@@ -2054,6 +2041,8 @@ msgid "No calls found."
 msgstr ""
 
 #: lib/qpbx/web/live/tenant/calls_live.ex:136
+#: lib/qpbx/web/live/tenant/home_live.ex:207
+#: lib/qpbx/web/live/tenant/home_live.ex:270
 #: lib/qpbx/web/live/tenant/my_extension_live.ex:203
 #, elixir-autogen, elixir-format
 msgid "No calls yet."
@@ -2160,7 +2149,9 @@ msgstr ""
 msgid "Invite a user"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:85
+#: lib/qpbx/web/components/layouts.ex:321
+#: lib/qpbx/web/live/tenant/home_live.ex:239
+#: lib/qpbx/web/live/tenant/home_live.ex:266
 #: lib/qpbx/web/live/tenant/my_extension_live.ex:15
 #: lib/qpbx/web/live/tenant/my_extension_live.ex:139
 #, elixir-autogen, elixir-format
@@ -2211,8 +2202,9 @@ msgstr ""
 msgid "The company needs at least one tenant admin."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:99
+#: lib/qpbx/web/components/layouts.ex:332
 #: lib/qpbx/web/live/platform/tenant_live.ex:204
+#: lib/qpbx/web/live/tenant/home_live.ex:185
 #: lib/qpbx/web/live/tenant/users_live.ex:14
 #: lib/qpbx/web/live/tenant/users_live.ex:142
 #, elixir-autogen, elixir-format
@@ -2256,8 +2248,8 @@ msgstr ""
 msgid "All tenants"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:74
-#: lib/qpbx/web/components/layouts.ex:102
+#: lib/qpbx/web/components/layouts.ex:305
+#: lib/qpbx/web/components/layouts.ex:347
 #: lib/qpbx/web/live/platform/audit_live.ex:13
 #: lib/qpbx/web/live/platform/audit_live.ex:54
 #: lib/qpbx/web/live/tenant/audit_live.ex:14
@@ -2309,11 +2301,12 @@ msgid "Nothing recorded yet."
 msgstr ""
 
 #: lib/qpbx/web/components/audit_table.ex:37
+#: lib/qpbx/web/controllers/auth_html.ex:10
 #, elixir-autogen, elixir-format
 msgid "Platform admin"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:71
+#: lib/qpbx/web/components/layouts.ex:309
 #: lib/qpbx/web/live/platform/admins_live.ex:13
 #: lib/qpbx/web/live/platform/admins_live.ex:75
 #, elixir-autogen, elixir-format
@@ -2381,6 +2374,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: lib/qpbx/web/api/controllers/spec_controller.ex:12
+#: lib/qpbx/web/components/layouts.ex:353
 #: lib/qpbx/web/live/account/api_keys_live.ex:94
 #, elixir-autogen, elixir-format
 msgid "API explorer"
@@ -2392,8 +2386,8 @@ msgstr ""
 msgid "API key"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:80
-#: lib/qpbx/web/components/layouts.ex:123
+#: lib/qpbx/web/components/layouts.ex:310
+#: lib/qpbx/web/components/layouts.ex:352
 #: lib/qpbx/web/live/account/api_keys_live.ex:15
 #: lib/qpbx/web/live/account/api_keys_live.ex:89
 #, elixir-autogen, elixir-format
@@ -2694,7 +2688,7 @@ msgstr ""
 msgid "Webhook removed."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:120
+#: lib/qpbx/web/components/layouts.ex:351
 #: lib/qpbx/web/live/tenant/webhooks_live.ex:14
 #: lib/qpbx/web/live/tenant/webhooks_live.ex:69
 #, elixir-autogen, elixir-format
@@ -2788,10 +2782,11 @@ msgstr ""
 msgid "Alertmanager"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:77
-#: lib/qpbx/web/components/layouts.ex:117
+#: lib/qpbx/web/components/layouts.ex:304
+#: lib/qpbx/web/components/layouts.ex:345
 #: lib/qpbx/web/live/account/alerts_live.ex:21
 #: lib/qpbx/web/live/account/alerts_live.ex:208
+#: lib/qpbx/web/live/platform/dashboard_live.ex:161
 #, elixir-autogen, elixir-format
 msgid "Alerts"
 msgstr ""
@@ -2918,7 +2913,9 @@ msgstr ""
 msgid "No notifications."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:143
+#: lib/qpbx/web/components/layouts.ex:82
+#: lib/qpbx/web/components/layouts.ex:311
+#: lib/qpbx/web/components/layouts.ex:322
 #: lib/qpbx/web/live/account/notifications_live.ex:13
 #: lib/qpbx/web/live/account/notifications_live.ex:116
 #, elixir-autogen, elixir-format
@@ -2990,6 +2987,8 @@ msgstr ""
 msgid "Resolved."
 msgstr ""
 
+#: lib/qpbx/web/components/layouts.ex:294
+#: lib/qpbx/web/components/layouts.ex:343
 #: lib/qpbx/web/live/account/notifications_live.ex:85
 #, elixir-autogen, elixir-format
 msgid "Security"
@@ -3090,4 +3089,347 @@ msgstr ""
 #: lib/qpbx/web/api/controllers/spec_html.ex:17
 #, elixir-autogen, elixir-format
 msgid "File"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/home_live.ex:133
+#, elixir-autogen, elixir-format
+msgid "%{n} answered"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:152
+#, elixir-autogen, elixir-format
+msgid "%{n} assigned to tenants"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:74
+#, elixir-autogen, elixir-format
+msgid "%{n} components checked"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:131
+#: lib/qpbx/web/live/tenant/home_live.ex:169
+#, elixir-autogen, elixir-format
+msgid "%{n} critical"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:117
+#, elixir-autogen, elixir-format
+msgid "%{n} down"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/home_live.ex:157
+#, elixir-autogen, elixir-format
+msgid "%{n} extensions"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:84
+#, elixir-autogen, elixir-format
+msgid "%{n} plans"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:307
+#, elixir-autogen, elixir-format
+msgid "Administration"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:176
+#: lib/qpbx/web/live/tenant/home_live.ex:214
+#, elixir-autogen, elixir-format
+msgid "All alerts"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/home_live.ex:203
+#, elixir-autogen, elixir-format
+msgid "All calls"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:185
+#: lib/qpbx/web/live/tenant/home_live.ex:226
+#, elixir-autogen, elixir-format
+msgid "All clear: no open alerts."
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:208
+#, elixir-autogen, elixir-format
+msgid "Background jobs"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:207
+#, elixir-autogen, elixir-format
+msgid "Backups"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:139
+#, elixir-autogen, elixir-format
+msgid "Blocked addresses"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/home_live.ex:130
+#, elixir-autogen, elixir-format
+msgid "Calls today"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:241
+#, elixir-autogen, elixir-format
+msgid "Calls, voicemail and numbers for your whole team. Every change is live on the next call."
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:206
+#, elixir-autogen, elixir-format
+msgid "Certificates"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:102
+#, elixir-autogen, elixir-format
+msgid "Close the menu"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:159
+#, elixir-autogen, elixir-format
+msgid "Components"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:283
+#, elixir-autogen, elixir-format
+msgid "Customers"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:282
+#: lib/qpbx/web/components/layouts.ex:320
+#: lib/qpbx/web/live/platform/dashboard_live.ex:17
+#: lib/qpbx/web/live/tenant/home_live.ex:18
+#, elixir-autogen, elixir-format
+msgid "Dashboard"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:199
+#, elixir-autogen, elixir-format
+msgid "Degraded"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:205
+#, elixir-autogen, elixir-format
+msgid "Disk space"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:200
+#, elixir-autogen, elixir-format
+msgid "Down"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:255
+#, elixir-autogen, elixir-format
+msgid "English and Arabic"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:60
+#, elixir-autogen, elixir-format
+msgid "Everything running on this server, at a glance."
+msgstr ""
+
+#: lib/qpbx/web/controllers/auth_html.ex:40
+#, elixir-autogen, elixir-format
+msgid "Forgot your password? Ask your administrator for a new setup link."
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:198
+#, elixir-autogen, elixir-format
+msgid "Healthy"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/home_live.ex:90
+#, elixir-autogen, elixir-format
+msgid "Hello, %{name}"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:247
+#, elixir-autogen, elixir-format
+msgid "Instant changes"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:349
+#, elixir-autogen, elixir-format
+msgid "Integrations"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/home_live.ex:201
+#, elixir-autogen, elixir-format
+msgid "Latest calls"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:91
+#: lib/qpbx/web/live/tenant/home_live.ex:120
+#, elixir-autogen, elixir-format
+msgid "Live calls"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:115
+#, elixir-autogen, elixir-format
+msgid "Main"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:318
+#, elixir-autogen, elixir-format
+msgid "Me"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:69
+#, elixir-autogen, elixir-format
+msgid "Menu"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:302
+#, elixir-autogen, elixir-format
+msgid "Monitoring"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/home_live.ex:264
+#, elixir-autogen, elixir-format
+msgid "My latest calls"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/home_live.ex:177
+#: lib/qpbx/web/live/tenant/home_live.ex:249
+#, elixir-autogen, elixir-format
+msgid "New voicemail"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:126
+#: lib/qpbx/web/live/platform/dashboard_live.ex:174
+#: lib/qpbx/web/live/tenant/home_live.ex:164
+#: lib/qpbx/web/live/tenant/home_live.ex:212
+#, elixir-autogen, elixir-format
+msgid "Open alerts"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/home_live.ex:140
+#, elixir-autogen, elixir-format
+msgid "Outbound minutes this month"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:281
+#, elixir-autogen, elixir-format
+msgid "Overview"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:101
+#: lib/qpbx/web/live/tenant/home_live.ex:154
+#, elixir-autogen, elixir-format
+msgid "Phones online"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:59
+#, elixir-autogen, elixir-format
+msgid "Platform overview"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:336
+#, elixir-autogen, elixir-format
+msgid "Routing"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:237
+#, elixir-autogen, elixir-format
+msgid "Run the whole platform from one place."
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:142
+#, elixir-autogen, elixir-format
+msgid "SIP bans in force"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:250
+#, elixir-autogen, elixir-format
+msgid "Secure by default"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:70
+#, elixir-autogen, elixir-format
+msgid "Server health"
+msgstr ""
+
+#: lib/qpbx/web/controllers/auth_html.ex:15
+#, elixir-autogen, elixir-format
+msgid "Sign in with your email and password."
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:145
+#, elixir-autogen, elixir-format
+msgid "Sign-in and sessions"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:328
+#, elixir-autogen, elixir-format
+msgid "Team"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:288
+#, elixir-autogen, elixir-format
+msgid "Telephony"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:169
+#, elixir-autogen, elixir-format
+msgid "The first check has not run yet."
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:111
+#, elixir-autogen, elixir-format
+msgid "Trunks up"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/home_live.ex:257
+#, elixir-autogen, elixir-format
+msgid "Unread notifications"
+msgstr ""
+
+#: lib/qpbx/web/controllers/auth_html.ex:10
+#, elixir-autogen, elixir-format
+msgid "Welcome back"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:238
+#, elixir-autogen, elixir-format
+msgid "Your phone system, wherever you are."
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:118
+#, elixir-autogen, elixir-format
+msgid "all carriers answering"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/home_live.ex:147
+#, elixir-autogen, elixir-format
+msgid "no monthly cap"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:116
+#, elixir-autogen, elixir-format
+msgid "no trunks yet"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:132
+#: lib/qpbx/web/live/tenant/home_live.ex:170
+#, elixir-autogen, elixir-format
+msgid "nothing critical"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/home_live.ex:144
+#, elixir-autogen, elixir-format
+msgid "of %{n}"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:104
+#, elixir-autogen, elixir-format
+msgid "registered now"
+msgstr ""
+
+#: lib/qpbx/web/live/tenant/home_live.ex:123
+#, elixir-autogen, elixir-format
+msgid "right now"
+msgstr ""
+
+#: lib/qpbx/web/live/platform/dashboard_live.ex:94
+#, elixir-autogen, elixir-format
+msgid "right now, all tenants"
 msgstr ""

@@ -19,7 +19,7 @@ config reports `not_configured` and does not count.
 
 **Portal routes:** `/login`, `/platform/login`, `/2fa`, `/2fa/setup`, `/2fa/skip`,
 `/setup/:token`, `/locale/:locale`, `/logout`; platform LiveViews under `/platform`
-(tenants, new tenant, `/platform/tenants/:id` (edit, limit overrides, users with new setup
+(`/platform` the dashboard, `/platform/tenants` the list, new tenant, `/platform/tenants/:id` (edit, limit overrides, users with new setup
 link and sign out everywhere, another tenant admin), `/platform/admins`, `/platform/audit`,
 plans and `/platform/plans/:id` to edit one, firewall, trunks, numbers, numbering, protection, fraud); tenant LiveViews under
 `/app`. The tenant configuration pages (`/app/extensions`, `/app/extensions/:id`,
@@ -136,6 +136,26 @@ to `QPBX.Edge.registration_report/1` (204, or 422 for an unknown extension).
 **FreeSWITCH:** `POST /internal/freeswitch/dialplan` (`FreeswitchController`): loopback only
 (a request through nginx carries the client's address) and HTTP basic auth with FreeSWITCH's
 password; answers `QPBX.Telephony.dialplan_xml/1`. nginx returns 404 for `/internal/`.
+
+**Design:** colours from Meow's web palette as daisyUI themes in `assets/css/app.css` (light
+and dark; brand teal for actions, cyan for links and icons, amber for the one call to action),
+plus the roles daisyUI has no name for (`night`, `hairline`, `muted`, pale icon tiles) as
+Tailwind colours. Fonts: IBM Plex Sans, Vazirmatn for Arabic (`priv/static/fonts`, SIL OFL).
+`Layouts.app`: a night sidebar with the pages grouped by task (platform: overview, customers,
+telephony, security, monitoring, administration; tenant: me, team, routing, security,
+integrations), fixed on the reading-start side and sliding in on phones (a checkbox, no
+script); `app.js` marks the current page. Every form placed directly on a page is drawn as a
+card (`.page > form`). `Layouts.auth`: the sign-in pages, a night panel beside the form card.
+Without an account `Layouts.app` is a plain page (the alert acknowledge page).
+`lab/done-when/portal-shots.mjs` takes review screenshots (desktop and phone, light and dark,
+English and Arabic).
+
+**Dashboards:** `/app` (`Tenant.HomeLive`) and `/platform` (`Platform.DashboardLive`), cards
+from `QPBX.Web.Dashboard` that each open their page, refreshed every 15 seconds. Tenant admins:
+live calls, calls today, outbound minutes this month against the cap, phones online, open
+alerts, new voicemail, users, numbers, the latest calls and open alerts; a tenant user: their
+extension, voicemail and unread notifications. Platform: server health with each component,
+tenants, live calls, phones online, trunks up, open alerts, SIP bans, numbers.
 
 **Logo:** `priv/static/images/logo.svg` (source, brand teal `#174355`), `logo-dark.svg` (for
 dark backgrounds, used by the README), `logo-mark.svg` (the hexagon alone: the SVG favicon;

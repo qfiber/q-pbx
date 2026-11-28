@@ -118,6 +118,7 @@ uses two roles (`qpbx_owner` for migrations, `qpbx` for the app); development us
 | `lab/done-when/phase2-calls.py <vm-ip>` | 2-5 lab check: real calls (extensions, features, outbound, failover, inbound, fallback) |
 | `lab/done-when/phase2-protect.py <vm-ip>` | 2-4 lab check: floods, scanners, failed logins, rate limits, office IPs |
 | `lab/done-when/phase2-edge.py <vm-ip> <host-ip>` | 2-3 lab check: Kamailio edge with simulated carriers on this host |
+| `node lab/done-when/portal-shots.mjs <vm-ip>` | Portal screenshots for design review (desktop and phone, light and dark, English and Arabic) into `~/.local/share/qpbx-lab/work/shots` |
 | `lab/tools/sip_register.py <ip> <user> <domain> <password>` | Test a SIP registration against the lab |
 | `cd ansible && ansible-lint` | Lint the playbook and roles |
 | `scripts/check_module_docs.sh <base>` | Fails if an area's public API module changed without its `README.md` |

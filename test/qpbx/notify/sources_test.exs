@@ -239,7 +239,13 @@ defmodule QPBX.Notify.SourcesTest do
       assert_receive {:event, %TrunkStatusChanged{trunk_id: "tr1", up: false} = e}
       s = s |> TrunkMonitor.round_with(up) |> TrunkMonitor.round_with(up)
       assert_receive {:event, %TrunkStatusChanged{trunk_id: "tr1", up: true} = back}
-      _ = s
+
+      # Down, then deleted: the alert ends with the trunk.
+      s = s |> TrunkMonitor.round_with(down) |> TrunkMonitor.round_with(down)
+      assert_receive {:event, %TrunkStatusChanged{trunk_id: "tr1", up: false}}
+      s = TrunkMonitor.round_with(s, %{})
+      assert_receive {:event, %TrunkStatusChanged{trunk_id: "tr1", up: true, reason: "removed"}}
+      assert s.told == %{}
 
       run(e)
       assert %{kind: "trunk_down", tenant_id: nil, state: "open"} = alert("trunk:tr1")

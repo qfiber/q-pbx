@@ -44,6 +44,34 @@ defmodule QPBX.EdgeTest do
     assert_received {:rpc, "dispatcher.reload", []}
   end
 
+  test "registered devices come from Kamailio's location table (brief and full dumps)" do
+    Req.Test.stub(__MODULE__, fn conn ->
+      Req.Test.json(conn, %{
+        "jsonrpc" => "2.0",
+        "id" => 1,
+        "result" => %{
+          "Domains" => [
+            %{
+              "Domain" => %{
+                "Domain" => "location",
+                "AoRs" => [
+                  %{"AoR" => "101-desk@acme.pbx.test"},
+                  %{"Info" => %{"AoR" => "102-meow@other.pbx.test"}}
+                ]
+              }
+            }
+          ]
+        }
+      })
+    end)
+
+    assert QPBX.Edge.registered_devices() ==
+             [{"101-desk", "acme.pbx.test"}, {"102-meow", "other.pbx.test"}]
+
+    Req.Test.stub(__MODULE__, &Plug.Conn.send_resp(&1, 500, ""))
+    assert QPBX.Edge.registered_devices() == []
+  end
+
   test "an error answer is reported" do
     Req.Test.stub(
       __MODULE__,

@@ -51,6 +51,11 @@ automatic firewall block; audited); `rpc/2` (any Kamailio JSON-RPC method), `rel
 (settings), `FirewallChanged` (allow
 lists). Every minute: allow lists (entries expire) and registrations (a restarted Kamailio
 has none). `CallState` (busy lamps), `ConfigChanged` "extensions" and `VoicemailChanged` (voicemail lights).
+**Registered devices:** `registered_devices/0`: `{sip_user, domain}` for every contact in
+Kamailio's location table (`ul.dump brief`; `[]` when Kamailio does not answer), for the
+dashboards. A trunk the monitor reported down that is deleted or disabled is reported up
+("removed"), so its alert ends with it.
+
 **Events emitted:** `EdgeAlert`, `EdgeBanned` (every new ban: ip, port, reason; `domain` for
 failed logins, from Kamailio's reason "auth failures <domain>"), `ExtensionRegistration`,
 `TrunkStatusChanged`.

@@ -221,7 +221,8 @@ defmodule QPBX.Web.Router do
     pipe_through [:browser, :require_platform_admin]
 
     live_session :platform_admin, on_mount: {QPBX.Web.Auth, :platform_admin} do
-      live "/", TenantsLive, :index
+      live "/", DashboardLive, :index
+      live "/tenants", TenantsLive, :index
       live "/tenants/new", TenantsLive, :new
       live "/tenants/:id", TenantLive, :show
       live "/admins", AdminsLive, :index

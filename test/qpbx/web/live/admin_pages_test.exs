@@ -29,7 +29,7 @@ defmodule QPBX.Web.AdminPagesTest do
       user = user_fixture(t, "tenant_user")
       {_token, _session} = Core.create_session(user)
 
-      {:ok, view, _} = live(conn, ~p"/platform")
+      {:ok, view, _} = live(conn, ~p"/platform/tenants")
       view |> element("#tenant-#{t.id}") |> render_click()
       {:ok, view, html} = live(conn, ~p"/platform/tenants/#{t.id}")
       assert html =~ user.email

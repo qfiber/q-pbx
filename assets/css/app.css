@@ -17,79 +17,147 @@
   themes: false;
 }
 
-/* daisyUI theme plugin. You can update this file by fetching the latest version with:
-  curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui-theme.js
-  We ship with two themes, a light one inspired on Phoenix colors and a dark one inspired
-  on Elixir colors. Build your own at: https://daisyui.com/theme-generator/ */
-@plugin "../vendor/daisyui-theme" {
-  name: "dark";
-  default: false;
-  prefersdark: true;
-  color-scheme: "dark";
-  --color-base-100: oklch(30.33% 0.016 252.42);
-  --color-base-200: oklch(25.26% 0.014 253.1);
-  --color-base-300: oklch(20.15% 0.012 254.09);
-  --color-base-content: oklch(97.807% 0.029 256.847);
-  --color-primary: oklch(58% 0.233 277.117);
-  --color-primary-content: oklch(96% 0.018 272.314);
-  --color-secondary: oklch(58% 0.233 277.117);
-  --color-secondary-content: oklch(96% 0.018 272.314);
-  --color-accent: oklch(60% 0.25 292.717);
-  --color-accent-content: oklch(96% 0.016 293.756);
-  --color-neutral: oklch(37% 0.044 257.287);
-  --color-neutral-content: oklch(98% 0.003 247.858);
-  --color-info: oklch(58% 0.158 241.966);
-  --color-info-content: oklch(97% 0.013 236.62);
-  --color-success: oklch(60% 0.118 184.704);
-  --color-success-content: oklch(98% 0.014 180.72);
-  --color-warning: oklch(66% 0.179 58.318);
-  --color-warning-content: oklch(98% 0.022 95.277);
-  --color-error: oklch(58% 0.253 17.585);
-  --color-error-content: oklch(96% 0.015 12.422);
-  --radius-selector: 0.25rem;
-  --radius-field: 0.25rem;
-  --radius-box: 0.5rem;
-  --size-selector: 0.21875rem;
-  --size-field: 0.21875rem;
-  --border: 1.5px;
-  --depth: 1;
-  --noise: 0;
-}
-
+/* Colours: Meow's web palette (the same brand teal, accent cyan and amber, AA-checked), as
+   daisyUI themes. Brand teal is for actions and selection, cyan for links and icons, amber
+   for the one call to action in view. */
 @plugin "../vendor/daisyui-theme" {
   name: "light";
   default: true;
   prefersdark: false;
   color-scheme: "light";
-  --color-base-100: oklch(98% 0 0);
-  --color-base-200: oklch(96% 0.001 286.375);
-  --color-base-300: oklch(92% 0.004 286.32);
-  --color-base-content: oklch(21% 0.006 285.885);
-  --color-primary: oklch(70% 0.213 47.604);
-  --color-primary-content: oklch(98% 0.016 73.684);
-  --color-secondary: oklch(55% 0.027 264.364);
-  --color-secondary-content: oklch(98% 0.002 247.839);
-  --color-accent: oklch(0% 0 0);
-  --color-accent-content: oklch(100% 0 0);
-  --color-neutral: oklch(44% 0.017 285.786);
-  --color-neutral-content: oklch(98% 0 0);
-  --color-info: oklch(62% 0.214 259.815);
-  --color-info-content: oklch(97% 0.014 254.604);
-  --color-success: oklch(70% 0.14 182.503);
-  --color-success-content: oklch(98% 0.014 180.72);
-  --color-warning: oklch(66% 0.179 58.318);
-  --color-warning-content: oklch(98% 0.022 95.277);
-  --color-error: oklch(58% 0.253 17.585);
-  --color-error-content: oklch(96% 0.015 12.422);
-  --radius-selector: 0.25rem;
-  --radius-field: 0.25rem;
-  --radius-box: 0.5rem;
-  --size-selector: 0.21875rem;
-  --size-field: 0.21875rem;
-  --border: 1.5px;
+  --color-base-100: #ffffff;
+  --color-base-200: #eef2f5;
+  --color-base-300: #dde4ea;
+  --color-base-content: #0e1a21;
+  --color-primary: #174355;
+  --color-primary-content: #ffffff;
+  --color-secondary: #066c8d;
+  --color-secondary-content: #ffffff;
+  --color-accent: #f5a524;
+  --color-accent-content: #0e1a21;
+  --color-neutral: #0c2733;
+  --color-neutral-content: #f2f7fa;
+  --color-info: #066c8d;
+  --color-info-content: #ffffff;
+  --color-success: #18674d;
+  --color-success-content: #ffffff;
+  --color-warning: #f5a524;
+  --color-warning-content: #0e1a21;
+  --color-error: #a92d37;
+  --color-error-content: #ffffff;
+  --radius-selector: 6px;
+  --radius-field: 8px;
+  --radius-box: 12px;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
   --depth: 1;
   --noise: 0;
 }
+
+@plugin "../vendor/daisyui-theme" {
+  name: "dark";
+  default: false;
+  prefersdark: true;
+  color-scheme: "dark";
+  --color-base-100: #1e2427;
+  --color-base-200: #171c1e;
+  --color-base-300: #2b3336;
+  --color-base-content: #d3dbdf;
+  --color-primary: #5cc2eb;
+  --color-primary-content: #0a1c24;
+  --color-secondary: #5cc8ee;
+  --color-secondary-content: #0a1c24;
+  --color-accent: #f5a524;
+  --color-accent-content: #0e1a21;
+  --color-neutral: #0a1c24;
+  --color-neutral-content: #f2f7fa;
+  --color-info: #5cc8ee;
+  --color-info-content: #0a1c24;
+  --color-success: #61d1ac;
+  --color-success-content: #0a1c24;
+  --color-warning: #f7bc45;
+  --color-warning-content: #0e1a21;
+  --color-error: #ee969d;
+  --color-error-content: #1e2427;
+  --radius-selector: 6px;
+  --radius-field: 8px;
+  --radius-box: 12px;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+/* The roles daisyUI has no name for (Meow's tokens): night bands, pale icon tiles, hairlines,
+   muted ink. Light values here, dark ones below. */
+:root {
+  --q-night: #0c2733;
+  --q-night-2: #174355;
+  --q-on-night: #f2f7fa;
+  --q-on-night-muted: #a7c1cd;
+  --q-accent-bright: #3cc4ea;
+  --q-hairline: #c3cfd8;
+  --q-muted: #526370;
+  --q-brand-pale: #dcebf1;
+  --q-accent-pale: #e0f4fa;
+  --q-warm-pale: #fef3de;
+  --q-warm-ink: #8a5300;
+  --q-ok-pale: #dff1ea;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme=light]) {
+    --q-night: #0a1c24;
+    --q-night-2: #12303c;
+    --q-hairline: #364044;
+    --q-muted: #9eadb3;
+    --q-brand-pale: #1e3c48;
+    --q-accent-pale: #173a47;
+    --q-warm-pale: #3a2c12;
+    --q-warm-ink: #f7bc45;
+    --q-ok-pale: #17352c;
+  }
+}
+:root[data-theme=dark] {
+  --q-night: #0a1c24;
+  --q-night-2: #12303c;
+  --q-hairline: #364044;
+  --q-muted: #9eadb3;
+  --q-brand-pale: #1e3c48;
+  --q-accent-pale: #173a47;
+  --q-warm-pale: #3a2c12;
+  --q-warm-ink: #f7bc45;
+  --q-ok-pale: #17352c;
+}
+
+@theme inline {
+  --color-night: var(--q-night);
+  --color-night-2: var(--q-night-2);
+  --color-on-night: var(--q-on-night);
+  --color-on-night-muted: var(--q-on-night-muted);
+  --color-accent-bright: var(--q-accent-bright);
+  --color-hairline: var(--q-hairline);
+  --color-muted: var(--q-muted);
+  --color-brand-pale: var(--q-brand-pale);
+  --color-accent-pale: var(--q-accent-pale);
+  --color-warm-pale: var(--q-warm-pale);
+  --color-warm-ink: var(--q-warm-ink);
+  --color-ok-pale: var(--q-ok-pale);
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --shadow-card: 0 1px 2px rgba(14, 26, 33, 0.06), 0 10px 30px -12px rgba(14, 26, 33, 0.22);
+  --shadow-card-hover: 0 2px 4px rgba(14, 26, 33, 0.08), 0 18px 40px -14px rgba(14, 26, 33, 0.3);
+  --shadow-float: 0 20px 50px -12px rgba(12, 39, 51, 0.45);
+}
+
+/* IBM Plex Sans and Vazirmatn (Arabic), SIL Open Font License (priv/static/fonts/OFL-*.txt). */
+@font-face { font-family: "IBM Plex Sans"; font-weight: 400; font-display: swap; src: url("/fonts/ibm-plex-sans-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Sans"; font-weight: 600; font-display: swap; src: url("/fonts/ibm-plex-sans-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Sans"; font-weight: 700; font-display: swap; src: url("/fonts/ibm-plex-sans-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Vazirmatn"; font-weight: 400; font-display: swap; src: url("/fonts/vazirmatn-arabic-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Vazirmatn"; font-weight: 600; font-display: swap; src: url("/fonts/vazirmatn-arabic-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Vazirmatn"; font-weight: 700; font-display: swap; src: url("/fonts/vazirmatn-arabic-700-normal.woff2") format("woff2"); }
+:root:lang(ar) { font-family: "Vazirmatn", "IBM Plex Sans", system-ui, sans-serif; }
 
 /* Add variants based on LiveView classes */
 @custom-variant phx-click-loading (.phx-click-loading&, .phx-click-loading &);
@@ -100,12 +168,50 @@
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 /* The logo: the brand's dark teal on light themes, a light teal on dark ones (an explicit
-   dark theme, or the system's when no theme is chosen). */
+   dark theme, or the system's when no theme is chosen); always light on a night band. */
 .qpbx-logo { color: #174355; }
-[data-theme=dark] .qpbx-logo { color: #8cc8d8; }
+[data-theme=dark] .qpbx-logo, .on-night .qpbx-logo { color: #8cc8d8; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) .qpbx-logo { color: #8cc8d8; }
 }
+
+/* Sidebar: the night band, links with an edge when current (set by app.js from the path). */
+.side-link {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.5rem 0.75rem; border-radius: 8px;
+  color: var(--q-on-night-muted); font-size: 0.925rem;
+  transition: background-color 120ms, color 120ms;
+}
+.side-link:hover { background: rgb(255 255 255 / 6%); color: var(--q-on-night); }
+.side-link[aria-current=page] {
+  background: rgb(60 196 234 / 14%); color: #ffffff;
+  box-shadow: inset 3px 0 0 var(--q-accent-bright);
+}
+[dir=rtl] .side-link[aria-current=page] { box-shadow: inset -3px 0 0 var(--q-accent-bright); }
+.side-link .side-icon { width: 1.15rem; height: 1.15rem; opacity: 0.9; }
+
+/* Pages: each form directly on a page is a card, so related settings read as one group;
+   section headings get room above them. */
+.page > form, .page > section > form {
+  background: var(--color-base-100);
+  border: 1px solid var(--q-hairline);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 2px rgba(14, 26, 33, 0.06), 0 10px 30px -12px rgba(14, 26, 33, 0.22);
+}
+@media (min-width: 640px) { .page > form, .page > section > form { padding: 1.5rem; } }
+.page > h2 { margin-top: 2rem; font-size: 1.125rem; font-weight: 600; }
+
+/* Sign-in: a night panel with sound rings around the hexagon; the rings breathe slowly. */
+.ring { fill: none; stroke: var(--q-accent-bright); transform-origin: center; transform-box: fill-box; }
+.ring-1 { stroke-width: 1.2; opacity: 0.55; animation: ring-pulse 6s ease-out infinite; }
+.ring-2 { stroke-width: 1; opacity: 0.4; animation: ring-pulse 6s ease-out 2s infinite; }
+.ring-3 { stroke-width: 0.8; opacity: 0.3; animation: ring-pulse 6s ease-out 4s infinite; }
+.orbit { fill: none; stroke: #f5a524; stroke-width: 1.5; stroke-dasharray: 2 14; stroke-linecap: round;
+  animation: orbit 30s linear infinite; transform-origin: center; transform-box: fill-box; opacity: 0.7; }
+@keyframes ring-pulse { 0% { transform: scale(0.6); opacity: 0; } 20% { opacity: 0.6; } 100% { transform: scale(1.25); opacity: 0; } }
+@keyframes orbit { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ring, .orbit { animation: none; } }
 
 /* Make LiveView wrapper divs transparent for layout */
 [data-phx-session], [data-phx-teleported-src] { display: contents }

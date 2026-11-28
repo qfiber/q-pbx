@@ -50,6 +50,36 @@ defmodule QPBX.Edge.TrunkMonitor do
 
   @doc false
   def round_with(s, now_view) do
+    s |> forget_removed(now_view) |> judge(now_view)
+  end
+
+  # A trunk told down that is gone (deleted or disabled): its alert ends with it.
+  # shortcut: a trunk deleted while the app was stopped keeps its open alert; resolve it by hand.
+  defp forget_removed(s, now_view) do
+    gone = for {id, false} <- s.told, not Map.has_key?(now_view, id), do: id
+
+    for id <- gone do
+      t = s.view[id] || %{name: nil, tenant_id: nil}
+
+      Events.publish(%TrunkStatusChanged{
+        trunk_id: id,
+        tenant_id: t.tenant_id,
+        name: t.name,
+        up: true,
+        reason: "removed",
+        at: DateTime.utc_now()
+      })
+    end
+
+    %{
+      s
+      | told: Map.drop(s.told, gone),
+        seen: Map.drop(s.seen, gone),
+        streak: Map.drop(s.streak, gone)
+    }
+  end
+
+  defp judge(s, now_view) do
     Enum.reduce(now_view, %{s | view: now_view}, fn {id, t}, acc ->
       streak = if acc.seen[id] == t.up, do: (acc.streak[id] || 1) + 1, else: 1
       acc = %{acc | seen: Map.put(acc.seen, id, t.up), streak: Map.put(acc.streak, id, streak)}
