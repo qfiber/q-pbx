@@ -50,7 +50,11 @@ oldest first, inside a transaction), `usage_daily/2`, `cdr_directions/0`; voicem
 `list_voicemails/2` (`{message, extension_id}`), `voicemail_audio/3`, `save_voicemail/4`,
 `delete_voicemail/4` (a last `ext_id` limits each to one extension's mailbox: a tenant user's own), `greetings/2`, `greeting_kinds/0`, `put_greeting/5` (MP3 or WAV by
 content, up to 5 MB), `delete_greeting/4`; `voicemail_counts/1` (`%{extension_id => {new,
-saved}}`, for the voicemail lights);
+saved}}`, for the voicemail lights); the prompt library (`Prompts`, `Prompt`):
+`list_prompts/1`, `upload_prompt/4` (WAV or MP3 as uploaded, up to 5 MB, encrypted, names
+unique per tenant), `delete_prompt/3`, `prompt_audio/2`, `system_prompts/0` (a curated list of
+the installed English prompts, by path; the full set also holds joke prompts, so only these
+are offered), `system_prompt?/1`;
 `child_spec/1` (started by the application; the event socket only with `config :qpbx,
 QPBX.Telephony, esl: true`, i.e. production).
 
@@ -85,6 +89,12 @@ when a carrier call's bridge ends; day and month in the tenant's time zone.
 `FraudAlert` (audited, once per hour per rule) and, as the settings say, blocks the tenant's
 international and premium calls for `block_hours` (`fraud_blocks`). Lifting a block also
 clears the attempts that caused it. Settings and blocks: Platform > Fraud protection.
+
+**Destinations (`Destinations`):** `route/5` sends a call to a `QPBX.Core.Destination`
+(extension: rung with its forwarding and voicemail; voicemail: its mailbox; external: out
+showing the called number; hangup: refused normally); numbers (DIDs) and calls to the
+tenant's own numbers go through it. Numbers reach it as `%Did{}` structs from the cache:
+read fields with `Map.get`, not `[]`.
 
 **Voicemail (`Voicemail`, `VoicemailFlow`, 2-7):** one mailbox per extension (`mailboxes`:
 PIN hashed with Argon2, 4 to 10 digits, not all one digit or a run; optional email, audio

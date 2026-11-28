@@ -277,6 +277,7 @@ IO.puts("JSON" <> Jason.encode!(for a <- QPBX.Notify.list_alerts(QPBX.Core.scope
     ea = done(a102)
     check("inbound: a carrier call to the number rings tenant A's 102", r == "200" and ea == 0, f"{r}, answer exit {ea}")
 
+
     # Voicemail: 103 has a mailbox and no phone; the caller talks for a few seconds.
     r = call("127.0.0.81", 5062, "101", "103", A, S["pwa"]["101"], talk_ms=12000, audio=True)
     time.sleep(3)
@@ -286,6 +287,25 @@ u = hd(QPBX.Core.list_users(%QPBX.Core.Scope{{kind: :platform}}, t))
 IO.puts("JSON" <> Jason.encode!(Enum.map(QPBX.Telephony.list_voicemails(QPBX.Core.scope_for(u)), fn {{v, _}} -> v.duration end)))
 ''')
     check("voicemail: the mailbox answers and keeps the message", r == "200" and len(vm) == 1 and vm[0] >= 1, f"{r}, {vm}")
+
+    # Other destinations for the number: straight to 103's voicemail (answered), then hang up.
+    def point(dest):
+        app(f'''
+t = QPBX.Core.get_tenant!("{S['ta']}")
+s = QPBX.Core.scope_for(hd(QPBX.Core.list_users(%QPBX.Core.Scope{{kind: :platform}}, t)))
+did = Enum.find(QPBX.Core.list_dids(s), &(&1.number == "{DID}"))
+e103 = Enum.find(QPBX.Core.list_extensions(s), &(&1.number == "103"))
+{{:ok, _}} = QPBX.Core.set_did_destination(s, did, %{{destination_type: "{dest}", destination_id: e103.id}}, {{:system, "ci"}})
+IO.puts("JSON{{}}")
+''')
+        time.sleep(1)
+
+    point("voicemail")
+    r = call("127.0.0.71", 5090, "carrier", "0" + DID[4:], "127.0.0.1", talk_ms=2000)
+    check("inbound: the number straight to 103's voicemail is answered", r == "200", r)
+    point("hangup")
+    r = call("127.0.0.71", 5090, "carrier", "0" + DID[4:], "127.0.0.1")
+    check("inbound: the number set to hang up is not answered", r not in ("200", "") and not r.startswith("none"), r)
 
     # Call records of all of the above, in tenant A.
     time.sleep(6)

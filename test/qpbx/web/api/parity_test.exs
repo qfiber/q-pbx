@@ -10,7 +10,7 @@ defmodule QPBX.Web.Api.ParityTest do
   # the health checks run now; their results are at /health/details for code).
   @ui_only ~w(validate validate_class validate_emergency validate_device validate_greeting
               validate_channel validate_email validate_captcha dismiss hide_secret edit cancel
-              open refresh filter check)
+              open refresh filter check pick)
 
   # A signed-in person's own sessions: an API key is not a person.
   @personal %{
@@ -20,6 +20,10 @@ defmodule QPBX.Web.Api.ParityTest do
   }
 
   @parity %{
+    "tenant/prompts_live" => %{
+      "upload" => "POST /v1/prompts",
+      "delete" => "DELETE /v1/prompts/:id"
+    },
     "platform/settings_live" => %{
       "save_email" => "PATCH /v1/platform-settings",
       "save_captcha" => "PATCH /v1/platform-settings",

@@ -23,7 +23,10 @@ config reports `not_configured` and does not count.
 link and sign out everywhere, another tenant admin), `/platform/admins`, `/platform/audit`,
 plans and `/platform/plans/:id` to edit one, firewall, trunks, numbers, numbering, protection, fraud); tenant LiveViews under
 `/app`. The tenant configuration pages (`/app/extensions`, `/app/extensions/:id`,
-`/app/numbers`, `/app/routes`, `/app/office-ips`, `/app/number-format`,
+`/app/numbers` (each number's destination: the form shows the fields of the kind picked),
+`/app/prompts` (the prompt library: upload, listen, remove; the system prompts; audio at
+`/app/prompts/:id/audio` and `/app/prompts/system?path=`, tenant admins only), `/app/routes`,
+`/app/office-ips`, `/app/number-format`,
 `/app/extensions/:id/voicemail` (mailbox and greetings), `/app/voicemail` (messages, played
 in the browser; playing marks heard), `/app/calls` (call history with filters in the URL,
 daily totals), `/app/users` (invite, extension, role, new setup link, sign out everywhere,

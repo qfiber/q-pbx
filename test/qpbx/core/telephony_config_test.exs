@@ -272,6 +272,33 @@ defmodule QPBX.Core.TelephonyConfigTest do
                )
 
       assert errors_on(cs)[:destination_id]
+
+      # Straight to voicemail: also only this tenant's extensions; hang up needs nothing else.
+      assert {:error, cs} =
+               Core.set_did_destination(
+                 scope,
+                 did,
+                 %{destination_type: "voicemail", destination_id: foreign.id},
+                 @actor
+               )
+
+      assert errors_on(cs)[:destination_id]
+
+      assert {:ok, %{destination_type: "voicemail"}} =
+               Core.set_did_destination(
+                 scope,
+                 did,
+                 %{destination_type: "voicemail", destination_id: e.id},
+                 @actor
+               )
+
+      assert {:ok, %{destination_type: "hangup", destination_id: nil}} =
+               Core.set_did_destination(scope, did, %{destination_type: "hangup"}, @actor)
+
+      assert {:error, cs} =
+               Core.set_did_destination(scope, did, %{destination_type: "ivr"}, @actor)
+
+      assert errors_on(cs)[:destination_type]
       assert_raise Ecto.NoResultsError, fn -> Core.get_did!(other, did.id) end
 
       # Moving the number to another tenant clears its destination and moves its backup.

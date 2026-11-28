@@ -354,6 +354,7 @@ defmodule QPBX.Web.Layouts do
         {gettext("Routing"),
          [
            {gettext("Numbers"), ~p"/app/numbers", "nav-numbers", "hero-hashtag"},
+           {gettext("Prompts"), ~p"/app/prompts", "nav-prompts", "hero-speaker-wave"},
            {gettext("Outbound routes"), ~p"/app/routes", "nav-routes", "hero-arrows-right-left"},
            {gettext("Number format"), ~p"/app/number-format", "nav-number-format",
             "hero-adjustments-horizontal"}

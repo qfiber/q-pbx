@@ -81,9 +81,14 @@ and writes an audit entry in the same transaction. Each entry keeps names as the
   an IP-authenticated trunk may belong to one IP trunk only, across tenants. Passwords are
   encrypted.
 - DIDs: platform `create_did/3`, `update_did/4` (moving tenants clears the destination; backup
-  numbers move along), `delete_did/3`; tenant `set_did_destination/4` (own extension or an
-  external number; not on backup numbers); `list_dids/1`, `get_did!/2`, `change_did/2`,
+  numbers move along), `delete_did/3`; tenant `set_did_destination/4` (a destination, below;
+  not on backup numbers); `list_dids/1`, `get_did!/2`, `change_did/2`,
   `change_did_destination/2`.
+- Destinations (`QPBX.Core.Destination`): where a call can go, kept as three fields on the
+  record that points (`<prefix>_type`, `_id`, `_number`). `types/0` (`extension`, `voicemail`
+  straight to an extension's mailbox, `external` E.164, `hangup`; ring groups, IVRs, time
+  conditions and fax boxes join with their tasks), `validate/3` (the kind, the tenant's own
+  record, E.164, unused fields cleared). An empty type means nowhere: refused.
 - Outbound routes (tenant scope): `list_routes/1`, `get_route!/2`, `change_route/2`,
   `create_route/3`, `update_route/4`, `delete_route/3`; `trunk_ids` is the failover order.
 - Numbering: `number_rule/1` (tenant override, else platform default, else Israel),

@@ -2,6 +2,18 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-28: Destinations and prompts (4-1)
+
+- **A destination is three fields on the record that points** (`<prefix>_type`, `_id`,
+  `_number`), the shape numbers already had, with one validator and one router for all.
+  Rejected: an embedded JSON value (it would change the numbers API and hide "what points at
+  this extension" from plain queries).
+- **Prompts are stored as uploaded** (WAV or MP3): our FreeSWITCH plays both
+  (`mod_sndfile`, `mod_shout`), so no conversion tool is installed or run. Rejected:
+  converting with sox or ffmpeg (another program to sandbox, for nothing callers hear).
+- **System prompts are a curated list** of the English set: it also holds jokes no business
+  would play ("asterisk_like_syphilis"), so the full folder is never offered.
+
 ## 2026-11-28: Phase 4 plan
 
 - **No text-to-speech for IVR prompts:** a synthetic voice is not wanted for callers; uploaded

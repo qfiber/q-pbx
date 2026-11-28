@@ -154,6 +154,8 @@ defmodule QPBX.Web.AuditTable do
   defp what("plan.create"), do: gettext("created the plan")
   defp what("plan.update"), do: gettext("changed the plan")
   defp what("platform_admin.create"), do: gettext("added the platform admin")
+  defp what("prompt.create"), do: gettext("uploaded the prompt")
+  defp what("prompt.delete"), do: gettext("removed the prompt")
   defp what("route.create"), do: gettext("created the route")
   defp what("route.update"), do: gettext("changed the route")
   defp what("route.delete"), do: gettext("deleted the route")

@@ -7,10 +7,7 @@ defmodule QPBX.Core.Did do
   """
   use Ecto.Schema
   import Ecto.Changeset
-  alias QPBX.Core.E164
-
-  # Phase 2 destinations; ring groups, IVRs, queues and fax boxes come with their phases.
-  @destination_types ~w(extension external)
+  alias QPBX.Core.{Destination, E164}
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -26,7 +23,7 @@ defmodule QPBX.Core.Did do
     timestamps(type: :utc_datetime)
   end
 
-  def destination_types, do: @destination_types
+  def destination_types, do: Destination.types()
 
   @doc "Platform side: the number, its carrier trunk, its tenant, or the main number it backs up."
   def platform_changeset(did, attrs) do
@@ -43,24 +40,6 @@ defmodule QPBX.Core.Did do
   def destination_changeset(did, attrs) do
     did
     |> cast(attrs, [:destination_type, :destination_id, :destination_number])
-    |> validate_inclusion(:destination_type, @destination_types)
-    |> then(fn cs ->
-      case get_field(cs, :destination_type) do
-        "extension" ->
-          cs |> validate_required([:destination_id]) |> put_change(:destination_number, nil)
-
-        "external" ->
-          cs
-          |> validate_required([:destination_number])
-          |> E164.validate(:destination_number)
-          |> put_change(:destination_id, nil)
-
-        nil ->
-          cs |> put_change(:destination_id, nil) |> put_change(:destination_number, nil)
-
-        _ ->
-          cs
-      end
-    end)
+    |> Destination.validate(did.tenant_id)
   end
 end

@@ -18,6 +18,7 @@ defmodule QPBX.Telephony do
       Fraud.Block,
       Admission,
       Cdr,
+      Prompt,
       Voicemail.Mailbox,
       Voicemail.Message,
       Voicemail.Greeting
@@ -49,6 +50,15 @@ defmodule QPBX.Telephony do
     as: :delete_message
 
   defdelegate greetings(scope, ext_id), to: Voicemail
+
+  ## Prompt library (QPBX.Telephony.Prompts)
+
+  defdelegate list_prompts(scope), to: QPBX.Telephony.Prompts, as: :list
+  defdelegate upload_prompt(scope, name, audio, actor), to: QPBX.Telephony.Prompts, as: :upload
+  defdelegate delete_prompt(scope, id, actor), to: QPBX.Telephony.Prompts, as: :delete
+  defdelegate prompt_audio(scope, id), to: QPBX.Telephony.Prompts, as: :audio
+  defdelegate system_prompts(), to: QPBX.Telephony.Prompts, as: :system
+  defdelegate system_prompt?(path), to: QPBX.Telephony.Prompts, as: :system?
   defdelegate greeting_kinds(), to: Voicemail.Greeting, as: :kinds
   defdelegate put_greeting(scope, ext_id, kind, audio, actor), to: Voicemail
   defdelegate delete_greeting(scope, ext_id, kind, actor), to: Voicemail

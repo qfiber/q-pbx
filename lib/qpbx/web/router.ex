@@ -155,6 +155,11 @@ defmodule QPBX.Web.Router do
     get "/extensions/:extension_id/mailbox", VoicemailController, :mailbox
     put "/extensions/:extension_id/mailbox", VoicemailController, :put_mailbox
     delete "/extensions/:extension_id/mailbox", VoicemailController, :delete_mailbox
+    get "/prompts", PromptController, :index
+    get "/prompts/system", PromptController, :system
+    post "/prompts", PromptController, :create
+    get "/prompts/:id/audio", PromptController, :audio
+    delete "/prompts/:id", PromptController, :delete
     get "/extensions/:extension_id/greetings", VoicemailController, :greetings
     put "/extensions/:extension_id/greetings/:kind", VoicemailController, :put_greeting
     delete "/extensions/:extension_id/greetings/:kind", VoicemailController, :delete_greeting
@@ -262,6 +267,9 @@ defmodule QPBX.Web.Router do
 
     # Decrypted audio, for tenant admins of the message's tenant (checked in the controller).
     get "/voicemail/:id/audio", QPBX.Web.VoicemailController, :audio, alias: false
+    # Prompt audio for the prompts page (tenant admins, checked in the controller).
+    get "/prompts/system", QPBX.Web.PromptController, :system, alias: false
+    get "/prompts/:id/audio", QPBX.Web.PromptController, :audio, alias: false
     get "/calls/export", QPBX.Web.CallsController, :export, alias: false
 
     live_session :tenant_admin, on_mount: {QPBX.Web.Auth, :tenant_admin} do
@@ -273,6 +281,7 @@ defmodule QPBX.Web.Router do
       live "/users", UsersLive, :index
       live "/audit", AuditLive, :index
       live "/numbers", NumbersLive, :index
+      live "/prompts", PromptsLive, :index
       live "/routes", RoutesLive, :index
       live "/office-ips", OfficeIpsLive, :index
       live "/number-format", NumberFormatLive, :index

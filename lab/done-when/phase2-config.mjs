@@ -119,11 +119,13 @@ try {
   // Number destination, route, office IP, number format.
   await tp.goto(`${base}/app/numbers`, { waitUntil: "networkidle0" });
   check("tenant sees its number in national form", (await text(tp, "main")).includes(local.replace(/-/g, "")));
-  const form = await tp.$("form[id^=did-form-]");
-  const extId = await form.$eval(`select[name="did[destination_id]"]`, (s) => [...s.options].find((o) => o.text.startsWith("101")).value);
-  await form.$eval(`select[name="did[destination_type]"]`, (s) => { s.value = "extension"; });
-  await form.$eval(`select[name="did[destination_id]"]`, (s, v) => { s.value = v; }, extId);
-  await form.$eval("button", (b) => b.click());
+  // Pick the kind first: the extension list appears for "An extension".
+  const formId = await tp.$eval("form[id^=did-form-]", (f) => f.id);
+  await tp.select(`#${formId} select[name="did[destination_type]"]`, "extension");
+  await tp.waitForSelector(`#${formId} select[name="did[destination_id]"]`);
+  const extId = await tp.$eval(`#${formId} select[name="did[destination_id]"]`, (s) => [...s.options].find((o) => o.text.startsWith("101")).value);
+  await tp.select(`#${formId} select[name="did[destination_id]"]`, extId);
+  await tp.$eval(`#${formId} button`, (b) => b.click());
   await sleep(1500);
   await shot(tp, "tenant-numbers-ar");
   const dest = ssh(`sudo -u postgres psql -qAt qpbx -c "select destination_type from dids where number = '${e164}'"`).trim();

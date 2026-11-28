@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 4 — routing, recording, basic fax, Meow and migration (the 1.0 release): breakdown approved 2026-11-28; next task 4-1. Phases 1 to 3 done.
+**Current phase:** 4 — routing, recording, basic fax, Meow and migration (the 1.0 release): 4-1 done; next task 4-2. Phases 1 to 3 done.
 **Last updated:** 2026-11-28
 
 ## Phase 1 goal
@@ -40,6 +40,18 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 4-1 Destinations and prompts (done, 2026-11-28): one destination kind for wherever a call
+  goes (`QPBX.Core.Destination`: extension, straight to an extension's voicemail, an outside
+  number, hang up; ring groups, IVRs, time conditions and fax boxes join with their tasks),
+  routed by `QPBX.Telephony.Destinations`; numbers use it, and the numbers page shows only the
+  fields of the kind picked. A prompt library per tenant (`/app/prompts`, `/v1/prompts`): WAV
+  or MP3 uploaded as is (FreeSWITCH plays both), encrypted, listened to in the browser, and 19
+  curated English system prompts (the full sound set has joke prompts, never offered). 8 new
+  tests (383 in all). Lab: the SIPp suite 16/16 with two new real calls (a number straight to
+  voicemail answered; a number set to hang up refused, 480). Found in the lab: numbers reach
+  routing as `%Did{}` structs and `did[:field]` broke every inbound call; fixed with
+  `Map.get`, and a router test now uses a struct.
 
 - Repeated notifications (2026-11-28, from a lab report): a trunk that stayed down produced a
   "Repeated" notice after every app restart (the trunk monitor sees it again, the open alert
@@ -658,7 +670,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 4-1 Destinations and prompts (next).
+- 4-2 Ring groups (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next

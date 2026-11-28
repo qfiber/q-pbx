@@ -16,6 +16,7 @@ defmodule QPBX.Telephony.Router do
   call waiting, forwarding (always, busy, no answer) and follow-me.
   """
   alias QPBX.Core.Numbers
+  alias QPBX.Telephony.Destinations
 
   @max_hops 5
   # A diagnostic feature code ahead of phase 4's full set: answers, plays a prompt, echoes.
@@ -124,11 +125,14 @@ defmodule QPBX.Telephony.Router do
   defp to_number(e164, caller, %{tenant: t} = ctx, hops) do
     case Enum.find(t.dids, &(&1.number == e164)) do
       %{} = did ->
-        did_destination(
-          main_did(did, ctx),
+        main = main_did(did, ctx)
+
+        Destinations.route(
+          Destinations.of_did(main),
           %{caller | number: caller.external || caller.number},
           ctx,
-          hops
+          hops,
+          Map.get(main, :number)
         )
 
       nil ->
@@ -136,7 +140,8 @@ defmodule QPBX.Telephony.Router do
     end
   end
 
-  defp outbound(e164, caller, %{tenant: t} = ctx) do
+  @doc false
+  def outbound(e164, caller, %{tenant: t} = ctx) do
     case Numbers.select_route(e164, t.routes) do
       nil ->
         reject("NO_ROUTE_DESTINATION")
@@ -211,32 +216,8 @@ defmodule QPBX.Telephony.Router do
   Second step for calls from carriers, once the DID's tenant snapshot is loaded (`plan/2`
   returned `{:tenant_needed, tenant_id, did, caller}`).
   """
-  def plan_did(did, caller, ctx), do: did_destination(did, caller, ctx, 0)
-
-  defp did_destination(
-         %{destination_type: "extension", destination_id: id},
-         caller,
-         %{tenant: t} = ctx,
-         hops
-       ) do
-    case Enum.find(t.extensions, &(&1.id == id)) do
-      nil -> reject("UNALLOCATED_NUMBER")
-      ext -> ring_extension(ext, caller, ctx, hops)
-    end
-  end
-
-  defp did_destination(
-         %{destination_type: "external", destination_number: e164, number: did_number},
-         caller,
-         ctx,
-         hops
-       )
-       when hops < @max_hops do
-    # Forwarded out: the carrier sees the tenant's number that was called.
-    outbound(e164, %{caller | external: did_number}, ctx)
-  end
-
-  defp did_destination(_did, _caller, _ctx, _hops), do: reject("UNALLOCATED_NUMBER")
+  def plan_did(did, caller, ctx),
+    do: Destinations.route(Destinations.of_did(did), caller, ctx, 0, Map.get(did, :number))
 
   defp find_did(dest, rule, dids) do
     digits = String.trim_leading(dest, "+")
@@ -267,10 +248,14 @@ defmodule QPBX.Telephony.Router do
 
   ## Extensions and their features
 
-  defp ring_extension(_ext, _caller, _ctx, hops) when hops >= @max_hops,
+  @doc false
+  def max_hops, do: @max_hops
+
+  @doc false
+  def ring_extension(_ext, _caller, _ctx, hops) when hops >= @max_hops,
     do: reject("NO_ROUTE_DESTINATION")
 
-  defp ring_extension(ext, caller, %{tenant: t} = ctx, hops) do
+  def ring_extension(ext, caller, %{tenant: t} = ctx, hops) do
     cond do
       ext.forward_always ->
         forward(ext.forward_always, caller, ctx, hops + 1, reject("NO_ROUTE_DESTINATION"))
@@ -505,9 +490,11 @@ defmodule QPBX.Telephony.Router do
     end)
   end
 
-  defp reject(cause), do: %{op: :reject, cause: cause}
+  @doc false
+  def reject(cause), do: %{op: :reject, cause: cause}
 
-  defp voicemail(ext, reason, otherwise),
+  @doc false
+  def voicemail(ext, reason, otherwise),
     do: %{
       op: :voicemail,
       ext_id: ext.id,

@@ -5,7 +5,7 @@ defmodule QPBX.Core.Dids do
   main number and routes like it.
   """
   import Ecto.Query
-  alias QPBX.Core.{Changes, Did, Extension, Scope}
+  alias QPBX.Core.{Changes, Did, Scope}
   alias QPBX.Repo
 
   def list(%Scope{kind: :platform}), do: Repo.all(from d in Did, order_by: d.number)
@@ -76,10 +76,7 @@ defmodule QPBX.Core.Dids do
         actor
       ) do
     Scope.run(scope, fn ->
-      cs = Did.destination_changeset(did, attrs)
-
-      cs = cs |> Did.destination_changeset(attrs) |> own_extension(tid)
-      Changes.update(cs, actor, "did.destination")
+      did |> Did.destination_changeset(attrs) |> Changes.update(actor, "did.destination")
     end)
     |> announce()
   end
@@ -87,16 +84,6 @@ defmodule QPBX.Core.Dids do
   def set_destination(%Scope{kind: :tenant}, %Did{alias_of_id: id}, _attrs, _actor)
       when not is_nil(id),
       do: {:error, :backup_number}
-
-  defp own_extension(cs, tid) do
-    ext_id = Ecto.Changeset.get_field(cs, :destination_id)
-
-    if Ecto.Changeset.get_field(cs, :destination_type) != "extension" or
-         (ext_id &&
-            Repo.exists?(from e in Extension, where: e.id == ^ext_id and e.tenant_id == ^tid)),
-       do: cs,
-       else: Ecto.Changeset.add_error(cs, :destination_id, "not an extension of this tenant")
-  end
 
   # A backup number points at a main number of the same tenant, which is not itself a backup.
   defp check_alias(cs) do

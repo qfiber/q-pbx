@@ -137,6 +137,15 @@ defmodule QPBX.Web.TelephonyPagesTest do
       {:ok, view, html} = live(conn, ~p"/app/numbers")
       assert html =~ "021234567"
 
+      # Picking a kind shows its field: an extension list, or a number to dial.
+      html =
+        view
+        |> form("#did-form-#{did.id}", did: %{destination_type: "extension"})
+        |> render_change()
+
+      assert html =~ ~s(name="did[destination_id]")
+      refute html =~ ~s(name="did[destination_number]")
+
       view
       |> form("#did-form-#{did.id}",
         did: %{destination_type: "extension", destination_id: ext.id}
@@ -144,6 +153,18 @@ defmodule QPBX.Web.TelephonyPagesTest do
       |> render_submit()
 
       assert Core.get_did!(scope, did.id).destination_id == ext.id
+
+      view
+      |> form("#did-form-#{did.id}", did: %{destination_type: "voicemail"})
+      |> render_change()
+
+      view
+      |> form("#did-form-#{did.id}",
+        did: %{destination_type: "voicemail", destination_id: ext.id}
+      )
+      |> render_submit()
+
+      assert Core.get_did!(scope, did.id).destination_type == "voicemail"
     end
 
     test "office IPs are tenant SIP allow entries; too-wide prefixes refused", %{

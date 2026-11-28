@@ -336,6 +336,29 @@ defmodule QPBX.Telephony.RouterTest do
                a.dial =~ "origination_caller_id_number=+97221234567"
     end
 
+    test "a number straight to an extension's voicemail, or hung up" do
+      # As the cache holds them: %Did{} structs, not plain maps.
+      vm = [
+        struct(
+          QPBX.Core.Did,
+          Map.new(did("+97221234567", destination_type: "voicemail", destination_id: "ext-102"))
+        )
+      ]
+
+      assert %{op: :voicemail, ext_id: "ext-102", reason: :unavailable} =
+               from_carrier("+97221234567", ctx(dids: vm))
+
+      off = [did("+97221234567", destination_type: "hangup")]
+
+      assert %{op: :reject, cause: "NORMAL_CLEARING"} =
+               from_carrier("+97221234567", ctx(dids: off))
+
+      gone = [did("+97221234567", destination_type: "voicemail", destination_id: "ext-gone")]
+
+      assert %{op: :reject, cause: "UNALLOCATED_NUMBER"} =
+               from_carrier("+97221234567", ctx(dids: gone))
+    end
+
     test "unknown numbers, unassigned numbers, and another tenant's number on a tenant's own trunk are refused" do
       assert %{op: :reject, cause: "UNALLOCATED_NUMBER"} = from_carrier("+97299999999", ctx())
       assert %{op: :reject} = from_carrier("+97221234567", ctx(dids: [did("+97221234567")]))

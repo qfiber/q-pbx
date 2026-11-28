@@ -32,6 +32,14 @@ defmodule QPBX.Web.Tenant.NumbersLive do
   end
 
   @impl true
+  # The form shows the fields of the kind picked (an extension, or a number to dial).
+  def handle_event("pick", %{"id" => id, "did" => params}, socket) do
+    did = Enum.find(socket.assigns.dids, &(&1.id == id))
+    params = Map.update(params, "destination_type", nil, &blank/1)
+    form = to_form(Core.change_did_destination(did, params), as: "did", id: "did-#{id}")
+    {:noreply, assign(socket, forms: Map.put(socket.assigns.forms, id, form))}
+  end
+
   def handle_event("save", %{"id" => id, "did" => params}, socket) do
     %{current_scope: scope, current_account: actor} = socket.assigns
     did = Enum.find(socket.assigns.dids, &(&1.id == id))
@@ -118,6 +126,7 @@ defmodule QPBX.Web.Tenant.NumbersLive do
           :if={!did.alias_of_id}
           for={@forms[did.id]}
           phx-submit="save"
+          phx-change="pick"
           phx-value-id={did.id}
           id={"did-form-#{did.id}"}
         >
@@ -127,22 +136,27 @@ defmodule QPBX.Web.Tenant.NumbersLive do
               type="select"
               label={gettext("Calls go to")}
               options={[
-                {gettext("Nowhere (rejected)"), ""},
+                {gettext("Nowhere (refused)"), ""},
                 {gettext("An extension"), "extension"},
-                {gettext("An outside number"), "external"}
+                {gettext("Straight to an extension's voicemail"), "voicemail"},
+                {gettext("An outside number"), "external"},
+                {gettext("Hang up"), "hangup"}
               ]}
             />
             <.input
+              :if={type(@forms[did.id]) in ~w(extension voicemail)}
               field={@forms[did.id][:destination_id]}
               type="select"
               label={gettext("Extension")}
               options={[{"—", ""} | Enum.map(@extensions, &{"#{&1.number} #{&1.name}", &1.id})]}
             />
             <.input
+              :if={type(@forms[did.id]) == "external"}
               field={@forms[did.id][:destination_number]}
               label={gettext("Outside number")}
               dir="ltr"
             />
+            <div :if={type(@forms[did.id]) not in ~w(extension voicemail external)}></div>
             <.button variant="primary" class="mb-2">{gettext("Save")}</.button>
           </div>
         </.form>
@@ -150,4 +164,6 @@ defmodule QPBX.Web.Tenant.NumbersLive do
     </Layouts.app>
     """
   end
+
+  defp type(form), do: Phoenix.HTML.Form.input_value(form, :destination_type) |> to_string()
 end
