@@ -1,12 +1,12 @@
 defmodule QPBX.Core.Audit do
   @moduledoc "Writes audit entries inside the same transaction as the change."
   alias Ecto.Multi
-  alias QPBX.Core.{AuditLog, PlatformAdmin, User}
+  alias QPBX.Core.{ApiKey, AuditLog, PlatformAdmin, User}
 
   # Never written to the audit log, even as changed values.
-  @secret_fields ~w(hashed_password password totp_secret ha1 push_token)a
+  @secret_fields ~w(hashed_password password totp_secret ha1 push_token token_hash)a
 
-  @type actor :: %PlatformAdmin{} | %User{} | {:system, String.t()}
+  @type actor :: %PlatformAdmin{} | %User{} | %ApiKey{} | {:system, String.t()}
 
   @doc """
   Appends an audit insert to `multi`. `target_step` names the multi step whose result is the
@@ -43,6 +43,7 @@ defmodule QPBX.Core.Audit do
 
   defp actor_ref(%PlatformAdmin{id: id}), do: {"platform_admin", id}
   defp actor_ref(%User{id: id}), do: {"user", id}
+  defp actor_ref(%ApiKey{id: id}), do: {"api_key", id}
   defp actor_ref({:system, name}), do: {"system:" <> name, nil}
 
   defp tenant_of(%QPBX.Core.Tenant{id: id}), do: id

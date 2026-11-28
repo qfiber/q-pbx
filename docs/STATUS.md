@@ -1,7 +1,7 @@
 # Status
 
-**Current phase:** 3 — API, webhooks and notifications: breakdown approved (2026-11-27); next task 3-1. Phase 2 done.
-**Last updated:** 2026-11-27
+**Current phase:** 3 — API, webhooks and notifications: 3-1 done; next task 3-2. Phase 2 done.
+**Last updated:** 2026-11-28
 
 ## Phase 1 goal
 
@@ -40,6 +40,23 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 3-1 API foundation (done, 2026-11-28): API keys per tenant and for the platform
+  (`api_keys`: SHA-256 of a `qpbx_` key shown once, scopes read/write/calls/fax/admin, expiry
+  30/90/365 days or never, last use; row-level security), portal pages `/app/api-keys` (tenant
+  admins) and `/platform/api-keys` (create, list by prefix, revoke). `/v1` pipeline: key on
+  every request (revocation and expiry act at once), per-key rate limit from the plan's
+  `api_rate_limit_per_minute` (platform keys 600 by default) with `retry-after`, scope and key
+  kind checked from each action's own description, one error format, cursor pages,
+  `Idempotency-Key` on POST (24 hours, replay, refused for another body, 5xx not kept), the
+  key named in the audit log. OpenAPI 3.1 at `/v1/openapi.json`, built from the router and the
+  actions' descriptions (an undocumented `/v1` route fails the tests); explorer at `/v1/docs`
+  with this app's own script under the portal's CSP. First routes: `/v1/me`, `/v1/tenants`
+  (platform), `/v1/extensions` (list, get, create); the rest is 3-2. 23 new tests (275 in
+  all). Lab: `lab/done-when/phase3-api.py` 21/21 through nginx (keys, scopes, tenant
+  isolation, idempotent replay, pages, rate limit 3/min answered 429 on the fourth request,
+  audit, expiry, revocation) and `lab/done-when/phase3-explorer.mjs` 5/5 in Chrome (the
+  explorer sends requests with a typed key, shows answers and errors, no CSP violations).
 
 - CLI and portal parity (2026-11-27): every operator command of the release CLI now has a
   portal page, apart from install-time and internal ones (`migrate`, `kms_wrap_key`,
@@ -369,7 +386,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 3-1 API foundation (next).
+- 3-2 API resources (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next

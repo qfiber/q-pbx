@@ -28,7 +28,7 @@ defmodule QPBX.Web do
       QPBX.Events,
       QPBX.Repo
     ],
-    exports: [Endpoint, Telemetry, Health]
+    exports: [Endpoint, Telemetry, Health, Api.RateLimit]
 
   @doc """
   Absolute URL of an account setup link. Built from config rather than the running endpoint,
@@ -76,6 +76,23 @@ defmodule QPBX.Web do
       use Gettext, backend: QPBX.Web.Gettext
 
       import Plug.Conn
+
+      unquote(verified_routes())
+    end
+  end
+
+  @doc """
+  A `/v1` controller: JSON only, its actions described by `operation/1` (scope, audience,
+  OpenAPI), the key's scope checked before the action, idempotency keys on POST.
+  """
+  def api_controller do
+    quote do
+      use Phoenix.Controller, formats: [:json]
+      import Plug.Conn
+
+      plug QPBX.Web.Api.Authorize
+      plug QPBX.Web.Api.Idempotency
+      action_fallback QPBX.Web.Api.Fallback
 
       unquote(verified_routes())
     end

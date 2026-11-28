@@ -26,8 +26,8 @@ msgstr ""
 msgid "Allowed destination classes"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:202
-#: lib/qpbx/web/components/layouts.ex:214
+#: lib/qpbx/web/components/layouts.ex:208
+#: lib/qpbx/web/components/layouts.ex:220
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
 msgstr ""
@@ -81,6 +81,7 @@ msgstr ""
 msgid "Enter the 6-digit code from your authenticator app."
 msgstr ""
 
+#: lib/qpbx/web/live/account/api_keys_live.ex:67
 #: lib/qpbx/web/live/platform/plans_live.ex:178
 #: lib/qpbx/web/live/platform/trunks_live.ex:114
 #: lib/qpbx/web/live/platform/trunks_live.ex:222
@@ -146,7 +147,7 @@ msgstr ""
 msgid "Log in"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:136
+#: lib/qpbx/web/components/layouts.ex:142
 #, elixir-autogen, elixir-format
 msgid "Log out"
 msgstr ""
@@ -193,6 +194,7 @@ msgstr ""
 msgid "Mobile"
 msgstr ""
 
+#: lib/qpbx/web/live/account/api_keys_live.ex:106
 #: lib/qpbx/web/live/platform/admins_live.ex:92
 #: lib/qpbx/web/live/platform/admins_live.ex:127
 #: lib/qpbx/web/live/platform/plans_live.ex:70
@@ -358,7 +360,7 @@ msgstr ""
 msgid "Signed in as %{name}"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:209
+#: lib/qpbx/web/components/layouts.ex:215
 #, elixir-autogen, elixir-format
 msgid "Something went wrong!"
 msgstr ""
@@ -440,7 +442,7 @@ msgstr ""
 msgid "Verify"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:197
+#: lib/qpbx/web/components/layouts.ex:203
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
 msgstr ""
@@ -513,6 +515,7 @@ msgstr ""
 msgid "Block"
 msgstr ""
 
+#: lib/qpbx/web/live/account/api_keys_live.ex:111
 #: lib/qpbx/web/live/platform/firewall_live.ex:100
 #, elixir-autogen, elixir-format
 msgid "Expires"
@@ -570,6 +573,7 @@ msgstr ""
 msgid "Remove %{cidr}?"
 msgstr ""
 
+#: lib/qpbx/web/api/controllers/spec_html.ex:15
 #: lib/qpbx/web/live/platform/firewall_live.ex:98
 #: lib/qpbx/web/live/platform/firewall_live.ex:125
 #, elixir-autogen, elixir-format
@@ -601,7 +605,7 @@ msgstr ""
 msgid "Session ended."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:127
+#: lib/qpbx/web/components/layouts.ex:133
 #, elixir-autogen, elixir-format
 msgid "Sessions"
 msgstr ""
@@ -631,7 +635,7 @@ msgstr ""
 msgid "Signed out of %{count} other sessions."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:160
+#: lib/qpbx/web/components/layouts.ex:166
 #, elixir-autogen, elixir-format
 msgid "Stay signed in"
 msgstr ""
@@ -641,7 +645,7 @@ msgstr ""
 msgid "This browser"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:159
+#: lib/qpbx/web/components/layouts.ex:165
 #, elixir-autogen, elixir-format
 msgid "You will be signed out soon because of inactivity."
 msgstr ""
@@ -953,6 +957,7 @@ msgstr ""
 msgid "Do not disturb"
 msgstr ""
 
+#: lib/qpbx/web/live/account/api_keys_live.ex:102
 #: lib/qpbx/web/live/tenant/extension_live.ex:155
 #, elixir-autogen, elixir-format
 msgid "Done"
@@ -1017,7 +1022,7 @@ msgstr ""
 msgid "Extension %{number} deleted."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:82
+#: lib/qpbx/web/components/layouts.ex:85
 #: lib/qpbx/web/live/tenant/extensions_live.ex:10
 #: lib/qpbx/web/live/tenant/extensions_live.ex:53
 #, elixir-autogen, elixir-format
@@ -1212,7 +1217,7 @@ msgstr ""
 msgid "Number (e.g. 100)"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:106
+#: lib/qpbx/web/components/layouts.ex:109
 #: lib/qpbx/web/live/tenant/number_format_live.ex:8
 #: lib/qpbx/web/live/tenant/number_format_live.ex:64
 #, elixir-autogen, elixir-format
@@ -1232,7 +1237,7 @@ msgid "Numbering"
 msgstr ""
 
 #: lib/qpbx/web/components/layouts.ex:57
-#: lib/qpbx/web/components/layouts.ex:97
+#: lib/qpbx/web/components/layouts.ex:100
 #: lib/qpbx/web/live/platform/dids_live.ex:14
 #: lib/qpbx/web/live/platform/dids_live.ex:84
 #: lib/qpbx/web/live/tenant/numbers_live.ex:15
@@ -1246,7 +1251,7 @@ msgstr ""
 msgid "Numbers can be typed the local way, for example 02-123-4567."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:103
+#: lib/qpbx/web/components/layouts.ex:106
 #: lib/qpbx/web/live/tenant/office_ips_live.ex:14
 #: lib/qpbx/web/live/tenant/office_ips_live.ex:74
 #, elixir-autogen, elixir-format
@@ -1265,7 +1270,7 @@ msgstr ""
 msgid "Only tenant admins can open this page."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:100
+#: lib/qpbx/web/components/layouts.ex:103
 #: lib/qpbx/web/live/tenant/routes_live.ex:17
 #: lib/qpbx/web/live/tenant/routes_live.ex:114
 #, elixir-autogen, elixir-format
@@ -1915,7 +1920,7 @@ msgstr ""
 msgid "Upload greeting"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:85
+#: lib/qpbx/web/components/layouts.ex:88
 #: lib/qpbx/web/live/tenant/extension_live.ex:140
 #: lib/qpbx/web/live/tenant/my_extension_live.ex:125
 #: lib/qpbx/web/live/tenant/voicemail_live.ex:9
@@ -1955,7 +1960,7 @@ msgstr ""
 msgid "Answered"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:88
+#: lib/qpbx/web/components/layouts.ex:91
 #: lib/qpbx/web/live/tenant/calls_live.ex:15
 #: lib/qpbx/web/live/tenant/calls_live.ex:67
 #: lib/qpbx/web/live/tenant/calls_live.ex:139
@@ -2126,7 +2131,7 @@ msgstr ""
 msgid "Invite a user"
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:77
+#: lib/qpbx/web/components/layouts.ex:80
 #: lib/qpbx/web/live/tenant/my_extension_live.ex:15
 #: lib/qpbx/web/live/tenant/my_extension_live.ex:112
 #, elixir-autogen, elixir-format
@@ -2175,7 +2180,7 @@ msgstr ""
 msgid "The company needs at least one tenant admin."
 msgstr ""
 
-#: lib/qpbx/web/components/layouts.ex:91
+#: lib/qpbx/web/components/layouts.ex:94
 #: lib/qpbx/web/live/platform/tenant_live.ex:188
 #: lib/qpbx/web/live/tenant/users_live.ex:14
 #: lib/qpbx/web/live/tenant/users_live.ex:141
@@ -2221,7 +2226,7 @@ msgid "All tenants"
 msgstr ""
 
 #: lib/qpbx/web/components/layouts.ex:72
-#: lib/qpbx/web/components/layouts.ex:94
+#: lib/qpbx/web/components/layouts.ex:97
 #: lib/qpbx/web/live/platform/audit_live.ex:13
 #: lib/qpbx/web/live/platform/audit_live.ex:53
 #: lib/qpbx/web/live/tenant/audit_live.ex:14
@@ -2335,4 +2340,162 @@ msgstr ""
 #: lib/qpbx/web/components/audit_table.ex:22
 #, elixir-autogen, elixir-format
 msgid "Who"
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:72
+#, elixir-autogen, elixir-format
+msgid "1 day"
+msgid_plural "%{count} days"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/qpbx/web/api/controllers/spec_controller.ex:12
+#: lib/qpbx/web/live/account/api_keys_live.ex:93
+#, elixir-autogen, elixir-format
+msgid "API explorer"
+msgstr ""
+
+#: lib/qpbx/web/api/controllers/spec_html.ex:26
+#, elixir-autogen, elixir-format
+msgid "API key"
+msgstr ""
+
+#: lib/qpbx/web/components/layouts.ex:75
+#: lib/qpbx/web/components/layouts.ex:112
+#: lib/qpbx/web/live/account/api_keys_live.ex:15
+#: lib/qpbx/web/live/account/api_keys_live.ex:88
+#, elixir-autogen, elixir-format
+msgid "API keys"
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:68
+#, elixir-autogen, elixir-format
+msgid "Admin (users, keys, webhooks)"
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:66
+#, elixir-autogen, elixir-format
+msgid "Call control"
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:98
+#, elixir-autogen, elixir-format
+msgid "Copy this key now. It is not shown again."
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:161
+#, elixir-autogen, elixir-format
+msgid "Create key"
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:113
+#, elixir-autogen, elixir-format
+msgid "Expired"
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:158
+#, elixir-autogen, elixir-format
+msgid "Expires after"
+msgstr ""
+
+#: lib/qpbx/web/api/controllers/spec_html.ex:14
+#, elixir-autogen, elixir-format
+msgid "Idempotency-Key (optional)"
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:107
+#, elixir-autogen, elixir-format
+msgid "Key"
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:37
+#, elixir-autogen, elixir-format
+msgid "Key %{name} created."
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:53
+#, elixir-autogen, elixir-format
+msgid "Key %{name} revoked."
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:90
+#, elixir-autogen, elixir-format
+msgid "Keys let your own programs use the REST API. Each key has scopes and an expiry; revoke a key to stop it at once."
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:115
+#, elixir-autogen, elixir-format
+msgid "Last used"
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:133
+#, elixir-autogen, elixir-format
+msgid "Name (what uses this key)"
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:73
+#: lib/qpbx/web/live/account/api_keys_live.ex:112
+#, elixir-autogen, elixir-format
+msgid "Never"
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:116
+#, elixir-autogen, elixir-format
+msgid "Not yet"
+msgstr ""
+
+#: lib/qpbx/web/api/controllers/spec_html.ex:18
+#, elixir-autogen, elixir-format
+msgid "Q-PBX API explorer"
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:64
+#, elixir-autogen, elixir-format
+msgid "Read"
+msgstr ""
+
+#: lib/qpbx/web/api/controllers/spec_html.ex:13
+#, elixir-autogen, elixir-format
+msgid "Request body (JSON)"
+msgstr ""
+
+#: lib/qpbx/web/api/controllers/spec_html.ex:12
+#, elixir-autogen, elixir-format
+msgid "Response"
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:127
+#, elixir-autogen, elixir-format
+msgid "Revoke"
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:124
+#, elixir-autogen, elixir-format
+msgid "Revoke %{name}? Programs using it stop working at once."
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:108
+#: lib/qpbx/web/live/account/api_keys_live.ex:135
+#, elixir-autogen, elixir-format
+msgid "Scopes"
+msgstr ""
+
+#: lib/qpbx/web/api/controllers/spec_html.ex:11
+#, elixir-autogen, elixir-format
+msgid "Send"
+msgstr ""
+
+#: lib/qpbx/web/api/controllers/spec_html.ex:16
+#, elixir-autogen, elixir-format
+msgid "The request could not be sent."
+msgstr ""
+
+#: lib/qpbx/web/api/controllers/spec_html.ex:20
+#, elixir-autogen, elixir-format
+msgid "Try the API with a key from the portal (API keys page). The key stays in this page and is sent only to this server."
+msgstr ""
+
+#: lib/qpbx/web/live/account/api_keys_live.ex:65
+#, elixir-autogen, elixir-format
+msgid "Write"
 msgstr ""

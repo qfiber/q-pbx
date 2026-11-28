@@ -29,7 +29,8 @@ defmodule QPBX.Core do
       EmergencyRoute,
       NumberRule,
       NumberClass,
-      Numbers
+      Numbers,
+      ApiKey
     ]
 
   import Ecto.Query
@@ -176,6 +177,22 @@ defmodule QPBX.Core do
 
   @doc "A tenant user changes their own extension's call features (forwarding, DND, follow-me)."
   defdelegate update_my_extension(scope, attrs, actor), to: QPBX.Core.Users
+
+  ## API keys (see QPBX.Core.ApiKeys and QPBX.Core.Idempotency)
+
+  defdelegate list_api_keys(scope), to: QPBX.Core.ApiKeys, as: :list
+  defdelegate change_api_key(attrs \\ %{}), to: QPBX.Core.ApiKeys, as: :change
+
+  @doc "Creates a key in the scope (tenant or platform): `{:ok, key, token}`, the token shown once."
+  defdelegate create_api_key(scope, attrs, actor), to: QPBX.Core.ApiKeys, as: :create
+  defdelegate revoke_api_key(scope, id, actor), to: QPBX.Core.ApiKeys, as: :revoke
+  defdelegate authenticate_api_key(token), to: QPBX.Core.ApiKeys, as: :authenticate
+  defdelegate api_rate_limit(key), to: QPBX.Core.ApiKeys, as: :rate_limit
+  defdelegate idempotency_claim(key, idem_key, fingerprint), to: QPBX.Core.Idempotency, as: :claim
+
+  defdelegate idempotency_finish(key, idem_key, status, body),
+    to: QPBX.Core.Idempotency,
+    as: :finish
 
   ## Sessions (see QPBX.Core.Sessions)
 

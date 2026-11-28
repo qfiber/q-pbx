@@ -16,6 +16,15 @@ defmodule QPBX.Web.Router do
     plug :fetch_current_account
   end
 
+  pipeline :api do
+    plug :accepts, ["json"]
+  end
+
+  # Every /v1 request but the document: API key, then its rate limit.
+  pipeline :api_key do
+    plug QPBX.Web.Api.Auth
+  end
+
   pipeline :health do
     plug :accepts, ["json"]
   end
@@ -31,6 +40,27 @@ defmodule QPBX.Web.Router do
 
     get "/", HealthController, :show
     get "/details", HealthController, :details
+  end
+
+  # The API's OpenAPI document and its explorer, public.
+  scope "/v1", QPBX.Web.Api do
+    pipe_through :api
+    get "/openapi.json", SpecController, :show
+  end
+
+  scope "/v1", QPBX.Web.Api do
+    pipe_through :browser
+    get "/docs", SpecController, :docs
+  end
+
+  scope "/v1", QPBX.Web.Api do
+    pipe_through [:api, :api_key]
+
+    get "/me", MeController, :show
+    get "/tenants", TenantController, :index
+    get "/extensions", ExtensionController, :index
+    post "/extensions", ExtensionController, :create
+    get "/extensions/:id", ExtensionController, :show
   end
 
   scope "/", QPBX.Web do
@@ -78,6 +108,7 @@ defmodule QPBX.Web.Router do
       # Shared page: full module name, not the surrounding scope's alias.
       scope "/", alias: false do
         live "/account", QPBX.Web.Account.SessionsLive, :index, as: :platform_account
+        live "/api-keys", QPBX.Web.Account.ApiKeysLive, :index, as: :platform_api_keys
       end
     end
   end
@@ -101,6 +132,10 @@ defmodule QPBX.Web.Router do
       live "/routes", RoutesLive, :index
       live "/office-ips", OfficeIpsLive, :index
       live "/number-format", NumberFormatLive, :index
+
+      scope "/", alias: false do
+        live "/api-keys", QPBX.Web.Account.ApiKeysLive, :index, as: :tenant_api_keys
+      end
     end
 
     live_session :tenant_user, on_mount: {QPBX.Web.Auth, :tenant_user} do

@@ -157,3 +157,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "tenants can only add allow entries"
 msgstr ""
+
+#: lib/qpbx/web/error_messages.ex:24
+#, elixir-autogen, elixir-format
+msgid "pick at least one scope"
+msgstr ""

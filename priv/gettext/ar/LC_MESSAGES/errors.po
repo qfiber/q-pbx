@@ -186,3 +186,8 @@ msgstr "إدخالات المستأجر مخصصة لـ SIP فقط"
 #, elixir-autogen, elixir-format
 msgid "tenants can only add allow entries"
 msgstr "لا يمكن للمستأجرين إضافة سوى إدخالات السماح"
+
+#: lib/qpbx/web/error_messages.ex:24
+#, elixir-autogen, elixir-format
+msgid "pick at least one scope"
+msgstr "اختر صلاحية واحدة على الأقل"

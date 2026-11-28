@@ -20,7 +20,8 @@ defmodule QPBX.Web.ErrorMessages do
       dgettext_noop("errors", "tenants can only add allow entries"),
       dgettext_noop("errors", "tenant entries are for SIP only"),
       dgettext_noop("errors", "is too wide for a tenant entry (at most /%{min})"),
-      dgettext_noop("errors", "must be in the future")
+      dgettext_noop("errors", "must be in the future"),
+      dgettext_noop("errors", "pick at least one scope")
     ]
   end
 end

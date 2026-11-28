@@ -1,10 +1,10 @@
 # Web (`QPBX.Web`)
 
 **Purpose:** Phoenix endpoint (on 127.0.0.1:4000 behind nginx), LiveView portal (languages from
-`config :qpbx, :locales`, RTL supported), health endpoint.
-Later: REST API `/v1`, WebSocket event stream.
+`config :qpbx, :locales`, RTL supported), health endpoint, REST API `/v1`.
+Later: WebSocket event stream.
 
-**Public API:** `QPBX.Web.Endpoint`, `QPBX.Web.Telemetry` (started by `QPBX.Application`);
+**Public API:** `QPBX.Web.Endpoint`, `QPBX.Web.Telemetry`, `QPBX.Web.Api.RateLimit` (started by `QPBX.Application`);
 `QPBX.Web.setup_url/1` (absolute setup-link URL built from endpoint config, usable without a
 running endpoint).
 
@@ -31,6 +31,34 @@ remove), `/app/audit` (the tenant's own audit log)) are in the
 `:tenant_admin` live session: tenant users are sent back to `/app`. `QPBX.Web.NumberInput`
 turns numbers typed the local way into E.164 with the scope's number rule before Core sees
 them. A device's SIP password is shown once, after creation or reset.
+
+**REST API (`/v1`, `lib/qpbx/web/api/`):**
+- Pipeline: `QPBX.Web.Api.Auth` (key from `Authorization: Bearer qpbx_...`, checked in the
+  database on every request; then `QPBX.Web.Api.RateLimit`: per key per minute, the plan's
+  `api_rate_limit_per_minute` with tenant overrides, platform keys `:platform_api_rate_limit`
+  (default 600); headers `x-ratelimit-limit`, `x-ratelimit-remaining`, `retry-after` on 429).
+  Assigns `api_key` and `current_scope` (`Core.scope_for(key)`); the key is the audit actor.
+- Controllers `use QPBX.Web, :api_controller` and describe every action in `operation/1`
+  (`summary`, `tag`, `scope`, `audience` `:tenant | :platform | :any`, `params`, `body`,
+  `response`, `status`). `QPBX.Web.Api.Authorize` enforces scope and audience from it (403
+  `missing_scope` / `wrong_key_kind`) and `QPBX.Web.Api.Spec` builds the OpenAPI 3.1 document
+  from the router and the same descriptions: a `/v1` route without one fails the tests.
+- One error format (`QPBX.Web.Api.Error`): `{"error": {"code", "message", "details"}}`; action
+  `{:error, _}` through `QPBX.Web.Api.Fallback`, raised errors (not found, malformed id)
+  through `QPBX.Web.ErrorJSON`.
+- Lists: `QPBX.Web.Api.Page` (`limit` 1 to 200, `cursor`, `next_cursor`; ordered by id).
+- POST with `Idempotency-Key` (`QPBX.Web.Api.Idempotency`): the first response is kept 24
+  hours and replayed (`idempotent-replayed: true`); another body with the same key is 422
+  `idempotency_key_reused`; 409 while the first runs; 5xx responses are not kept.
+- Records as JSON next to their schema in `QPBX.Web.Api.Schemas` (secrets never rendered).
+- Routes so far: `GET /v1/me`, `GET /v1/tenants` (platform), `GET|POST /v1/extensions`,
+  `GET /v1/extensions/:id`; public `GET /v1/openapi.json` and `GET /v1/docs` (the explorer:
+  this app's own script `assets/js/api_explorer.js`, portal CSP, DOM built without
+  `innerHTML`).
+
+**API keys page:** `QPBX.Web.Account.ApiKeysLive` at `/app/api-keys` (tenant admins) and
+`/platform/api-keys` (platform admins): create (name, scopes, expiry 30/90/365 days or never;
+the key shown once), list by prefix with last use, revoke.
 
 **My extension:** `/app/me` (`:tenant_user` live session, every tenant user): the user's own
 extension's voicemail, recent calls, forwarding and DND, and devices (read only).
@@ -59,7 +87,7 @@ request, LiveView event and every 30 s) and `live_socket_id` (`sessions:<id>`);
 `pending` holds an account between password and TOTP for 5 minutes. Pages pass
 `idle_timeout={@idle_timeout}` to `Layouts.app` for the idle warning (JS hook `IdleWarning`).
 
-**Events emitted:** none. **Events consumed:** `SessionsRevoked`.
+**Events emitted:** none (an API key's changes are audited by Core). **Events consumed:** `SessionsRevoked`.
 
 **Real client IP:** `QPBX.Web.RealIP` (first plug in the endpoint) takes `X-Real-IP` only from
 loopback peers, i.e. nginx. Use `conn.remote_ip` everywhere; never read forwarding headers.

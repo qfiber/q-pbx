@@ -1,21 +1,20 @@
 defmodule QPBX.Web.ErrorJSON do
   @moduledoc """
-  This module is invoked by your endpoint in case of errors on JSON requests.
-
-  See config/config.exs.
+  Errors raised while answering a JSON request (for example a record that is not found or a
+  malformed id), in the API's error format (`QPBX.Web.Api.Error`).
   """
+  alias QPBX.Web.Api.Error
 
-  # If you want to customize a particular status code,
-  # you may add your own clauses, such as:
-  #
-  # def render("500.json", _assigns) do
-  #   %{errors: %{detail: "Internal Server Error"}}
-  # end
-
-  # By default, Phoenix returns the status message from
-  # the template name. For example, "404.json" becomes
-  # "Not Found".
   def render(template, _assigns) do
-    %{errors: %{detail: Phoenix.Controller.status_message_from_template(template)}}
+    status = template |> String.split(".") |> hd()
+    message = Phoenix.Controller.status_message_from_template(template)
+    Error.body(code(status), message <> ".")
   end
+
+  defp code("400"), do: "bad_request"
+  defp code("404"), do: "not_found"
+  defp code("406"), do: "not_acceptable"
+  defp code("415"), do: "unsupported_media_type"
+  defp code(status) when status >= "500", do: "server_error"
+  defp code(_), do: "error"
 end

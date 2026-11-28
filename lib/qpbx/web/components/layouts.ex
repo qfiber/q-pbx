@@ -71,6 +71,9 @@ defmodule QPBX.Web.Layouts do
           <.link navigate={~p"/platform/audit"} class="btn btn-ghost btn-sm" id="nav-audit">
             {gettext("Audit log")}
           </.link>
+          <.link navigate={~p"/platform/api-keys"} class="btn btn-ghost btn-sm" id="nav-api-keys">
+            {gettext("API keys")}
+          </.link>
         </nav>
         <nav :if={tenant_user?(@current_account)} class="flex flex-wrap gap-2">
           <.link navigate={~p"/app/me"} class="btn btn-ghost btn-sm" id="nav-me">
@@ -104,6 +107,9 @@ defmodule QPBX.Web.Layouts do
           </.link>
           <.link navigate={~p"/app/number-format"} class="btn btn-ghost btn-sm" id="nav-number-format">
             {gettext("Number format")}
+          </.link>
+          <.link navigate={~p"/app/api-keys"} class="btn btn-ghost btn-sm" id="nav-api-keys">
+            {gettext("API keys")}
           </.link>
         </nav>
       </div>

@@ -2,6 +2,34 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-28: API foundation (3-1)
+
+- **Scopes:** `read` (every GET), `write` (changes to configuration), `calls` (call control,
+  3-7), `fax` (phase 5), `admin` (users, keys, webhooks). Platform keys use the same scopes on
+  platform resources. Each endpoint also says which kind of key may call it (tenant,
+  platform, or either).
+- **Keys are `qpbx_` plus 32 random bytes, stored as SHA-256 only**, shown once, revoked by
+  deleting the row (the next request fails). Why SHA-256 and not Argon2: the key is random and
+  long, so a slow hash adds nothing, and every request checks it. Expiry is chosen at creation
+  (30, 90 or 365 days, default 90, or never). Rejected: forcing an expiry on every key, which
+  breaks integrations without warning.
+- **A wrong API key does not count towards the login IP block.** A misconfigured integration
+  retrying an old key would otherwise lock its office out of the portal, and a 256-bit key
+  cannot be guessed.
+- **Rate limit:** fixed one-minute windows per key, counted in memory on the node. Rejected:
+  counting in Postgres (a write for every request). Good while one node serves the API.
+- **The OpenAPI document is built from the code:** each API action describes itself once
+  (`operation/1`), the same description enforces scope and key kind, and a route without one
+  fails the tests. Rejected: the `open_api_spex` library (a large DSL for what a page of code
+  does, and its Swagger UI loads from a CDN, which the portal's CSP forbids); bundling Swagger
+  UI (about 1.5 MB of outside JavaScript). The explorer is a small script of our own.
+- **The document and the explorer are public** (they describe the software, not anyone's
+  data); every call from the explorer needs a key.
+- **Idempotency keys** are kept in Postgres for 24 hours per API key, tied to the request
+  (method, path, body); server errors are not kept, so a retry runs again.
+- **Pages:** an opaque cursor over the id order. Configuration lists are paged after loading
+  (hundreds of rows at most); call records will page in the database (3-2).
+
 ## 2026-11-27: Phase 3 approved, with three choices
 
 - **The portal design pass runs right after phase 3** (task 3-13), over every page at once,

@@ -5,8 +5,8 @@
 
 **Public API** (`QPBX.Core`; exported schemas `Plan`, `Tenant`, `PlatformAdmin`, `User`, `AuditLog`,
 `SipCredential`, `Extension`, `Device`, `Trunk`, `TrunkAddress`, `Did`, `OutboundRoute`,
-`EmergencyRoute`, `NumberRule`, `NumberClass`; `Vault`, `Scope`, `KeyProvider`; and `Numbers`).
-Every changing function takes an `actor` (`%PlatformAdmin{}`, `%User{}` or `{:system, name}`)
+`EmergencyRoute`, `NumberRule`, `NumberClass`, `ApiKey`; `Vault`, `Scope`, `KeyProvider`; and `Numbers`).
+Every changing function takes an `actor` (`%PlatformAdmin{}`, `%User{}`, `%ApiKey{}` or `{:system, name}`)
 and writes an audit entry in the same transaction.
 - A tenant's users (tenant scope, for tenant admins; `QPBX.Core.Users`): `list_tenant_users/1`,
   `invite_user/3` (role, optional `extension_id`; the caller sends the setup link),
@@ -29,6 +29,16 @@ and writes an audit entry in the same transaction.
 - Setup links: `setup_token/1`, `account_from_setup_token/1`, `complete_setup/2`.
 - TOTP: `new_totp_secret/0`, `totp_uri/2`, `totp_enabled?/1`, `requires_totp?/1` (platform and tenant admins always), `totp_optional?/1`,
   `enable_totp/3`, `verify_totp/2`.
+- API keys (`QPBX.Core.ApiKeys`; tenant scope: the tenant's keys, platform scope: keys with no
+  tenant): `list_api_keys/1`, `change_api_key/1`, `create_api_key/3` (`name`, `scopes` from
+  `ApiKey.scopes/0` (read, write, calls, fax, admin), `expires_in` 30/90/365 or "never";
+  returns `{:ok, key, token}`, only the SHA-256 is stored), `revoke_api_key/3` (deletes it),
+  `authenticate_api_key/1` (`{:ok, key}` with tenant and plan, `{:error, :invalid | :expired}`;
+  last use written at most once a minute), `api_rate_limit/1`. `Scope.for_account/1` takes a
+  key (its tenant, or the platform). Idempotency (`QPBX.Core.Idempotency`, table
+  `api_idempotency`): `idempotency_claim/3` (`:claimed`, `{:replay, status, body}`,
+  `:in_progress`, `:mismatch`), `idempotency_finish/4` (5xx frees the key); kept 24 hours,
+  an unfinished claim given up after a minute.
 - Sessions: `create_session/2`, `fetch_session/2` (`touch: false` for checks that are not
   activity), `list_sessions/1`, `revoke_session/3`, `revoke_sessions/3` (`except:`),
   `end_session/1`, `session_idle_timeout/0`. Password and 2FA changes revoke all sessions.

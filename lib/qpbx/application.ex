@@ -30,6 +30,7 @@ defmodule QPBX.Application do
       QPBX.Web.Health,
       QPBX.Web.SessionReaper,
       QPBX.Web.Captcha.PowStore,
+      QPBX.Web.Api.RateLimit,
       QPBX.Web.Endpoint
     ]
 
