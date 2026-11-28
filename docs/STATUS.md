@@ -42,25 +42,27 @@ Kamailio gets its real config.
 ## Done
 
 - 3-4 Outbound request safety (done, 2026-11-28): `QPBX.Integrations.request/3`, the one HTTP
-  client for tenant-chosen addresses (new integrations area): HTTPS only unless the
-  installation allows plain HTTP, no credentials in URLs; the name resolved here and every
+  client for tenant-chosen addresses (new integrations area): HTTPS only, always (final
+  decision; the first version had an installation setting for plain HTTP, removed), no
+  credentials in URLs; the name resolved here and every
   answer checked against inside ranges (loopback, private, shared, link-local, multicast,
   reserved, documentation, and IPv6 forms carrying IPv4: mapped, compatible, NAT64, 6to4,
   Teredo); one inside answer refuses the name; the connection pinned to the checked address
   (Host, SNI and certificate checked for the name); every redirect checked again (303 and
   POST-after-301/302 become GET, authorization dropped across hosts); limits on connect time,
-  total time and response size; telemetry. Installation settings `qpbx_outbound_allow_http`
-  and `qpbx_outbound_allow_cidrs` (the lab: plain HTTP and the backup VM). 10 new tests
+  total time and response size; telemetry. Installation settings `qpbx_outbound_allow_cidrs`
+  and `qpbx_outbound_ca_pem` (the lab: the backup VM, and the lab CA from `lab/tools/lab-ca.sh`
+  for its HTTPS test receiver). 10 new tests
   (306 in all) against local HTTP and HTTPS servers: inside addresses in every spelling, a
   name with a mixed answer, redirect chains to inside addresses, loops, 303/307, the
   authorization header across hosts, size and time limits, the certificate checked for the
-  name while connecting to the pinned address. Lab: `lab/done-when/phase3-outbound.py` 15/15
+  name while connecting to the pinned address. Lab: `lab/done-when/phase3-outbound.py` 16/16
   from the server with real DNS and certificates (a public HTTPS site answered; expired and
-  wrong-name certificates refused; the receiver on the backup VM reached; 127.0.0.1,
+  wrong-name certificates refused; the HTTPS receiver on the backup VM reached and plain HTTP
+  to it refused; 127.0.0.1,
   `localhost`, `2130706433`, `[::1]`, `[::ffff:127.0.0.1]`, 169.254.169.254, the server's own
   and the router's LAN address, and `localtest.me` (a public name for 127.0.0.1) refused; the
-  receiver's redirects to loopback and to the metadata address refused). Open: whether plain
-  HTTP should also be a portal setting (it is an inventory setting now; see DECISIONS).
+  receiver's redirects to loopback and to the metadata address refused).
 
 - 3-3 Call events (done, 2026-11-28): the call process publishes `CallEvent` (version 1) in
   order: `started` (direction internal, inbound or outbound), `ringing` (the far end rings:
@@ -556,8 +558,8 @@ webhook with minutes remaining, and a webhook aimed at an internal address is re
 Decisions with the approval (2026-11-27): the portal design pass runs right after
 phase 3 (3-13); email: hard bounces caught at send time in phase 3, delayed bounces in phase 7
 (it builds the inbound mail server), per-tenant SMTP in Phase D (D-12); webhooks to plain HTTP
-are refused by default and a platform admin can allow them for the installation (the lab needs
-it).
+are refused (2026-11-28: HTTPS only, always, no setting; this replaced "a platform
+admin can allow them").
 
 Not in phase 3 (spec): OAuth 2 for CRM apps, chat formats, digests and escalation (phase 8),
 mobile push (phase 4, with Meow), call quality alerts from RTCP (with recording in phase 4 if

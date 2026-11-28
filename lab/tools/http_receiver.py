@@ -3,9 +3,9 @@
 echo of what it got and keeps the requests; GET /_seen returns and clears them.
 /redirect?to=URL[&status=302] answers a redirect to URL.
 
-usage: http_receiver.py <port>
+usage: http_receiver.py <port> [<cert.pem> <key.pem>]   (with a certificate: HTTPS)
 """
-import json, sys, time, urllib.parse
+import json, ssl, sys, time, urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 seen = []
@@ -40,4 +40,9 @@ class Handler(BaseHTTPRequestHandler):
     do_GET = do_POST = do_PUT = do_DELETE = handle_any
 
 
-ThreadingHTTPServer(("0.0.0.0", int(sys.argv[1])), Handler).serve_forever()
+server = ThreadingHTTPServer(("0.0.0.0", int(sys.argv[1])), Handler)
+if len(sys.argv) > 3:
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ctx.load_cert_chain(sys.argv[2], sys.argv[3])
+    server.socket = ctx.wrap_socket(server.socket, server_side=True)
+server.serve_forever()

@@ -44,6 +44,23 @@
     deb: "/var/cache/qpbx/{{ qpbx_app_deb | basename }}"
   notify: Restart qpbx
 
+- name: Extra certificate authorities for outbound requests (webhooks)
+  ansible.builtin.copy:
+    dest: /etc/qpbx/outbound-ca.pem
+    content: "{{ qpbx_outbound_ca_pem }}"
+    owner: root
+    group: qpbx
+    mode: "0644"
+  when: qpbx_outbound_ca_pem | length > 0
+  notify: Restart qpbx
+
+- name: No extra certificate authorities when none are set
+  ansible.builtin.file:
+    path: /etc/qpbx/outbound-ca.pem
+    state: absent
+  when: qpbx_outbound_ca_pem | length == 0
+  notify: Restart qpbx
+
 - name: Environment
   ansible.builtin.template:
     src: qpbx.env.j2

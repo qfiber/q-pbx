@@ -2,8 +2,7 @@ defmodule QPBX.Integrations.OutboundHTTP do
   @moduledoc """
   The one HTTP client for addresses a tenant chooses (webhooks, alert webhooks, CRM URLs):
 
-  - HTTPS only, unless the installation allows plain HTTP (`allow_http`); no credentials in
-    the URL.
+  - HTTPS only, always; no credentials in the URL.
   - The host is resolved here and every answer must be a public address
     (`QPBX.Integrations.Address`); one inside answer refuses the request (no DNS-rebinding
     mix). The connection then goes to the checked address itself, with the original name for
@@ -13,8 +12,9 @@ defmodule QPBX.Integrations.OutboundHTTP do
   - Limits: `connect_timeout`, `timeout` for the whole exchange redirects included,
     `max_body` for the response.
 
-  Installation settings (`config :qpbx, QPBX.Integrations`): `allow_http` (default false) and
-  `allow_cidrs` (inside networks the operator trusts, such as a lab receiver; default none).
+  Installation settings (`config :qpbx, QPBX.Integrations`): `allow_cidrs` (inside networks
+  the operator trusts, such as a lab receiver; default none) and `ca_file` (a PEM file of
+  extra certificate authorities trusted next to the system's, such as a lab CA; default none).
   Emits `[:qpbx, :outbound, :request]` telemetry (`duration`; `host`, `result`).
   """
   alias QPBX.Integrations.Address
@@ -57,7 +57,7 @@ defmodule QPBX.Integrations.OutboundHTTP do
   end
 
   defp follow(method, url, headers, body, opts, deadline, hops) do
-    with {:ok, uri} <- check_url(url, opts),
+    with {:ok, uri} <- check_url(url),
          {:ok, ip} <- resolve(uri.host, opts, deadline),
          {:ok, resp} <- send_once(method, uri, ip, headers, body, opts, deadline) do
       max = opts[:max_redirects]
@@ -86,15 +86,14 @@ defmodule QPBX.Integrations.OutboundHTTP do
     follow(method, URI.to_string(next), headers, body, opts, deadline, hops + 1)
   end
 
-  defp check_url(url, opts) do
+  defp check_url(url) do
     case URI.new(url) do
       {:ok, %URI{host: host, userinfo: nil, scheme: scheme} = uri}
       when is_binary(host) and host != "" ->
-        cond do
-          scheme == "https" -> {:ok, uri}
-          scheme == "http" and opts[:allow_http] == true -> {:ok, uri}
-          scheme == "http" -> {:error, :https_required}
-          true -> {:error, :bad_url}
+        case scheme do
+          "https" -> {:ok, uri}
+          "http" -> {:error, :https_required}
+          _ -> {:error, :bad_url}
         end
 
       _ ->
@@ -148,9 +147,7 @@ defmodule QPBX.Integrations.OutboundHTTP do
   end
 
   defp send_once(method, uri, ip, headers, body, opts, deadline) do
-    scheme = if uri.scheme == "https", do: :https, else: :http
-
-    case Mint.HTTP.connect(scheme, ip, uri.port, connect_opts(scheme, uri, opts, deadline)) do
+    case Mint.HTTP.connect(:https, ip, uri.port, connect_opts(uri, opts, deadline)) do
       {:ok, conn} ->
         {result, conn} = split(exchange(conn, method, uri, headers, body, opts, deadline))
         Mint.HTTP.close(conn)
@@ -165,18 +162,33 @@ defmodule QPBX.Integrations.OutboundHTTP do
   end
 
   # To the checked address, with the name for Host, SNI and certificate verification.
-  defp connect_opts(scheme, uri, opts, deadline) do
-    tls =
-      if scheme == :https,
-        do: [verify: :verify_peer, cacerts: opts[:cacerts] || :public_key.cacerts_get(), depth: 5],
-        else: []
+  defp connect_opts(uri, opts, deadline) do
+    cacerts = opts[:cacerts] || :public_key.cacerts_get() ++ extra_cacerts(opts[:ca_file])
 
     [
       hostname: uri.host,
       protocols: [:http1],
       mode: :passive,
-      transport_opts: [timeout: min(opts[:connect_timeout], remaining(deadline))] ++ tls
+      transport_opts: [
+        timeout: min(opts[:connect_timeout], remaining(deadline)),
+        verify: :verify_peer,
+        cacerts: cacerts,
+        depth: 5
+      ]
     ]
+  end
+
+  # The installation's own certificate authorities (a PEM file), next to the system's.
+  defp extra_cacerts(nil), do: []
+  defp extra_cacerts(""), do: []
+
+  # sobelow_skip ["Traversal.FileModule"]
+  # The path is the installation's setting (server environment), never from a request.
+  defp extra_cacerts(path) do
+    case File.read(path) do
+      {:ok, pem} -> for {:Certificate, der, _} <- :public_key.pem_decode(pem), do: der
+      {:error, _} -> []
+    end
   end
 
   defp exchange(conn, method, uri, headers, body, opts, deadline) do

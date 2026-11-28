@@ -12,11 +12,12 @@ Newest first. Each entry: date, what, why, alternatives rejected.
   resolve the name again on its own. One connection per request (these calls are few).
 - **One inside answer refuses the whole name** (a name with public and private answers is a
   rebinding trick, not a mistake).
-- **Plain HTTP and trusted inside networks are installation settings in the inventory**
-  (`qpbx_outbound_allow_http`, `qpbx_outbound_allow_cidrs`), not a portal toggle: they lower
-  a security boundary, so they need server access, not only a platform admin login. This
-  narrows the approval's "a platform admin can allow them": to be confirmed. The
-  lab allows plain HTTP and the backup VM (its test receivers).
+- **HTTPS only, always** (2026-11-28, final; replaces the phase 3 approval's "a
+  platform admin can allow plain HTTP"): no setting turns plain HTTP on. Trusted inside
+  networks (`qpbx_outbound_allow_cidrs`) and extra certificate authorities
+  (`qpbx_outbound_ca_pem`) are installation settings in the inventory, not portal toggles:
+  they lower a boundary, so they need server access. The lab trusts the backup VM, whose test
+  receiver serves HTTPS with a certificate from the lab's own CA (`lab/tools/lab-ca.sh`).
 - **Backup target host keys are pinned per address:** a target that moves is scanned once at
   its new address (trust on first use, as before), instead of failing until someone deletes
   the file by hand.
@@ -100,7 +101,7 @@ Newest first. Each entry: date, what, why, alternatives rejected.
   goes to Phase D until a tenant asks.
 - **Webhooks to plain HTTP are refused by default;** a platform admin can allow them for the
   installation (the lab's test receivers need it). Private and internal addresses stay refused
-  either way.
+  either way. (Replaced on 2026-11-28: HTTPS only, always; see 3-4.)
 
 ## 2026-11-27: Phase 2 closed; known limits moved to a deferred phase
 

@@ -12,7 +12,7 @@ outbound HTTP client; webhooks (3-5), flows and CRM adapters come later.
 `in_cidr?/2`).
 
 **What it guarantees:**
-- HTTPS only unless the installation allows plain HTTP; no credentials in the URL.
+- HTTPS only, always (no setting turns plain HTTP on); no credentials in the URL.
 - The host is resolved here (both families) and every answer must be a public address; one
   inside answer refuses the request. Inside: this host, private and shared networks,
   link-local (cloud metadata), multicast, reserved and documentation ranges, and every IPv6
@@ -24,9 +24,9 @@ outbound HTTP client; webhooks (3-5), flows and CRM adapters come later.
   without a body; `authorization` is dropped when the host changes.
 
 **Installation settings** (`config :qpbx, QPBX.Integrations`; inventory
-`qpbx_outbound_allow_http`, `qpbx_outbound_allow_cidrs`): `allow_http` (default false),
-`allow_cidrs` (inside networks the operator trusts, such as a lab receiver; default none).
-Tenants cannot change either.
+`qpbx_outbound_allow_cidrs`, `qpbx_outbound_ca_file`): `allow_cidrs` (inside networks the
+operator trusts, such as a lab receiver; default none), `ca_file` (extra certificate
+authorities, PEM, trusted next to the system's; default none). Tenants cannot change either.
 
 **Telemetry:** `[:qpbx, :outbound, :request]` (`duration`; metadata `host`, `result`: the
 status or the error reason).

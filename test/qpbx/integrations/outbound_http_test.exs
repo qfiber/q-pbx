@@ -40,18 +40,42 @@ defmodule QPBX.Integrations.OutboundHTTPTest do
     end
   end
 
+  # A local HTTPS server with a test CA: valid for hooks.example, other.example and 127.0.0.1.
   # Local servers are "inside": tests allow only 127.0.0.1 explicitly, as an operator would.
-  @local [allow_http: true, allow_cidrs: ["127.0.0.1"]]
-
   setup do
+    k = [key: {:namedCurve, :secp256r1}, digest: :sha256]
+    names = [dNSName: ~c"hooks.example", dNSName: ~c"other.example", iPAddress: <<127, 0, 0, 1>>]
+    san = {:Extension, {2, 5, 29, 17}, false, names}
+
+    data =
+      :public_key.pkix_test_data(%{
+        server_chain: %{root: k, intermediates: [], peer: k ++ [extensions: [san]]},
+        client_chain: %{root: k, intermediates: [], peer: k}
+      })
+
     {:ok, pid} =
-      start_supervised({Bandit, plug: Receiver, ip: {127, 0, 0, 1}, port: 0, startup_log: false})
+      start_supervised(
+        {Bandit,
+         plug: Receiver,
+         scheme: :https,
+         ip: {127, 0, 0, 1},
+         port: 0,
+         startup_log: false,
+         thousand_island_options: [transport_options: data.server_config]}
+      )
 
     {:ok, {_, port}} = ThousandIsland.listener_info(pid)
-    %{port: port, base: "http://127.0.0.1:#{port}"}
-  end
+    cacerts = data.client_config[:cacerts]
+    to_local = fn _ -> [{127, 0, 0, 1}] end
 
-  defp echo({:ok, %{status: 200, body: body}}), do: Jason.decode!(body)
+    %{
+      port: port,
+      base: "https://127.0.0.1:#{port}",
+      local: [allow_cidrs: ["127.0.0.1"], cacerts: cacerts],
+      to_local: to_local,
+      cacerts: cacerts
+    }
+  end
 
   describe "addresses" do
     test "only public addresses; every inside form is refused" do
@@ -76,89 +100,146 @@ defmodule QPBX.Integrations.OutboundHTTPTest do
   end
 
   describe "refusals" do
-    test "plain HTTP needs the installation's permission; no credentials in the URL", %{
-      base: base
-    } do
+    test "HTTPS only, always; no credentials in the URL", %{port: port, local: local} do
       assert {:error, :https_required} =
-               Integrations.request(:get, base <> "/x", allow_cidrs: ["127.0.0.1"])
+               Integrations.request(:get, "http://127.0.0.1:#{port}/x", local)
 
+      assert {:error, :https_required} = Integrations.request(:get, "http://example.com/")
       assert {:error, :bad_url} = Integrations.request(:get, "https://user:pw@example.com/")
       assert {:error, :bad_url} = Integrations.request(:get, "ftp://example.com/")
       assert {:error, :bad_url} = Integrations.request(:get, "not a url")
     end
 
-    test "inside addresses in every spelling, without an allowance", %{port: port} do
-      for host <- [
-            "127.0.0.1",
-            "2130706433",
-            "0x7f.1",
-            "127.1",
-            "[::1]",
-            "[::ffff:127.0.0.1]",
-            "[::ffff:7f00:1]",
-            "localhost",
-            "169.254.169.254"
-          ] do
+    test "inside addresses in every spelling, without an allowance", %{
+      port: port,
+      cacerts: cacerts
+    } do
+      for host <-
+            ~w(127.0.0.1 2130706433 0x7f.1 127.1 [::1] [::ffff:127.0.0.1] [::ffff:7f00:1] localhost 169.254.169.254) do
         assert {:error, {:blocked_address, _}} =
-                 Integrations.request(:get, "http://#{host}:#{port}/x", allow_http: true),
+                 Integrations.request(:get, "https://#{host}:#{port}/x", cacerts: cacerts),
                host
       end
     end
 
     test "a name with one inside answer among public ones is refused (DNS rebinding)", %{
-      port: port
+      port: port,
+      local: local
     } do
       resolver = fn "mixed.example" -> [{93, 184, 216, 34}, {10, 0, 0, 5}] end
 
       assert {:error, {:blocked_address, "10.0.0.5"}} =
-               Integrations.request(:get, "http://mixed.example:#{port}/",
-                 allow_http: true,
-                 resolver: resolver
+               Integrations.request(
+                 :get,
+                 "https://mixed.example:#{port}/",
+                 local ++ [resolver: resolver]
                )
     end
 
-    test "every redirect is checked again", %{base: base} do
-      to = URI.encode_www_form("http://169.254.169.254/latest/meta-data")
+    test "every redirect is checked again", %{
+      base: base,
+      port: port,
+      local: local,
+      to_local: to_local
+    } do
+      for to <- ["https://169.254.169.254/latest/meta-data", "https://[::ffff:10.0.0.1]/"] do
+        assert {:error, {:blocked_address, _}} =
+                 Integrations.request(
+                   :get,
+                   "#{base}/redirect?to=#{URI.encode_www_form(to)}",
+                   local
+                 ),
+               to
+      end
 
-      assert {:error, {:blocked_address, "169.254.169.254"}} =
-               Integrations.request(:get, "#{base}/redirect?to=#{to}", @local)
+      # To plain HTTP: refused like any plain HTTP address.
+      to = URI.encode_www_form("http://hooks.example:#{port}/x")
 
-      to = URI.encode_www_form("http://[::ffff:10.0.0.1]/")
+      assert {:error, :https_required} =
+               Integrations.request(
+                 :get,
+                 "#{base}/redirect?to=#{to}",
+                 local ++ [resolver: to_local]
+               )
 
-      assert {:error, {:blocked_address, _}} =
-               Integrations.request(:get, "#{base}/redirect?to=#{to}", @local)
+      assert {:error, :too_many_redirects} = Integrations.request(:get, base <> "/loop", local)
+    end
 
-      assert {:error, :too_many_redirects} = Integrations.request(:get, base <> "/loop", @local)
+    test "certificates: checked for the name while connecting to the pinned address", %{
+      port: port,
+      local: local,
+      to_local: to_local
+    } do
+      assert %{"host" => "hooks.example:" <> _} =
+               echo(
+                 Integrations.request(
+                   :get,
+                   "https://hooks.example:#{port}/x",
+                   local ++ [resolver: to_local]
+                 )
+               )
+
+      # Another name at the same address: the certificate does not match.
+      assert {:error, {:connect, _}} =
+               Integrations.request(
+                 :get,
+                 "https://wrong.example:#{port}/x",
+                 local ++ [resolver: to_local]
+               )
+
+      # An authority the system does not trust.
+      assert {:error, {:connect, _}} =
+               Integrations.request(:get, "https://hooks.example:#{port}/x",
+                 allow_cidrs: ["127.0.0.1"],
+                 resolver: to_local
+               )
+    end
+
+    test "the installation's own CA file is trusted next to the system's", %{
+      port: port,
+      cacerts: cacerts,
+      to_local: to_local
+    } do
+      path = Path.join(System.tmp_dir!(), "qpbx-ca-#{System.unique_integer([:positive])}.pem")
+
+      File.write!(
+        path,
+        :public_key.pem_encode(for der <- cacerts, do: {:Certificate, der, :not_encrypted})
+      )
+
+      on_exit(fn -> File.rm(path) end)
+      opts = [allow_cidrs: ["127.0.0.1"], resolver: to_local]
+
+      assert {:ok, %{status: 200}} =
+               Integrations.request(
+                 :get,
+                 "https://hooks.example:#{port}/x",
+                 opts ++ [ca_file: path]
+               )
+
+      assert {:error, {:connect, _}} =
+               Integrations.request(
+                 :get,
+                 "https://hooks.example:#{port}/x",
+                 opts ++ [ca_file: "/nonexistent"]
+               )
     end
   end
 
   describe "allowed requests" do
-    test "a request reaches the server with its body and headers", %{base: base} do
+    test "a request reaches the server with its body and headers", %{base: base, local: local} do
       res =
         Integrations.request(
           :post,
           base <> "/hook?a=1",
-          @local ++ [body: ~s({"x":1}), headers: [{"content-type", "application/json"}]]
+          local ++ [body: ~s({"x":1}), headers: [{"content-type", "application/json"}]]
         )
 
       assert %{"method" => "POST", "path" => "/hook", "body" => ~s({"x":1})} = echo(res)
     end
 
-    test "the connection goes to the checked address, the name stays in Host", %{port: port} do
-      resolver = fn "hooks.example" -> [{127, 0, 0, 1}] end
-
-      res =
-        Integrations.request(
-          :get,
-          "http://hooks.example:#{port}/x",
-          @local ++ [resolver: resolver]
-        )
-
-      assert %{"host" => "hooks.example:" <> _} = echo(res)
-    end
-
     test "redirects: followed within the limit; 303 becomes GET; authorization dropped on another host",
-         %{base: base, port: port} do
+         %{base: base, port: port, local: local, to_local: to_local} do
       to = URI.encode_www_form("/after")
 
       assert %{"method" => "GET", "path" => "/after", "body" => ""} =
@@ -166,7 +247,7 @@ defmodule QPBX.Integrations.OutboundHTTPTest do
                  Integrations.request(
                    :post,
                    "#{base}/redirect?status=303&to=#{to}",
-                   @local ++ [body: "x"]
+                   local ++ [body: "x"]
                  )
                )
 
@@ -175,13 +256,12 @@ defmodule QPBX.Integrations.OutboundHTTPTest do
                  Integrations.request(
                    :post,
                    "#{base}/redirect?status=307&to=#{to}",
-                   @local ++ [body: "x"]
+                   local ++ [body: "x"]
                  )
                )
 
-      other = URI.encode_www_form("http://other.example:#{port}/after")
-      resolver = fn "other.example" -> [{127, 0, 0, 1}] end
-      opts = @local ++ [resolver: resolver, headers: [{"authorization", "Bearer secret"}]]
+      other = URI.encode_www_form("https://other.example:#{port}/after")
+      opts = local ++ [resolver: to_local, headers: [{"authorization", "Bearer secret"}]]
 
       assert %{"auth" => nil, "host" => "other.example:" <> _} =
                echo(Integrations.request(:get, "#{base}/redirect?to=#{other}", opts))
@@ -190,88 +270,20 @@ defmodule QPBX.Integrations.OutboundHTTPTest do
                echo(Integrations.request(:get, "#{base}/redirect?to=#{to}", opts))
     end
 
-    test "size and time limits", %{base: base} do
-      assert {:error, :too_large} = Integrations.request(:get, base <> "/big", @local)
+    test "size and time limits", %{base: base, local: local} do
+      assert {:error, :too_large} = Integrations.request(:get, base <> "/big", local)
 
       assert {:ok, %{body: body}} =
-               Integrations.request(:get, base <> "/big", @local ++ [max_body: 3_000_000])
+               Integrations.request(:get, base <> "/big", local ++ [max_body: 3_000_000])
 
       assert byte_size(body) == 2_000_000
 
       assert {:error, :timeout} =
-               Integrations.request(:get, base <> "/slow", @local ++ [timeout: 300])
+               Integrations.request(:get, base <> "/slow", local ++ [timeout: 300])
     end
   end
 
-  describe "HTTPS" do
-    setup do
-      k = [key: {:namedCurve, :secp256r1}, digest: :sha256]
-      san = {:Extension, {2, 5, 29, 17}, false, [dNSName: ~c"hooks.example"]}
-
-      data =
-        :public_key.pkix_test_data(%{
-          server_chain: %{root: k, intermediates: [], peer: k ++ [extensions: [san]]},
-          client_chain: %{root: k, intermediates: [], peer: k}
-        })
-
-      {:ok, pid} =
-        start_supervised(
-          {Bandit,
-           plug: Receiver,
-           scheme: :https,
-           ip: {127, 0, 0, 1},
-           port: 0,
-           startup_log: false,
-           thousand_island_options: [transport_options: data.server_config]},
-          id: :tls
-        )
-
-      {:ok, {_, port}} = ThousandIsland.listener_info(pid)
-      %{tls_port: port, cacerts: data.client_config[:cacerts]}
-    end
-
-    test "the certificate is verified for the name while connecting to the checked address", %{
-      tls_port: port,
-      cacerts: cacerts
-    } do
-      opts = [allow_cidrs: ["127.0.0.1"], cacerts: cacerts]
-      ok = fn _ -> [{127, 0, 0, 1}] end
-
-      assert %{"host" => "hooks.example:" <> _} =
-               echo(
-                 Integrations.request(
-                   :get,
-                   "https://hooks.example:#{port}/x",
-                   opts ++ [resolver: ok]
-                 )
-               )
-
-      # Another name at the same address: its certificate does not match, refused.
-      assert {:error, {:connect, _}} =
-               Integrations.request(
-                 :get,
-                 "https://wrong.example:#{port}/x",
-                 opts ++ [resolver: ok]
-               )
-
-      # A redirect from HTTPS to plain HTTP is refused like any plain HTTP address.
-      to = URI.encode_www_form("http://hooks.example:#{port}/x")
-
-      assert {:error, :https_required} =
-               Integrations.request(
-                 :get,
-                 "https://hooks.example:#{port}/redirect?to=#{to}",
-                 opts ++ [resolver: ok]
-               )
-
-      # A certificate from an unknown authority: refused.
-      assert {:error, {:connect, _}} =
-               Integrations.request(:get, "https://hooks.example:#{port}/x",
-                 allow_cidrs: ["127.0.0.1"],
-                 resolver: ok
-               )
-    end
-  end
+  defp echo({:ok, %{status: 200, body: body}}), do: Jason.decode!(body)
 
   defp parse(ip), do: ip |> String.to_charlist() |> :inet.parse_address() |> elem(1)
 end

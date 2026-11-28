@@ -6,9 +6,10 @@ qpbx_mail_from: noreply@pbx.lab.test
 qpbx_smtp_host: localhost
 # Backups to the second lab VM. The password stays on this machine, outside the repository
 # (lab/create-vm.sh does not make it; see docs/DEVELOPING.md).
-# The lab's test receivers run on the backup VM, over plain HTTP.
-qpbx_outbound_allow_http: true
+# The lab's test receivers run on the backup VM, over HTTPS with a certificate from the lab's
+# own CA (lab/tools/lab-ca.sh; kept outside the repository).
 qpbx_outbound_allow_cidrs: ["192.168.10.84/32"]
+qpbx_outbound_ca_pem: "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'HOME') ~ '/.local/share/qpbx-lab/lab-ca/ca.pem') }}"
 qpbx_backup_enabled: true
 qpbx_backup_host: 192.168.10.84
 qpbx_backup_password: "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'HOME') ~ '/.local/share/qpbx-lab/backup-password') }}"

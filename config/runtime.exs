@@ -32,10 +32,10 @@ if config_env() == :prod do
 
   config :qpbx, :health_token, System.get_env("QPBX_HEALTH_TOKEN")
 
-  # Requests to tenant-chosen addresses (QPBX.Integrations.OutboundHTTP): plain HTTP only when
-  # allowed; inside addresses only in the listed networks.
+  # Requests to tenant-chosen addresses (QPBX.Integrations.OutboundHTTP): HTTPS only; inside
+  # addresses only in the listed networks; extra certificate authorities from a PEM file.
   config :qpbx, QPBX.Integrations,
-    allow_http: System.get_env("QPBX_OUTBOUND_ALLOW_HTTP") == "true",
+    ca_file: System.get_env("QPBX_OUTBOUND_CA_FILE"),
     allow_cidrs:
       System.get_env("QPBX_OUTBOUND_ALLOW_CIDRS", "")
       |> String.split(",", trim: true)
