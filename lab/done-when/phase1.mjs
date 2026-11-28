@@ -18,6 +18,8 @@ const ssh = sshTo(vm);
 const { check, done } = reporter();
 
 const browser = await puppeteer.launch({
+  // A desktop window: below 1024 px the menu is the phone's slide-in panel.
+  defaultViewport: { width: 1280, height: 900 },
   executablePath: "/usr/bin/google-chrome",
   headless: true,
   // Lab only: names resolve to the VM, and the certificate comes from a test CA.

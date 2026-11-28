@@ -26,7 +26,7 @@ a = {:system, "lab"}
 s = QPBX.Core.scope_for(u)
 for {n, name} <- [{"101", "Reception"}, {"102", "Dr. Cohen"}, {"103", "Billing"}, {"104", "Lab"}],
     do: {:ok, _} = QPBX.Core.create_extension(s, %{number: n, name: name}, a)
-IO.puts("JSON" <> Jason.encode!(%{email: u.email}))`);
+IO.puts("JSON" <> Jason.encode!(%{email: u.email, tenant: t.id}))`);
 const adminLink = ssh(`sudo /usr/local/sbin/qpbx eval 'QPBX.Release.create_platform_admin("shots-${run}@${domain}", "Sam Ops")'`).trim().split("\n").pop();
 const userLink = ssh(`sudo /usr/local/sbin/qpbx eval 'QPBX.Release.setup_link("${S.email}")'`).trim().split("\n").pop();
 
@@ -73,9 +73,9 @@ try {
   await shot(anon, "login-ar", "desktop", "light");
 
   const admin = await signIn(adminLink);
-  for (const path of ["/platform", "/platform/health", "/platform/trunks", "/platform/plans"]) {
+  for (const path of ["/platform", "/platform/health", "/platform/tenants", "/platform/tenants/new", `/platform/tenants/${S.tenant}`, "/platform/trunks", "/platform/plans"]) {
     await admin.goto(base + path, { waitUntil: "networkidle0" });
-    const name = "platform" + path.replace("/platform", "").replace(/\//g, "-");
+    const name = "platform" + path.replace("/platform", "").replace(S.tenant, "one").replace(/\//g, "-");
     await shot(admin, name, "desktop", "light");
   }
   await shot(admin, "platform-plans", "desktop", "dark");

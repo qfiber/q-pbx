@@ -7,6 +7,7 @@ defmodule QPBX.Web.Platform.TenantLive do
   use QPBX.Web, :live_view
   alias QPBX.Core
   alias QPBX.Core.{Plan, User}
+  alias QPBX.Web.PlanFields
   alias QPBX.Web.Platform.PlansLive
 
   @impl true
@@ -130,87 +131,124 @@ defmodule QPBX.Web.Platform.TenantLive do
       unread={assigns[:unread]}
       idle_timeout={@idle_timeout}
     >
-      <.header>
-        {@tenant.name}
-        <:subtitle><span dir="ltr">{@tenant.sip_domain}</span></:subtitle>
-        <:actions>
-          <.link navigate={~p"/platform/tenants"} class="btn btn-ghost btn-sm">
-            {gettext("All tenants")}
-          </.link>
-        </:actions>
-      </.header>
+      <header class="flex flex-wrap items-center justify-between gap-3 pb-2">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="size-12 shrink-0 rounded-[12px] bg-brand-pale text-primary grid place-items-center text-xl font-semibold">
+            {@tenant.name |> String.first() |> String.upcase()}
+          </div>
+          <div class="min-w-0">
+            <h1 class="text-2xl font-semibold leading-tight tracking-tight truncate">
+              {@tenant.name}
+            </h1>
+            <p class="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-muted">
+              <span dir="ltr">{@tenant.sip_domain}</span>
+              <span aria-hidden="true">·</span>
+              <span>{@tenant.plan && @tenant.plan.name}</span>
+              <span aria-hidden="true">·</span>
+              <span>{ngettext("1 user", "%{count} users", length(@users))}</span>
+            </p>
+          </div>
+        </div>
+        <.link navigate={~p"/platform/tenants"} class="btn btn-ghost btn-sm">
+          <.icon name="hero-arrow-left" class="size-4 rtl:rotate-180" /> {gettext("All tenants")}
+        </.link>
+      </header>
 
-      <div :if={@setup_link} class="alert alert-info flex-col items-start" id="setup-link">
-        <p>
-          {gettext("Setup link for %{email} (also emailed). It works once and expires in 48 hours:",
-            email: @setup_link.email
-          )}
-        </p>
-        <code class="break-all" dir="ltr">{@setup_link.url}</code>
-      </div>
+      <QPBX.Web.Platform.TenantsLive.setup_link_notice link={@setup_link} />
 
       <.form for={@form} id="tenant-form" phx-submit="save">
-        <div class="grid sm:grid-cols-2 gap-x-4">
-          <.input field={@form[:name]} label={gettext("Company name")} required />
-          <.input
-            field={@form[:plan_id]}
-            type="select"
-            label={gettext("Plan")}
-            options={Enum.map(@plans, &{&1.name, &1.id})}
-          />
-          <.input field={@form[:timezone]} label={gettext("Time zone")} dir="ltr" />
-          <.input
-            field={@form[:locale]}
-            type="select"
-            label={gettext("Language")}
-            options={Enum.map(Application.fetch_env!(:qpbx, :locales), &{&1.name, &1.code})}
+        <div class="divide-y divide-base-300">
+          <PlanFields.section title={gettext("Details")} icon="hero-building-office-2">
+            <div class="grid sm:grid-cols-2 gap-x-4">
+              <.input field={@form[:name]} label={gettext("Company name")} required />
+              <.input
+                field={@form[:plan_id]}
+                type="select"
+                label={gettext("Plan")}
+                options={Enum.map(@plans, &{&1.name, &1.id})}
+              />
+              <.input field={@form[:timezone]} label={gettext("Time zone")} dir="ltr" />
+              <.input
+                field={@form[:locale]}
+                type="select"
+                label={gettext("Language")}
+                options={Enum.map(Application.fetch_env!(:qpbx, :locales), &{&1.name, &1.code})}
+              />
+            </div>
+          </PlanFields.section>
+
+          <PlanFields.section
+            title={gettext("Usage alerts")}
+            icon="hero-bell-alert"
+            hint={gettext("Percentages of the monthly outbound minutes. Empty: the plan's.")}
+          >
+            <div class="max-w-md">
+              <.input
+                name="tenant[usage_thresholds]"
+                id="tenant_usage_thresholds"
+                value={
+                  PlansLive.percents_text(Ecto.Changeset.get_field(@form.source, :usage_thresholds))
+                }
+                label={gettext("Usage alerts at (%); empty: the plan's")}
+                placeholder={PlansLive.percents_text(@tenant.plan && @tenant.plan.usage_thresholds)}
+                dir="ltr"
+                errors={Enum.map(@form[:usage_thresholds].errors, &translate_error/1)}
+              />
+            </div>
+          </PlanFields.section>
+
+          <p
+            :for={{_k, msg} <- Keyword.take(@form.errors, [:limit_overrides])}
+            class="text-error text-sm pt-5"
+          >
+            {translate_error(msg)}
+          </p>
+          <PlanFields.limits
+            hint={
+              gettext(
+                "Leave a field empty to use the plan's value (shown as the hint). 0 means none allowed."
+              )
+            }
+            input={
+              fn l ->
+                %{
+                  name: "tenant[override_#{l}]",
+                  id: "override_#{l}",
+                  value: @form.params["override_#{l}"],
+                  placeholder: plan_value(@tenant.plan, l)
+                }
+              end
+            }
           />
         </div>
-
-        <.input
-          name="tenant[usage_thresholds]"
-          id="tenant_usage_thresholds"
-          value={PlansLive.percents_text(Ecto.Changeset.get_field(@form.source, :usage_thresholds))}
-          label={gettext("Usage alerts at (%); empty: the plan's")}
-          placeholder={PlansLive.percents_text(@tenant.plan && @tenant.plan.usage_thresholds)}
-          dir="ltr"
-          errors={Enum.map(@form[:usage_thresholds].errors, &translate_error/1)}
-        />
-
-        <h2 class="text-lg font-semibold mt-6">{gettext("Limits for this tenant")}</h2>
-        <p class="text-sm opacity-70">
-          {gettext(
-            "Leave a field empty to use the plan's value (shown as the hint). 0 means none allowed."
-          )}
-        </p>
-        <p :for={{_k, msg} <- Keyword.take(@form.errors, [:limit_overrides])} class="text-error">
-          {translate_error(msg)}
-        </p>
-        <div class="grid sm:grid-cols-3 gap-x-4">
-          <.input
-            :for={l <- Plan.limits()}
-            name={"tenant[override_#{l}]"}
-            id={"override_#{l}"}
-            value={@form.params["override_#{l}"]}
-            type="number"
-            min="0"
-            label={limit_label(l)}
-            placeholder={plan_value(@tenant.plan, l)}
-          />
+        <div class="pt-5 mt-2 border-t border-base-300">
+          <.button variant="primary">{gettext("Save")}</.button>
         </div>
-        <.button variant="primary">{gettext("Save")}</.button>
       </.form>
 
-      <h2 class="text-lg font-semibold mt-8">{gettext("Users")}</h2>
+      <h2>{gettext("Users")}</h2>
       <.table id="tenant-users" rows={@users} row_id={&"user-#{&1.id}"}>
-        <:col :let={u} label={gettext("Name")}>{u.name}</:col>
-        <:col :let={u} label={gettext("Email")}><span dir="ltr">{u.email}</span></:col>
-        <:col :let={u} label={gettext("Role")}>{role_label(User.role(u))}</:col>
+        <:col :let={u} label={gettext("Name")}>
+          <span class="font-medium">{u.name}</span>
+          <span class="block text-xs text-muted" dir="ltr">{u.email}</span>
+        </:col>
+        <:col :let={u} label={gettext("Role")}>
+          <span class={[
+            "rounded-[6px] px-2 py-0.5 text-xs font-medium",
+            if(User.role(u) == "tenant_admin",
+              do: "bg-brand-pale text-primary",
+              else: "bg-base-200 text-muted"
+            )
+          ]}>
+            {role_label(User.role(u))}
+          </span>
+        </:col>
         <:action :let={u}>
           <.link
             phx-click="setup_link"
             phx-value-id={u.id}
             id={"setup-link-#{u.id}"}
+            class="btn btn-ghost btn-xs"
             data-confirm={
               gettext(
                 "Send %{email} a new setup link? It lets them choose a new password and authenticator.",
@@ -218,7 +256,7 @@ defmodule QPBX.Web.Platform.TenantLive do
               )
             }
           >
-            {gettext("New setup link")}
+            <.icon name="hero-envelope" class="size-4" /> {gettext("New setup link")}
           </.link>
         </:action>
         <:action :let={u}>
@@ -226,26 +264,33 @@ defmodule QPBX.Web.Platform.TenantLive do
             phx-click="sign_out"
             phx-value-id={u.id}
             id={"sign-out-#{u.id}"}
+            class="btn btn-ghost btn-xs text-error"
             data-confirm={gettext("Sign %{email} out everywhere?", email: u.email)}
           >
+            <.icon name="hero-arrow-right-start-on-rectangle" class="size-4 rtl:rotate-180" />
             {gettext("Sign out everywhere")}
           </.link>
         </:action>
       </.table>
 
-      <h3 class="font-semibold mt-6">{gettext("Add a tenant admin")}</h3>
       <.form for={@admin_form} id="tenant-admin-form" phx-submit="add_admin">
-        <div class="grid sm:grid-cols-2 gap-x-4">
-          <.input field={@admin_form[:name]} label={gettext("Name")} required />
-          <.input
-            field={@admin_form[:email]}
-            type="email"
-            label={gettext("Email")}
-            dir="ltr"
-            required
-          />
-        </div>
-        <.button variant="primary">{gettext("Add")}</.button>
+        <PlanFields.section
+          title={gettext("Add a tenant admin")}
+          icon="hero-user-plus"
+          hint={gettext("They get an email with a link to choose a password and set up 2FA.")}
+        >
+          <div class="grid sm:grid-cols-[1fr_1fr_auto] gap-x-4 items-end">
+            <.input field={@admin_form[:name]} label={gettext("Name")} required />
+            <.input
+              field={@admin_form[:email]}
+              type="email"
+              label={gettext("Email")}
+              dir="ltr"
+              required
+            />
+            <.button variant="primary" class="mb-2">{gettext("Add")}</.button>
+          </div>
+        </PlanFields.section>
       </.form>
     </Layouts.app>
     """
@@ -256,6 +301,4 @@ defmodule QPBX.Web.Platform.TenantLive do
 
   defp role_label("tenant_admin"), do: gettext("Tenant admin")
   defp role_label(_), do: gettext("Tenant user")
-
-  defp limit_label(limit), do: PlansLive.limit_label(limit)
 end

@@ -19,6 +19,9 @@ defmodule QPBX.Web.Locale do
   @doc "`{name, code}` pairs for select inputs."
   def options, do: Enum.map(all(), &{&1.name, &1.code})
 
+  @doc ~s[A language's own name: "English", "العربية"; the code when it is not configured.]
+  def name(code), do: Enum.find_value(all(), code, &(&1.code == code && &1.name))
+
   def init(opts), do: opts
 
   def call(conn, _opts) do

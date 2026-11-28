@@ -388,7 +388,7 @@ defmodule QPBX.Web.CoreComponents do
             >
               {render_slot(col, @row_item.(row))}
             </td>
-            <td :if={@action != []} class="w-0 font-semibold">
+            <td :if={@action != []} class="w-px whitespace-nowrap font-semibold">
               <div class="flex gap-4">
                 <%= for action <- @action do %>
                   {render_slot(action, @row_item.(row))}

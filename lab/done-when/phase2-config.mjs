@@ -20,6 +20,8 @@ const register = (...args) =>
   execFileSync("python3", [new URL("../tools/sip_register.py", import.meta.url).pathname, vm, ...args], { encoding: "utf8" }).trim();
 
 const browser = await puppeteer.launch({
+  // A desktop window: below 1024 px the menu is the phone's slide-in panel.
+  defaultViewport: { width: 1280, height: 900 },
   executablePath: "/usr/bin/google-chrome",
   headless: true,
   args: [`--host-resolver-rules=MAP *.${domain} ${vm}, MAP ${domain} ${vm}`, "--ignore-certificate-errors"],

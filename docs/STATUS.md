@@ -41,6 +41,18 @@ Kamailio gets its real config.
 
 ## Done
 
+- Tenants and plans pages restyled (2026-11-28): the tenant list with search, a tile, the
+  domain and plan per row; the new-tenant form in two sections (company, first admin); a
+  tenant's page with its settings in sections (details, usage alerts, limits grouped as
+  accounts, calls at the same time, outbound minutes, storage, API and a class-by-period
+  grid of minutes), its users with their actions, adding an admin; plans listed with
+  minutes, destinations, features and how many tenants use each, the same grouped limits in
+  the form, destination classes as checkboxes. Pages of 25 for tenants and plans (the page in
+  the URL; after a save the list opens on the page that holds it). The table's action column
+  no longer cuts off its buttons. Lab scripts drive Chrome at a desktop size (below 1024 px
+  the menu is the phone's slide-in panel). 4 new tests (367 in all). Lab: phase 1 check 8/8,
+  2-2 portal check 15/15, screenshots reviewed.
+
 - 3-13 follow-up (2026-11-28, from review): the light theme chosen by hand now wins on a
   computer set to dark (daisyUI's "follow the system" rule came after the light theme; the
   dark theme is declared first again; checked in Chrome with a dark system); a server health

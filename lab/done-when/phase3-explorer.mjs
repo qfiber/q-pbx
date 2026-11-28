@@ -41,6 +41,8 @@ const wav = (() => {
 })();
 
 const browser = await puppeteer.launch({
+  // A desktop window: below 1024 px the menu is the phone's slide-in panel.
+  defaultViewport: { width: 1280, height: 900 },
   executablePath: "/usr/bin/google-chrome",
   headless: true,
   args: [`--host-resolver-rules=MAP portal.pbx.lab.test ${vm}`, "--ignore-certificate-errors"],

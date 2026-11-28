@@ -5,6 +5,7 @@ defmodule QPBX.Web.AdminPagesTest do
   import Phoenix.LiveViewTest
   import QPBX.Fixtures
   alias QPBX.Core
+  alias QPBX.Web.{Pager, PlanFields}
 
   defp signed_in(conn, account, login_path) do
     secret = Core.new_totp_secret()
@@ -86,6 +87,40 @@ defmodule QPBX.Web.AdminPagesTest do
       assert Core.usage_thresholds(Core.get_tenant!(t.id)) == [25]
       view |> form("#tenant-form", tenant: %{usage_thresholds: ""}) |> render_submit()
       assert Core.usage_thresholds(Core.get_tenant!(t.id)) == [60, 90]
+    end
+
+    test "every plan limit has a place in the grouped fields" do
+      assert Enum.sort(PlanFields.grouped()) == Enum.sort(QPBX.Core.Plan.limits())
+    end
+
+    test "pages of 25: the pager, a page from the URL, numbers with gaps" do
+      list = for i <- 1..60, do: %{id: i}
+      p = Pager.paginate(list, "3")
+      assert %{page: 3, pages: 3, total: 60} = p
+      assert length(p.items) == 10
+      assert Pager.paginate(list, "x").page == 1
+      assert Pager.paginate(list, "99").page == 3
+      assert Pager.page_of(list, 26) == 2
+      assert Pager.numbers(%{page: 5, pages: 20}) == [1, :gap, 3, 4, 5, 6, 7, :gap, 20]
+    end
+
+    test "the tenant list shows 25 a page", %{conn: conn} do
+      for i <- 1..27, do: tenant_fixture(%{name: "Pg #{String.pad_leading("#{i}", 2, "0")}"})
+      {:ok, view, html} = live(conn, ~p"/platform/tenants")
+      assert html =~ "1–25 of"
+      assert has_element?(view, "#tenants-pages a", "2")
+      {:ok, _view, html} = live(conn, ~p"/platform/tenants?page=2")
+      assert html =~ "26–"
+    end
+
+    test "the tenant list: search by name or domain", %{conn: conn} do
+      a = tenant_fixture(%{name: "Alpha Dental"})
+      b = tenant_fixture(%{name: "Beta Law"})
+      {:ok, view, _} = live(conn, ~p"/platform/tenants")
+      assert has_element?(view, "#tenant-#{a.id}") and has_element?(view, "#tenant-#{b.id}")
+      view |> form("#tenant-search", q: "alpha") |> render_change()
+      assert has_element?(view, "#tenant-#{a.id}")
+      refute has_element?(view, "#tenant-#{b.id}")
     end
 
     test "adds a platform admin and sends a new setup link", %{conn: conn} do

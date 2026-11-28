@@ -148,6 +148,9 @@ integrations), fixed on the reading-start side and sliding in on phones (a check
 script); `app.js` marks the current page. Every form placed directly on a page is drawn as a
 card (`.page > form`). `Layouts.auth`: the sign-in pages, a night panel beside the form card.
 Without an account `Layouts.app` is a plain page (the alert acknowledge page).
+Long lists (tenants, plans) come in pages of 25 (`QPBX.Web.Pager`: `paginate/3`, `pager/1`,
+`page_of/2`; the page is a `?page=` parameter). Plan limits in groups: `QPBX.Web.PlanFields`
+(`limits/1`, `section/1`, `group/1`; `grouped/0` covers every limit, checked by a test).
 `lab/done-when/portal-shots.mjs` takes review screenshots (desktop and phone, light and dark,
 English and Arabic).
 
