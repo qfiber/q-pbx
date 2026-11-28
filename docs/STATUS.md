@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-5 done; next task 3-6. Phase 2 done.
+**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-6 done; next task 3-7. Phase 2 done.
 **Last updated:** 2026-11-28
 
 ## Phase 1 goal
@@ -40,6 +40,22 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 3-6 WebSocket event stream (done, 2026-11-28): `/v1/socket`, a Phoenix channel `events`
+  for a tenant's API key with the read scope, the key in the handshake header (never the
+  URL), optional event-type filter, each message the webhook body; own tenant only; revoking
+  the key closes its streams at once (`ApiKeysRevoked`), and each channel re-checks its key
+  every minute. Bus events now carry an `id` set at publish, shared by webhooks and the
+  stream. 7 new tests (322 in all): own tenant's events only, the shared id, type filters,
+  refused keys (none, wrong, no read scope, platform, expired), revocation and expiry closing
+  the stream, the portal socket keeping its origin check, and the endpoint option that
+  passes the key on (a lab run found it was being
+  overwritten in Phoenix 1.8: the unit tests could not see it, the test now guards it). Lab:
+  `lab/done-when/phase3-stream.mjs` 9/9 through nginx: two tenants' streams at once, tenant
+  A's phones register and call (A's stream: both registrations, then started, ringing,
+  answered, ended in order; B's stream: nothing), a stream filtered to `call.answered` got
+  only that, a connection without a key refused, revoking A's key closed its stream within
+  half a second of the revoke command starting (B's stayed open).
 
 - 3-5 Webhooks (done, 2026-11-28): tenant endpoints (HTTPS URL refused at save when it
   resolves inside, event types, signing secret shown once, encrypted, rotatable), events
@@ -469,7 +485,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 3-6 WebSocket event stream (next).
+- 3-7 Click-to-call and call control (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next

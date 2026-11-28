@@ -33,7 +33,7 @@ and writes an audit entry in the same transaction.
 - API keys (`QPBX.Core.ApiKeys`; tenant scope: the tenant's keys, platform scope: keys with no
   tenant): `list_api_keys/1`, `change_api_key/1`, `create_api_key/3` (`name`, `scopes` from
   `ApiKey.scopes/0` (read, write, calls, fax, admin), `expires_in` 30/90/365 or "never";
-  returns `{:ok, key, token}`, only the SHA-256 is stored), `revoke_api_key/3` (deletes it),
+  returns `{:ok, key, token}`, only the SHA-256 is stored), `revoke_api_key/3` (deletes it; publishes `ApiKeysRevoked`),
   `authenticate_api_key/1` (`{:ok, key}` with tenant and plan, `{:error, :invalid | :expired}`;
   last use written at most once a minute), `api_rate_limit/1`. `Scope.for_account/1` takes a
   key (its tenant, or the platform). Idempotency (`QPBX.Core.Idempotency`, table

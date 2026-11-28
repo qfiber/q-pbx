@@ -24,5 +24,10 @@
 | `QPBX.Events.EdgeAlert` | `edge_alerts` | 1 | `ip`, `reason`, `at` | `QPBX.Edge` (an office IP would have been banned) |
 | `QPBX.Events.ConfigChanged` | `config` | 1 | `tenant_id` (nil: platform), `kind`, `at` | `QPBX.Core` (telephony configuration and plans) |
 
+`CallEvent`, `ExtensionRegistration`, `VoicemailReceived` and `LimitReached` also have an `id`,
+filled by `publish/1` (a new UUID), so webhooks and the event stream name each event the same.
+`QPBX.Events.ApiKeysRevoked` (topic `api_keys`, version 1, `key_ids`, `at`) is published by
+`QPBX.Core` when a key is revoked; the event stream closes that key's sockets.
+
 **Gotchas:** bump `version` and keep old fields when an event's shape changes; webhooks
 (phase 3) will expose these structs.

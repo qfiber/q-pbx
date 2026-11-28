@@ -5,7 +5,7 @@ defmodule QPBX.Events.LimitReached do
   Feeds the `limit.reached` webhook (phase 3). Version 1.
   """
   @enforce_keys [:tenant_id, :limit, :at]
-  defstruct version: 1, tenant_id: nil, limit: nil, detail: nil, at: nil
+  defstruct version: 1, id: nil, tenant_id: nil, limit: nil, detail: nil, at: nil
 
   def topic, do: "limits"
 end

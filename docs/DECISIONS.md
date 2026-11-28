@@ -2,6 +2,23 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-28: Live event stream (3-6)
+
+- **The key goes in the WebSocket handshake header** (`Sec-WebSocket-Protocol`, Phoenix's
+  `authToken` scheme), never in the URL, where nginx and the app would log it. Rejected: a
+  `?token=` parameter; a key in the join message (every socket could then be opened without
+  one).
+- **Tenant keys with `read` only;** platform keys do not stream (no cross-tenant stream yet).
+- **Same message as webhooks, same event id:** bus events get their `id` when published, so a
+  program using both can match them. Adding the field kept version 1 (a new field, nothing
+  removed or changed).
+- **Revocation closes the stream at once** (`ApiKeysRevoked`), and every channel re-checks
+  its key each minute, which catches expiry and a deleted tenant.
+- **No origin check on this socket:** no cookie is involved, so the check would guard
+  nothing and would block dashboards on customers' own domains. Sobelow's cross-site
+  WebSocket rule is ignored for it in `.sobelow-conf`, and a test keeps the portal's `/live`
+  socket on its origin check so the ignore cannot hide a mistake there.
+
 ## 2026-11-28: Webhooks (3-5)
 
 - **Signature like the common providers':** HMAC-SHA256 over `"<timestamp>.<body>"`, sent as

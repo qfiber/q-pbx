@@ -15,6 +15,17 @@ defmodule QPBX.Web.Endpoint do
     max_age: 12 * 3600
   ]
 
+  # The API's live event stream: an API key in the handshake header.
+  # auth_token is a socket option, not a websocket one: Phoenix 1.8 overwrites the latter.
+  # Any origin: hijacking rides a victim's cookies, and this socket uses none (the key is in
+  # a header a page on another site cannot set with someone else's key); dashboards on
+  # customers' own domains must connect. The portal's /live socket keeps its origin check
+  # (test/qpbx/web/api/event_channel_test.exs guards it).
+  socket "/v1/socket", QPBX.Web.Api.EventSocket,
+    auth_token: true,
+    websocket: [connect_info: [:auth_token], check_origin: false],
+    longpoll: false
+
   socket "/live", Phoenix.LiveView.Socket,
     websocket: [connect_info: [session: @session_options]],
     longpoll: [connect_info: [session: @session_options]]

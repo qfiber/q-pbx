@@ -21,6 +21,15 @@ defmodule QPBX.Integrations do
   @doc "Checks an address without sending anything (`OutboundHTTP.check_destination/1`)."
   defdelegate check_destination(url), to: OutboundHTTP
 
+  @doc """
+  A bus event as webhooks and the event stream carry it: `{tenant_id, type, message}`
+  (`message`: `%{id, type, version, created_at, tenant_id, data}`), or nil.
+  """
+  defdelegate event_message(event), to: Webhooks.Event, as: :message
+
+  @doc "The bus event modules webhooks and the event stream carry."
+  defdelegate event_sources(), to: Webhooks.Event, as: :sources
+
   ## Webhooks (tenant scope; see QPBX.Integrations.Webhooks)
 
   defdelegate webhook_event_types(), to: Webhooks.Event, as: :types

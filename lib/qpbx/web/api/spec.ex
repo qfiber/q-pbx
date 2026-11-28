@@ -26,7 +26,9 @@ defmodule QPBX.Web.Api.Spec do
             "needs. Lists are paged with `limit` and `cursor` (`next_cursor` is null on the " <>
             "last page). A POST with an `Idempotency-Key` header runs once; retries within " <>
             "24 hours get the first response. Errors look like " <>
-            "`{\"error\": {\"code\": ..., \"message\": ...}}`."
+            ~s(`{"error": {"code": ..., "message": ...}}`. Live events: a Phoenix channel ) <>
+            "at `/v1/socket` (topic `events`, the key in `Sec-WebSocket-Protocol`; see the " <>
+            "project's web README), each message the same JSON as a webhook."
       },
       servers: [%{url: "/"}],
       paths: paths,

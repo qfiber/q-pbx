@@ -1,8 +1,8 @@
 # Web (`QPBX.Web`)
 
 **Purpose:** Phoenix endpoint (on 127.0.0.1:4000 behind nginx), LiveView portal (languages from
-`config :qpbx, :locales`, RTL supported), health endpoint, REST API `/v1`.
-Later: WebSocket event stream.
+`config :qpbx, :locales`, RTL supported), health endpoint, REST API `/v1`, live event stream
+`/v1/socket`.
 
 **Public API:** `QPBX.Web.Endpoint`, `QPBX.Web.Telemetry`, `QPBX.Web.Api.RateLimit` (started by `QPBX.Application`);
 `QPBX.Web.setup_url/1` (absolute setup-link URL built from endpoint config, usable without a
@@ -76,6 +76,19 @@ them. A device's SIP password is shown once, after creation or reset.
 - Parity: `test/qpbx/web/api/parity_test.exs` maps every portal page event to its API route;
   a new portal action without one fails it.
 
+**Event stream (`/v1/socket`, `lib/qpbx/web/api/stream/`):** Phoenix channels over WebSocket
+(`/v1/socket/websocket?vsn=2.0.0`, no long-polling). `EventSocket` takes a tenant's API key
+with the `read` scope from the handshake header `Sec-WebSocket-Protocol: phoenix,
+base64url.bearer.phx.<base64 of the key, no padding>` (the Phoenix JS client's `authToken`;
+keys never contain characters that would break that header), never from the URL; counts one
+request against the key's rate limit; any origin (no cookies). `auth_token: true` is a
+top-level socket option in the endpoint (Phoenix 1.8 overwrites one inside `websocket:`; a
+test guards it). Socket id `api_key_socket:<key id>`: `SessionReaper` closes it on
+`ApiKeysRevoked`. `EventChannel` (`events`): join `{"types": [...]}` (optional, webhook type
+names, default all; unknown ones refused), pushes `"event"` with the webhook body
+(`QPBX.Integrations.event_message/1`), own tenant only; re-checks the key every minute
+(expiry, deleted tenant).
+
 **API keys page:** `QPBX.Web.Account.ApiKeysLive` at `/app/api-keys` (tenant admins) and
 `/platform/api-keys` (platform admins): create (name, scopes, expiry 30/90/365 days or never;
 the key shown once), list by prefix with last use, revoke.
@@ -115,7 +128,9 @@ request, LiveView event and every 30 s) and `live_socket_id` (`sessions:<id>`);
 `pending` holds an account between password and TOTP for 5 minutes. Pages pass
 `idle_timeout={@idle_timeout}` to `Layouts.app` for the idle warning (JS hook `IdleWarning`).
 
-**Events emitted:** none (an API key's changes are audited by Core). **Events consumed:** `SessionsRevoked`.
+**Events emitted:** none (an API key's changes are audited by Core). **Events consumed:**
+`SessionsRevoked`, `ApiKeysRevoked`, and in `EventChannel` the stream's sources (`CallEvent`,
+`ExtensionRegistration`, `VoicemailReceived`, `LimitReached`).
 
 **Real client IP:** `QPBX.Web.RealIP` (first plug in the endpoint) takes `X-Real-IP` only from
 loopback peers, i.e. nginx. Use `conn.remote_ip` everywhere; never read forwarding headers.

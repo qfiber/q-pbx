@@ -10,6 +10,7 @@ defmodule QPBX.Events do
       CallEvent,
       ExtensionRegistration,
       WebhookDeadLettered,
+      ApiKeysRevoked,
       ConfigChanged,
       FraudAlert,
       LimitReached,
@@ -24,9 +25,16 @@ defmodule QPBX.Events do
 
   @pubsub QPBX.PubSub
 
-  @doc "Broadcasts an event struct on its topic (`event.__struct__.topic/0`)."
-  def publish(%module{} = event),
-    do: Phoenix.PubSub.broadcast(@pubsub, module.topic(), {:event, event})
+  @doc """
+  Broadcasts an event struct on its topic (`event.__struct__.topic/0`). An event with an `id`
+  field gets a new UUID there, so every consumer (webhooks, the event stream) names it the same.
+  """
+  def publish(%module{} = event) do
+    event =
+      if Map.get(event, :id, false) == nil, do: %{event | id: Ecto.UUID.generate()}, else: event
+
+    Phoenix.PubSub.broadcast(@pubsub, module.topic(), {:event, event})
+  end
 
   @doc "Subscribes the calling process to an event type; messages arrive as `{:event, struct}`."
   def subscribe(module) when is_atom(module),

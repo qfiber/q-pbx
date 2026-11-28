@@ -47,9 +47,10 @@ defmodule QPBX.Core.ApiKeys do
     end
   end
 
-  @doc "Revokes (deletes) one of the scope's keys."
+  @doc "Revokes (deletes) one of the scope's keys; its open event streams close at once."
   def revoke(%Scope{} = scope, id, actor) do
-    Scope.run(scope, fn ->
+    scope
+    |> Scope.run(fn ->
       case Repo.one(from k in own(scope), where: k.id == ^id) do
         nil ->
           {:error, :not_found}
@@ -59,6 +60,16 @@ defmodule QPBX.Core.ApiKeys do
           Repo.insert!(Audit.entry(actor, "api_key.revoke", key, %{name: key.name}))
           {:ok, key}
       end
+    end)
+    |> tap(fn
+      {:ok, key} ->
+        QPBX.Events.publish(%QPBX.Events.ApiKeysRevoked{
+          key_ids: [key.id],
+          at: DateTime.utc_now()
+        })
+
+      _ ->
+        :ok
     end)
   end
 

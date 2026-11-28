@@ -10,6 +10,9 @@
   out: nil,
   # The CSP comes from the QPBX.Web.CSP plug (it depends on the configured human-check
   # provider), which Sobelow does not recognise; test/qpbx/web/csp_test.exs checks it.
-  ignore: ["Config.CSP"],
+  # Config.CSWH: the API event stream (/v1/socket) accepts any origin on purpose: it uses no
+  # cookies, the key is in a handshake header (see lib/qpbx/web/endpoint.ex). The portal's
+  # /live socket keeps its origin check; test/qpbx/web/api/event_channel_test.exs guards that.
+  ignore: ["Config.CSP", "Config.CSWH"],
   ignore_files: []
 ]

@@ -164,16 +164,13 @@ defmodule QPBX.Integrations.Webhooks do
 
   @doc "Turns a bus event into deliveries for the tenant's endpoints that want it."
   def dispatch(event) do
-    case Event.from(event) do
-      {type, tid, data} when is_binary(tid) ->
-        deliver(type, tid, data, Map.get(event, :version, 1), Map.get(event, :at))
-
-      _ ->
-        :ok
+    case Event.message(event) do
+      {tid, type, message} -> deliver(tid, type, message)
+      nil -> :ok
     end
   end
 
-  defp deliver(type, tid, data, version, at) do
+  defp deliver(tid, type, message) do
     endpoints =
       Repo.all(
         from e in Endpoint,
@@ -182,13 +179,12 @@ defmodule QPBX.Integrations.Webhooks do
       )
 
     if endpoints != [] do
-      id = Ecto.UUID.generate()
-      body = Event.payload(id, type, version, tid, data, at || DateTime.utc_now())
+      body = Jason.encode!(message)
 
       endpoints
       |> Enum.with_index()
       |> Enum.reduce(Multi.new(), fn {eid, i}, multi ->
-        enqueue(multi, tid, eid, id, type, body, i)
+        enqueue(multi, tid, eid, message.id, type, body, i)
       end)
       |> Repo.transaction()
     end

@@ -25,17 +25,28 @@ defmodule QPBX.Integrations.Webhooks.Event do
   def from(%LimitReached{} = e), do: {"limit.reached", e.tenant_id, data(e, [])}
   def from(_), do: nil
 
-  @doc "The JSON body of one event."
-  def payload(id, type, version, tenant_id, data, at),
-    do:
-      Jason.encode!(%{
-        id: id,
-        type: type,
-        version: version,
-        created_at: at,
-        tenant_id: tenant_id,
-        data: data
-      })
+  @doc """
+  The message for one bus event, as webhooks send it and the event stream pushes it:
+  `{tenant_id, type, map}`, or nil when no webhook carries the event.
+  """
+  def message(event) do
+    case from(event) do
+      {type, tid, data} when is_binary(tid) ->
+        {tid, type,
+         %{
+           id: Map.get(event, :id) || Ecto.UUID.generate(),
+           type: type,
+           version: Map.get(event, :version, 1),
+           created_at: Map.get(event, :at) || DateTime.utc_now(),
+           tenant_id: tid,
+           data: data
+         }}
 
-  defp data(e, drop), do: e |> Map.from_struct() |> Map.drop([:version, :tenant_id, :at | drop])
+      _ ->
+        nil
+    end
+  end
+
+  defp data(e, drop),
+    do: e |> Map.from_struct() |> Map.drop([:id, :version, :tenant_id, :at | drop])
 end

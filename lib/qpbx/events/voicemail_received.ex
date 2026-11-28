@@ -5,6 +5,8 @@ defmodule QPBX.Events.VoicemailReceived do
   """
   @enforce_keys [:tenant_id, :voicemail_id, :extension_id, :at]
   defstruct version: 1,
+            # Filled by QPBX.Events.publish/1: the same for every webhook and stream message.
+            id: nil,
             tenant_id: nil,
             voicemail_id: nil,
             extension_id: nil,

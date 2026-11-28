@@ -31,6 +31,10 @@ authorities, PEM, trusted next to the system's; default none). Tenants cannot ch
 **Telemetry:** `[:qpbx, :outbound, :request]` (`duration`; metadata `host`, `result`: the
 status or the error reason).
 
+**Event messages:** `event_message/1` (a bus event as webhooks and the event stream carry it:
+`{tenant_id, type, %{id, type, version, created_at, tenant_id, data}}`, or nil) and
+`event_sources/0` (the bus event modules they carry).
+
 **Webhooks** (`QPBX.Integrations.Webhooks`; tables `webhook_endpoints`, `webhook_deliveries`,
 row-level security):
 - API (tenant scope, audited): `webhook_event_types/0`, `list_webhooks/1`, `get_webhook/2`,

@@ -20,6 +20,8 @@ defmodule QPBX.Events.CallEvent do
 
   @enforce_keys [:type, :tenant_id, :call_id, :at]
   defstruct version: 1,
+            # Filled by QPBX.Events.publish/1: the same for every webhook and stream message.
+            id: nil,
             type: nil,
             tenant_id: nil,
             call_id: nil,
