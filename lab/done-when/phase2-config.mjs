@@ -6,6 +6,7 @@ import puppeteer from "puppeteer-core";
 import { execFileSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import { fill, reporter, sleep, sshTo, submit, totp } from "./lib.mjs";
+import { dropPlatformAdmins } from "./lib.mjs";
 
 const vm = process.argv[2] ?? "192.168.10.25";
 const domain = process.env.QPBX_LAB_DOMAIN ?? "pbx.lab.test";
@@ -169,4 +170,5 @@ end'`);
   await browser.close();
 }
 
+dropPlatformAdmins(ssh, `ops2-${run}@`);
 process.exit(done(shots));

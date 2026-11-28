@@ -31,6 +31,11 @@ defmodule QPBX.Web.UI do
   def state_tone("acknowledged"), do: :accent
   def state_tone(_), do: :ok
 
+  @doc "What a notification was about: raised (empty), repeated, back to normal."
+  def event_label("resolved"), do: gettext("Back to normal")
+  def event_label("repeated"), do: gettext("Repeated")
+  def event_label(_), do: ""
+
   @doc "A call direction's icon."
   def direction_icon("inbound"), do: "hero-phone-arrow-down-left"
   def direction_icon("outbound"), do: "hero-phone-arrow-up-right"

@@ -204,7 +204,36 @@ defmodule QPBX.Notify.AlertsTest do
     [job] = all_enqueued(worker: AlertEmail)
     assert {:cancel, :bounced} = perform_job(AlertEmail, job.args)
     assert [%{status: "bounced", attempts: [%{"error" => err}]}] = to(admin, "email")
-    assert err =~ "550"
+    assert err == "The mail server refused the address: 550 no such user"
+  end
+
+  test "an email whose last attempt fails is given up, the reason in plain words", %{
+    t: t,
+    admin: admin
+  } do
+    defmodule Refused do
+      use Swoosh.Adapter
+
+      def deliver(_email, _config),
+        do:
+          {:error, {:retries_exceeded, {:network_failure, ~c"10.0.0.9", {:error, :econnrefused}}}}
+    end
+
+    old = Application.get_env(:qpbx, QPBX.Notify.Mailer)
+    Application.put_env(:qpbx, QPBX.Notify.Mailer, adapter: Refused)
+    on_exit(fn -> Application.put_env(:qpbx, QPBX.Notify.Mailer, old) end)
+
+    {:ok, _} = raise_alert(t, "fraud_block", "f:r")
+    [job] = all_enqueued(worker: AlertEmail)
+    assert {:error, _} = perform_job(AlertEmail, job.args, attempt: 1)
+    assert [%{status: "failed"}] = to(admin, "email")
+    assert {:cancel, :gave_up} = perform_job(AlertEmail, job.args, attempt: 10)
+
+    assert [%{status: "dead", attempts: [_, %{"error" => err, "detail" => detail}]}] =
+             to(admin, "email")
+
+    assert err == "The mail server refused the connection."
+    assert detail =~ "econnrefused"
   end
 
   test "shared recipients and alert webhooks by category and severity; generic and Alertmanager bodies",

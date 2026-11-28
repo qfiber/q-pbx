@@ -7,6 +7,7 @@ import { spawn } from "node:child_process";
 import { connect } from "node:net";
 import { mkdirSync } from "node:fs";
 import { fill, lab, nextWindow, reporter, sleep, sshArgs, sshTo, submit, totp } from "./lib.mjs";
+import { dropPlatformAdmins } from "./lib.mjs";
 
 const vm = process.argv[2] ?? "192.168.10.25";
 const domain = process.env.QPBX_LAB_DOMAIN ?? "pbx.lab.test";
@@ -166,4 +167,5 @@ const ratings = section("ratings").split(/\s+/).filter(Boolean).map((r) => r.spl
 check("every Q-PBX-related unit rates OK in systemd-analyze security (< 5)", ratings.length >= 6 && ratings.every(([, v]) => parseFloat(v) < 5), section("ratings"));
 check("secrets file is root-only (600)", section("secrets") === "600", section("secrets"));
 
+dropPlatformAdmins(ssh, `sec-${run}@`);
 process.exit(done(shots));

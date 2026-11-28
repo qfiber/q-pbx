@@ -34,7 +34,8 @@ audio, decrypted while the email is built). Queue `notify`.
 - Email (`AlertEmail`): the recipient's language, an acknowledge link
   `/alerts/ack/<notification id>.<token>` (the token only in the email, its SHA-256 stored),
   "back to normal" when resolved. A permanent SMTP refusal is a hard bounce: `bounced`, not
-  retried.
+  retried. Other failures are retried (10 attempts), then `dead`. Each attempt keeps the error
+  in plain words (`AlertEmail.readable/1`) and the raw reason as `detail`.
 - Every notification (one recipient, one channel, one event) is a row: status pending, sent,
   failed, dead, bounced, skipped; attempts logged.
 

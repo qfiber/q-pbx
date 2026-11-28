@@ -41,6 +41,14 @@ Kamailio gets its real config.
 
 ## Done
 
+- Alert delivery review (2026-11-29, from a lab report): "who was told" is one row per person
+  or address with each channel and its state, a summary ("36 recipients · 36 sent · 36
+  retrying") and a search; an alert email whose last attempt fails is now given up (it stayed
+  "Retrying" forever); email errors are kept in plain words ("The mail server refused the
+  connection.") with the raw reason beside them. The long list in the report was real: 39
+  platform admins left over by the lab checks each got the alert; the checks now remove the
+  admins they create, and the lab's leftovers are gone. 1 new test (370 in all).
+
 - Shared portal components (2026-11-29): `QPBX.Web.UI` (avatar, chip, section, field group,
   form actions, setup link, alert and call tones) and `QPBX.Web.PagedTable` (search, pages of
   25, empty box, opening on a just-saved row) used by every list page: tenants, plans,

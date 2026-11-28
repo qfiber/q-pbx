@@ -79,6 +79,13 @@ try {
     await shot(admin, name, "desktop", "light");
   }
   await shot(admin, "platform-plans", "desktop", "dark");
+  await admin.goto(`${base}/platform/alerts`, { waitUntil: "networkidle0" });
+  const open = await admin.$("[id^=open-]");
+  if (open) {
+    await open.click();
+    await admin.waitForSelector("#deliveries", { timeout: 5000 }).catch(() => {});
+    await shot(admin, "platform-alerts-details", "desktop", "light");
+  }
 
   const user = await signIn(userLink);
   for (const path of ["/app", "/app/extensions", "/app/users", "/app/me", "/app/routes", "/app/calls", "/app/api-keys"]) {

@@ -98,10 +98,6 @@ defmodule QPBX.Web.Account.NotificationsLive do
   def state_label("acknowledged"), do: gettext("Acknowledged")
   def state_label(_), do: gettext("Resolved")
 
-  defp event_label("resolved"), do: gettext("Back to normal")
-  defp event_label("repeated"), do: gettext("Repeated")
-  defp event_label(_), do: ""
-
   @impl true
   def render(assigns) do
     ~H"""

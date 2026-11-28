@@ -298,40 +298,51 @@ defmodule QPBX.Web.Account.AlertsLive do
         </:action>
       </.live_component>
 
-      <div :if={@open} id="deliveries" class="space-y-2">
-        <h3 class="font-semibold">{gettext("Who was told")}</h3>
-        <.table id="delivery-log" rows={@deliveries} row_id={&"d-#{&1.id}"}>
-          <:col :let={d} label={gettext("Time")}>
-            <span dir="ltr">{Calendar.strftime(d.inserted_at, "%Y-%m-%d %H:%M:%S")}</span>
+      <div :if={@open} id="deliveries" class="space-y-3">
+        <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h3 class="font-semibold">{gettext("Who was told")}</h3>
+          <span class="text-sm text-muted" id="told-summary">{told_summary(@deliveries)}</span>
+        </div>
+        <.live_component
+          module={PagedTable}
+          id="delivery-log"
+          rows={recipients(@deliveries)}
+          search={& &1.name}
+          placeholder={gettext("Search people and addresses")}
+          empty={gettext("Nobody was told yet.")}
+        >
+          <:col :let={r} label={gettext("Who")}>
+            <span class="font-medium break-all" dir="ltr">{r.name}</span>
           </:col>
-          <:col :let={d} label={gettext("Channel")}>{d.channel}</:col>
-          <:col :let={d} label={gettext("To")}>
-            <span dir="ltr" class="break-all">{d.address || d.account_type}</span>
+          <:col :let={r} label={gettext("How")}>
+            <div class="space-y-1">
+              <div :for={d <- r.items} class="flex flex-wrap items-center gap-2 text-sm">
+                <.chip tone={:plain}>{channel_label(d.channel)}</.chip>
+                <.chip tone={delivery_tone(d.status)}>{status_label(d.status)}</.chip>
+                <span :if={d.event != "raised"} class="text-xs text-muted">
+                  {event_label(d.event)}
+                </span>
+                <span :if={d.reason} class="text-xs text-muted">({d.reason})</span>
+                <span
+                  :if={error = last_error(d)}
+                  class="text-xs text-muted"
+                  title={last_detail(d)}
+                >
+                  {error}
+                </span>
+                <.link
+                  :if={d.channel in ~w(email webhook) and d.status != "sent"}
+                  phx-click="resend"
+                  phx-value-id={d.id}
+                  id={"resend-#{d.id}"}
+                  class="btn btn-ghost btn-xs"
+                >
+                  <.icon name="hero-arrow-path" class="size-4" /> {gettext("Send again")}
+                </.link>
+              </div>
+            </div>
           </:col>
-          <:col :let={d} label={gettext("Status")}>
-            <.chip tone={if d.status in ~w(sent delivered), do: :ok, else: :plain}>
-              {status_label(d.status)}
-            </.chip>
-            <span :if={d.reason} class="text-xs text-muted">({d.reason})</span>
-          </:col>
-          <:col :let={d} label={gettext("Last answer")}>
-            <span dir="ltr" class="text-xs">
-              {d.attempts
-              |> List.last()
-              |> then(&(&1 && (&1["error"] || &1["status"] || &1["result"])))}
-            </span>
-          </:col>
-          <:action :let={d}>
-            <.link
-              :if={d.channel in ~w(email webhook)}
-              phx-click="resend"
-              phx-value-id={d.id}
-              id={"resend-#{d.id}"}
-            >
-              {gettext("Send again")}
-            </.link>
-          </:action>
-        </.table>
+        </.live_component>
       </div>
 
       <form
@@ -499,17 +510,22 @@ defmodule QPBX.Web.Account.AlertsLive do
       >
         <form id="mandatory-form" phx-submit="mandatory">
           <input type="hidden" name="m[categories][]" value="" />
-          <label :for={c <- Catalogue.categories()} class="label">
-            <input
-              type="checkbox"
-              class="checkbox checkbox-sm"
-              name="m[categories][]"
-              value={c}
-              id={"mandatory-#{c}"}
-              checked={c in @mandatory}
-            />
-            {category_label(c)}
-          </label>
+          <div class="flex flex-wrap gap-x-6 gap-y-2">
+            <label
+              :for={c <- Catalogue.categories()}
+              class="flex items-center gap-2 text-sm cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                class="checkbox checkbox-sm checkbox-primary"
+                name="m[categories][]"
+                value={c}
+                id={"mandatory-#{c}"}
+                checked={c in @mandatory}
+              />
+              {category_label(c)}
+            </label>
+          </div>
           <.form_actions>
             <.button id="save-mandatory" variant="primary">{gettext("Save")}</.button>
           </.form_actions>
@@ -518,4 +534,55 @@ defmodule QPBX.Web.Account.AlertsLive do
     </Layouts.app>
     """
   end
+
+  # One row per person or address: their portal entry, email or webhook, each event.
+  defp recipients(deliveries) do
+    deliveries
+    |> Enum.group_by(&(&1.account_id || &1.alert_channel_id || &1.address))
+    |> Enum.map(fn {key, ns} ->
+      %{
+        id: key,
+        name: Enum.find_value(ns, & &1.address) || account_label(hd(ns).account_type),
+        items: Enum.sort_by(ns, &{&1.channel, &1.inserted_at})
+      }
+    end)
+    |> Enum.sort_by(& &1.name)
+  end
+
+  defp told_summary(deliveries) do
+    people = deliveries |> recipients() |> length()
+    by = Enum.frequencies_by(deliveries, & &1.status)
+
+    [
+      ngettext("1 recipient", "%{count} recipients", people),
+      by["sent"] && gettext("%{n} sent", n: by["sent"]),
+      by["failed"] && gettext("%{n} retrying", n: by["failed"]),
+      by["dead"] && gettext("%{n} given up", n: by["dead"]),
+      by["bounced"] && gettext("%{n} bounced", n: by["bounced"])
+    ]
+    |> Enum.reject(&is_nil/1)
+    |> Enum.join(" · ")
+  end
+
+  defp last_error(%{status: s, attempts: attempts}) when s in ~w(failed dead bounced),
+    do: attempts |> List.last() |> then(&(&1 && (&1["error"] || &1["status"])))
+
+  defp last_error(_), do: nil
+
+  defp last_detail(d), do: d.attempts |> List.last() |> then(&(&1 && &1["detail"]))
+
+  defp channel_label("portal"), do: gettext("Portal")
+  defp channel_label("email"), do: gettext("Email")
+  defp channel_label("webhook"), do: gettext("Webhook")
+  defp channel_label(c), do: c
+
+  defp account_label("platform_admin"), do: gettext("Platform admin")
+  defp account_label("user"), do: gettext("User")
+  defp account_label(other), do: to_string(other)
+
+  defp delivery_tone("sent"), do: :ok
+  defp delivery_tone("failed"), do: :warm
+  defp delivery_tone("skipped"), do: :plain
+  defp delivery_tone("pending"), do: :plain
+  defp delivery_tone(_), do: :danger
 end

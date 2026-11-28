@@ -51,3 +51,10 @@ export function reporter() {
   };
   return { check, done };
 }
+
+// Removes the platform admins a check created (their emails start with `prefix`), so lab runs do
+// not pile up admins that every platform alert then goes to.
+export function dropPlatformAdmins(ssh, prefix) {
+  const code = `for a <- QPBX.Repo.all(QPBX.Core.PlatformAdmin), String.starts_with?(a.email, "${prefix}"), do: QPBX.Repo.delete!(a)`;
+  ssh(`sudo /usr/local/sbin/qpbx rpc '${code}'`);
+}
