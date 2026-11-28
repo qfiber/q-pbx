@@ -7,6 +7,8 @@ defmodule QPBX.Events do
     deps: [],
     exports: [
       CallState,
+      CallEvent,
+      ExtensionRegistration,
       ConfigChanged,
       FraudAlert,
       LimitReached,

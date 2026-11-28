@@ -43,7 +43,7 @@ once when Kamailio restarted (its start time moved).
 `ConfigChanged` "edge_settings"), `list_bans/0`, `lift_ban/2` (Kamailio, database and the
 automatic firewall block; audited); `rpc/2` (any Kamailio JSON-RPC method), `reload/1`
 ("credentials", "domains", "trunks", "settings"), `reload_trunks/0` (trunks htable and dispatcher), `reload_allowlist/0`;
-`QPBX.Edge.Registrations` (`sync/0`, `record/1`); `QPBX.Edge.Reloader` and `QPBX.Edge.Bans`
+`registration_report/1`, `event_secret/0`; `QPBX.Edge.Registrations` (`sync/0`, `record/1`); `QPBX.Edge.Reloader` and `QPBX.Edge.Bans`
 (started by the application, not in tests: `config :qpbx, :edge_workers`).
 
 **Events consumed:** `SipCredentialsChanged` (credentials), `TenantsChanged` (domains),
@@ -51,7 +51,20 @@ automatic firewall block; audited); `rpc/2` (any Kamailio JSON-RPC method), `rel
 (settings), `FirewallChanged` (allow
 lists). Every minute: allow lists (entries expire) and registrations (a restarted Kamailio
 has none). `CallState` (busy lamps), `ConfigChanged` "extensions" and `VoicemailChanged` (voicemail lights).
-**Events emitted:** `EdgeAlert`.
+**Events emitted:** `EdgeAlert`, `ExtensionRegistration`.
+
+**Registration reports:** Kamailio reports each device login's real changes to the app: after
+`save("location")` returns 1 (a new contact: `registered`) or 3 (removed: `unregistered`), and
+from `event_route[usrloc:contact-expired]` (`expired`); renewals are not reported. It POSTs
+JSON (`event`, `aor`, `contact`, `ua_hex`: the user agent hex-encoded) with
+`http_async_client` (package `kamailio-extra-modules`; its own worker, the SIP reply is not
+held) to `/internal/kamailio/registration` on 127.0.0.1:4000 with `X-QPBX-Secret`
+(`kamailio_event_secret` in `/etc/qpbx/secrets.json`; `/etc/kamailio/db.cfg` for Kamailio,
+`QPBX_KAMAILIO_EVENT_SECRET` for the app, `event_secret/0`). `registration_report/1`
+(`QPBX.Edge.RegistrationEvents`) finds the extension (the login's part before the first dash,
+at the To domain) and publishes `ExtensionRegistration`. Gotcha: Kamailio keeps registrations
+in memory, so after a Kamailio restart phones are gone without an `unregistered` until they
+register again (then `registered`).
 
 **What Kamailio does with a new request:**
 - From FreeSWITCH (127.0.0.1:5080): with `X-QPBX-Trunk-Edge: <edge id>` to that trunk (IP

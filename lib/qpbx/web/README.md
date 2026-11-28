@@ -91,6 +91,10 @@ no-store`. Deleting an extension deletes its mailbox (files included) first.
 filters as the Calls page; `send_csv/4` is shared with the API's export): CSV streamed in chunks; a cell starting with `=`, `+`, `-` or `@`
 that is not a plain number gets a leading `'` (no spreadsheet formulas from caller names).
 
+**Kamailio:** `POST /internal/kamailio/registration` (`KamailioController`): loopback only and
+`X-QPBX-Secret` equal to `QPBX.Edge.event_secret/0` (refused while unset); hands the report
+to `QPBX.Edge.registration_report/1` (204, or 422 for an unknown extension).
+
 **FreeSWITCH:** `POST /internal/freeswitch/dialplan` (`FreeswitchController`): loopback only
 (a request through nginx carries the client's address) and HTTP basic auth with FreeSWITCH's
 password; answers `QPBX.Telephony.dialplan_xml/1`. nginx returns 404 for `/internal/`.

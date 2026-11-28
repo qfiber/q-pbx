@@ -11,6 +11,7 @@ defmodule QPBX.Telephony.Call do
   @max_redirects 3
   require Logger
   alias QPBX.Telephony.{Cache, Calls, Cdrs, Router, Voicemail, VoicemailFlow}
+  alias QPBX.Telephony.Call.Events
   alias QPBX.Telephony.ESL.Connection
   import QPBX.Telephony.Call.Lamps, only: [lamp: 6, caller_lamp: 2, lamps_off: 1]
 
@@ -49,7 +50,13 @@ defmodule QPBX.Telephony.Call do
       admitted: %{},
       talking: nil,
       # Voicemail (leaving a message or the mailbox menu): QPBX.Telephony.VoicemailFlow state.
-      vm: nil
+      vm: nil,
+      # call.* events (QPBX.Telephony.Call.Events): direction, the current dial rings,
+      # extensions rung, connected to someone.
+      direction: nil,
+      ringing: false,
+      rung: [],
+      answered: false
     }
 
     {:ok, state, {:continue, :route}}
@@ -67,7 +74,7 @@ defmodule QPBX.Telephony.Call do
 
     # Lamps name a phone's caller by its extension, not its device login.
     call = if caller_ext, do: %{call | caller: caller_ext.number}, else: call
-    s = %{s | caller_ext: caller_ext, call: call}
+    s = Events.started(%{s | caller_ext: caller_ext, call: call}, action)
 
     for {app, arg} <- Cdrs.tags(call, tenant_id, call.caller),
         do: Connection.execute(call.uuid, app, arg, Ecto.UUID.generate())
@@ -126,11 +133,17 @@ defmodule QPBX.Telephony.Call do
     if s.awaiting_transfer or (target && target != s.call.destination) do
       Logger.info("call #{s.call.uuid}: transferred to #{target}")
       s = %{s | awaiting_transfer: false, call: %{s.call | destination: target}}
+      s = Events.transferred(s, target)
       {:noreply, run(reroute(s, target), s)}
     else
       {:noreply, s}
     end
   end
+
+  # The far end rings (or sends early media): call.ringing, once per dial.
+  def handle_info({:event, name, _e}, s)
+      when name in ["CHANNEL_PROGRESS", "CHANNEL_PROGRESS_MEDIA"],
+      do: {:noreply, Events.ringing(s)}
 
   # Answered and connected: the extension rung is on a call (call waiting off makes it busy).
   # Connected to a carrier: its talk time counts from now (minute caps).
@@ -138,7 +151,8 @@ defmodule QPBX.Telephony.Call do
         {:event, "CHANNEL_BRIDGE", _e},
         %{action: %{trunk_call: %{emergency: false} = meta}} = s
       ) do
-    {:noreply, caller_lamp(%{s | talking: {meta, DateTime.utc_now()}}, "confirmed")}
+    s = Events.answered(%{s | talking: {meta, DateTime.utc_now()}})
+    {:noreply, caller_lamp(s, "confirmed")}
   end
 
   def handle_info({:event, "CHANNEL_BRIDGE", _e}, %{action: %{ext_id: ext_id} = a} = s)
@@ -147,17 +161,19 @@ defmodule QPBX.Telephony.Call do
 
     s =
       s
+      |> Events.answered()
       |> lamp(a.ext_number, a.domain, s.call.caller, "recipient", "confirmed")
       |> caller_lamp("confirmed")
 
     {:noreply, s}
   end
 
-  def handle_info({:event, "CHANNEL_BRIDGE", _e}, s), do: {:noreply, caller_lamp(s, "confirmed")}
+  def handle_info({:event, "CHANNEL_BRIDGE", _e}, s),
+    do: {:noreply, s |> Events.answered() |> caller_lamp("confirmed")}
 
   def handle_info({:event, "CHANNEL_HANGUP_COMPLETE", e}, s) do
     if s.vm, do: VoicemailFlow.hangup(s.vm, e)
-    {:stop, :normal, s |> stop_talking() |> lamps_off()}
+    {:stop, :normal, s |> Events.ended(e) |> stop_talking() |> lamps_off()}
   end
 
   def handle_info({:event, _name, _e}, s), do: {:noreply, s}
@@ -308,7 +324,7 @@ defmodule QPBX.Telephony.Call do
 
     case Connection.execute(uuid, "bridge", action.dial, id) do
       {:ok, _} ->
-        %{s | action: action, pending: id}
+        Events.dialing(%{s | action: action, pending: id})
 
       {:error, reason} ->
         Logger.error("call #{uuid}: bridge not started: #{inspect(reason)}")

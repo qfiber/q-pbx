@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 3 — API, webhooks and notifications: 3-1 and 3-2 done; next task 3-3. Phase 2 done.
+**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-3 done; next task 3-4. Phase 2 done.
 **Last updated:** 2026-11-28
 
 ## Phase 1 goal
@@ -40,6 +40,23 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 3-3 Call events (done, 2026-11-28): the call process publishes `CallEvent` (version 1) in
+  order: `started` (direction internal, inbound or outbound), `ringing` (the far end rings:
+  FreeSWITCH's progress events, now subscribed), `answered`, `transferred`, `ended`
+  (disposition, cause, duration, billsec), `missed` (rang extensions, nobody answered).
+  Kamailio reports registration changes (new, removed, expired contacts; not renewals) to
+  `/internal/kamailio/registration` (loopback and a shared secret) through
+  `http_async_client` (new package `kamailio-extra-modules`), and Edge publishes
+  `ExtensionRegistration` (registered, unregistered with reason unregister or expired), with
+  `voicemail.received` and `limit.reached` already there. 4 new tests (296 in all): fake
+  FreeSWITCH (answered, missed, transferred in order), the report endpoint (events,
+  unknown extensions, loopback and secret). Lab: `lab/done-when/phase3-events.py` 14/14 with
+  real SIP (three phones register, an answered call: started, ringing, answered, ended; a
+  call that rings out: started, ringing, ended, missed by 103; an unregister; a phone that
+  stopped renewing reported expired). Not in the lab: a real transfer (the lab SIP agent
+  cannot send REFER; covered by the fake FreeSWITCH test). The explorer's binary uploads are
+  now part of 3-11.
 
 - 3-2 API resources (done, 2026-11-28): everything built so far through `/v1`, calling the
   same functions the portal pages call. Platform: tenants (created with their first admin,
@@ -407,7 +424,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 3-3 Call events (next).
+- 3-4 Outbound request safety (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next
@@ -508,7 +525,7 @@ webhook with minutes remaining, and a webhook aimed at an internal address is re
 | 3-8 | Notification service | `alerts` with state (open, acknowledged, resolved), deduplication and grouping ("37 more since 14:02"), per-recipient rate caps; rules with default subscriptions per role, mandatory alerts set by platform admins, preferences per user (channels per category), shared recipients, quiet hours that critical alerts bypass; channels: email (English and Arabic templates), alert webhooks (signed like 3-5; a platform-level one compatible with Alertmanager-style receivers), in-portal bell with unread count; acknowledge by email link, portal or API; "back to normal" when resolved; delivery log with resend | Unit tests for rules, dedup, throttling and quiet hours; LiveView tests for the bell |
 | 3-9 | Alert sources | Security: SIP attacks (edge alerts), brute force on extensions and portal accounts, failed 2FA and logins from a new IP, fraud alerts and blocks. Health: FreeSWITCH and Kamailio heartbeat lost, process crash loops, trunk down or registration failed, disk, backup failed, certificate expiring. Usage: thresholds per plan (50/80/90/100%) with tenant overrides, once per period, with minutes used and remaining, period end and projected run-out; limit reached; monthly summary. Operations: phone or trunk offline longer than a set time, webhook dead-lettered. Personal: missed call, voicemail | A test per alert; lab: real trunk down, a stopped FreeSWITCH, a threshold crossed by real calls |
 | 3-10 | Call tests in CI | The SIPp suite extended: call webhooks delivered and signed, an API-driven change applied, a threshold alert | CI green |
-| 3-11 | Leftovers | Whatever phase 3 turns up | — |
+| 3-11 | Leftovers | Whatever phase 3 turns up; the API explorer sends binary bodies (greeting uploads now, fax documents later) from a file input | — |
 | 3-12 | Done-when verification | The four conditions in the lab, with the webhook latency measured | Results recorded here |
 | 3-13 | Portal design pass (was D-2) | A visual and usability pass over every portal page, done once phase 3's pages exist and before phase 4 | Review in the browser |
 

@@ -9,6 +9,7 @@ loopback address (Kamailio tells carriers from phones by source address).
 Commands:
   {"cmd": "phone", "name": N, "ip": IP, "user": U, "domain": D, "password": P, "mode": M}
   {"cmd": "carrier", "name": N, "ip": IP, "port": PORT, "mode": M}
+  {"cmd": "unregister", "name": N}                REGISTER with Expires: 0
   {"cmd": "mode", "name": N, "mode": M}          M: answer | busy | ring | 503
   {"cmd": "call", "from": N, "to": NUMBER, "hold": bool, "wait": SECONDS}
   {"cmd": "bye", "dialog": ID}
@@ -188,13 +189,13 @@ class Endpoint(threading.Thread):
         return (f'{name}: Digest username="{self.user}", realm="{realm}", nonce="{nonce}", uri="{uri}", response="{r}", '
                 f'algorithm=MD5, qop=auth, nc=00000001, cnonce="{cn}"\r\n')
 
-    def register(self):
+    def register(self, expires=600):
         uri, call_id, tag = f"sip:{self.domain}", rnd(64), rnd()
         to = f"<sip:{self.user}@{self.domain}>"
-        self.request("REGISTER", uri, call_id, 1, tag, to, "Expires: 600\r\n")
+        self.request("REGISTER", uri, call_id, 1, tag, to, f"Expires: {expires}\r\n")
         r = self.final(call_id, 1, 5)
         if r and r.split(" ")[1] in ("401", "407"):
-            self.request("REGISTER", uri, call_id, 2, tag, to, "Expires: 600\r\n" + self.auth_header(r, "REGISTER", uri))
+            self.request("REGISTER", uri, call_id, 2, tag, to, f"Expires: {expires}\r\n" + self.auth_header(r, "REGISTER", uri))
             r = self.final(call_id, 2, 5)
         return r.split(" ")[1] if r else "timeout"
 
@@ -286,6 +287,8 @@ def handle(c):
         e.start()
         endpoints[c["name"]] = e
         return {"status": "ok"}
+    if cmd == "unregister":
+        return {"status": endpoints[c["name"]].register(0)}
     if cmd == "mode":
         endpoints[c["name"]].mode = c["mode"]
         return {"status": "ok"}

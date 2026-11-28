@@ -36,6 +36,12 @@ defmodule QPBX.Web.Router do
     post "/dialplan", FreeswitchController, :dialplan
   end
 
+  # Kamailio (this server only): registration reports; the controller checks the source and
+  # the shared secret.
+  scope "/internal/kamailio", QPBX.Web do
+    post "/registration", KamailioController, :registration
+  end
+
   scope "/health", QPBX.Web do
     pipe_through :health
 

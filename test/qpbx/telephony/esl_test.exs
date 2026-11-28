@@ -133,8 +133,89 @@ defmodule QPBX.Telephony.ESLTest do
       assert states |> List.last() |> elem(2) == "terminated"
     end
 
+    test "call events in order: started, ringing, answered, ended; an unanswered call is missed",
+         %{fs: fs, tenant: t} do
+      QPBX.Events.subscribe(QPBX.Events.CallEvent)
+
+      e102 =
+        Enum.find(
+          Core.list_extensions(
+            Core.scope_for(hd(Core.list_users(%Core.Scope{kind: :platform}, t)))
+          ),
+          &(&1.number == "102")
+        )
+
+      park(fs, "call-ev", %{
+        "variable_sip_h_X-QPBX-Source" => "device",
+        "variable_sip_h_X-QPBX-Tenant" => t.id,
+        "variable_sip_h_X-QPBX-Auth-User" => "101-desk",
+        "Caller-Destination-Number" => "102",
+        "Caller-Caller-ID-Number" => "101-desk"
+      })
+
+      assert %{app: "set"} = recv_sendmsg(fs, "call-ev")
+      assert %{app: "bridge", event_uuid: id} = recv_sendmsg(fs, "call-ev")
+      event(fs, %{"Event-Name" => "CHANNEL_PROGRESS", "Unique-ID" => "call-ev"})
+      # A second ringing signal (early media) is the same ringing.
+      event(fs, %{"Event-Name" => "CHANNEL_PROGRESS_MEDIA", "Unique-ID" => "call-ev"})
+      event(fs, %{"Event-Name" => "CHANNEL_BRIDGE", "Unique-ID" => "call-ev"})
+      complete(fs, "call-ev", id, "SUCCESS")
+      assert %{command: "hangup"} = recv_sendmsg(fs, "call-ev")
+
+      event(fs, %{
+        "Event-Name" => "CHANNEL_HANGUP_COMPLETE",
+        "Unique-ID" => "call-ev",
+        "Hangup-Cause" => "NORMAL_CLEARING",
+        "variable_duration" => "12",
+        "variable_billsec" => "9"
+      })
+
+      events = collect_calls()
+      assert Enum.map(events, & &1.type) == ~w(started ringing answered ended)
+
+      assert Enum.all?(
+               events,
+               &(&1.call_id == "call-ev" and &1.tenant_id == t.id and &1.direction == "internal")
+             )
+
+      [started, ringing, answered, ended] = events
+      assert started.from == "101" and started.to == "102" and started.extension_id
+      assert ringing.target == %{type: "extension", extension_id: e102.id, number: "102"}
+      assert answered.target.extension_id == e102.id
+
+      assert %{disposition: "answered", cause: "NORMAL_CLEARING", duration: 12, billsec: 9} =
+               ended
+
+      # 102 does not answer and has no mailbox: the call ends, and 102 missed it.
+      park(fs, "call-miss", %{
+        "variable_sip_h_X-QPBX-Source" => "device",
+        "variable_sip_h_X-QPBX-Tenant" => t.id,
+        "variable_sip_h_X-QPBX-Auth-User" => "101-desk",
+        "Caller-Destination-Number" => "102"
+      })
+
+      assert %{app: "set"} = recv_sendmsg(fs, "call-miss")
+      assert %{app: "bridge", event_uuid: id} = recv_sendmsg(fs, "call-miss")
+      event(fs, %{"Event-Name" => "CHANNEL_PROGRESS", "Unique-ID" => "call-miss"})
+      complete(fs, "call-miss", id, "NO_ANSWER")
+      assert %{command: "hangup", cause: "NO_ANSWER"} = recv_sendmsg(fs, "call-miss")
+
+      event(fs, %{
+        "Event-Name" => "CHANNEL_HANGUP_COMPLETE",
+        "Unique-ID" => "call-miss",
+        "Hangup-Cause" => "NO_ANSWER"
+      })
+
+      events = collect_calls()
+      assert Enum.map(events, & &1.type) == ~w(started ringing ended missed)
+      assert %{disposition: "no_answer", extension_ids: [id102]} = List.last(events)
+      assert id102 == e102.id
+    end
+
     test "a transfer re-routes the parked channel instead of hanging up; a 302 is followed",
          %{fs: fs, tenant: t} do
+      QPBX.Events.subscribe(QPBX.Events.CallEvent)
+
       park(fs, "call-5", %{
         "variable_sip_h_X-QPBX-Source" => "device",
         "variable_sip_h_X-QPBX-Tenant" => t.id,
@@ -166,6 +247,9 @@ defmodule QPBX.Telephony.ESLTest do
 
       assert %{app: "bridge", arg: "loopback/qpbx-echo/public/XML", event_uuid: id2} =
                recv_sendmsg(fs, "call-5")
+
+      assert_receive {:event,
+                      %QPBX.Events.CallEvent{type: "transferred", call_id: "call-5", to: "*43"}}
 
       # The echo answers 302 to 102: followed.
       event(fs, %{
@@ -375,6 +459,14 @@ defmodule QPBX.Telephony.ESLTest do
         collect_states([{e, d, st} | acc])
     after
       100 -> Enum.reverse(acc)
+    end
+  end
+
+  defp collect_calls(acc \\ []) do
+    receive do
+      {:event, %QPBX.Events.CallEvent{} = e} -> collect_calls([e | acc])
+    after
+      200 -> Enum.reverse(acc)
     end
   end
 

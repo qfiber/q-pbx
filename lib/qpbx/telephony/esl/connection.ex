@@ -10,8 +10,9 @@ defmodule QPBX.Telephony.ESL.Connection do
   alias QPBX.Telephony.Calls
   alias QPBX.Telephony.ESL.Frame
 
+  # CHANNEL_PROGRESS(_MEDIA): the far end rings (call.ringing).
   @events ~w(CHANNEL_PARK CHANNEL_ANSWER CHANNEL_BRIDGE CHANNEL_UNBRIDGE CHANNEL_EXECUTE_COMPLETE
-             CHANNEL_HANGUP_COMPLETE BACKGROUND_JOB)
+             CHANNEL_HANGUP_COMPLETE CHANNEL_PROGRESS CHANNEL_PROGRESS_MEDIA BACKGROUND_JOB)
   @timeout 5_000
 
   def start_link(opts), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)

@@ -122,8 +122,18 @@ early, confirmed) and each extension rung (recipient: early, confirmed, terminat
 answered there); everything goes terminated when the call ends. The caller is named by
 extension number.
 
+**Call events (`Call.Events`):** the call process publishes `CallEvent` at each step, in
+order and synchronously: `started` once routed (direction internal, inbound or outbound),
+`ringing` on the first `CHANNEL_PROGRESS` or `CHANNEL_PROGRESS_MEDIA` of each dial (the event
+socket subscribes to both), `answered` on `CHANNEL_BRIDGE`, `transferred` when a REFER moves
+the call, `ended` at hangup (disposition answered, voicemail, busy, no_answer or failed;
+cause, duration, billsec from the hangup event), then `missed` when it rang extensions and
+nobody answered (calls to carriers are never missed). A call no tenant claimed publishes
+nothing. A 302 redirect is not a transfer.
+
 **Events consumed:** `ConfigChanged`, `SipCredentialsChanged`, `TenantsChanged` (cache).
-**Emitted:** `CallState`, `LimitReached`, `FraudAlert`, `VoicemailReceived`, `VoicemailChanged`.
+**Emitted:** `CallState`, `CallEvent`, `LimitReached`, `FraudAlert`, `VoicemailReceived`,
+`VoicemailChanged`.
 
 **Gotchas:**
 - Without `continue_on_fail=true` FreeSWITCH hangs up the caller after a failed bridge, so

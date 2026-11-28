@@ -73,6 +73,7 @@ loadmodule "presence_xml.so"
 loadmodule "presence_dialoginfo.so"
 loadmodule "presence_mwi.so"
 loadmodule "pua_json.so"
+loadmodule "http_async_client.so"
 
 modparam("tls", "config", "/etc/kamailio/tls.cfg")
 modparam("jsonrpcs", "transport", 1)
@@ -492,10 +493,55 @@ route[REGISTER] {
   # One login is one device: a new registration replaces its older contacts (a phone that
   # re-registers from a new port would otherwise be forked to twice, and a busy or redirect
   # from one branch held until the stale branch times out).
-  if (!save("location", "0x04")) {
+  $var(saved) = save("location", "0x04");
+  if ($var(saved) < 0) {
     sl_reply_error();
+    exit;
+  }
+  # Only real changes reach the app (a renewal, code 2, does not): 1 a new contact, 3 removed.
+  if ($var(saved) == 1 || $var(saved) == 3) {
+    $var(rep_event) = "unregistered";
+    if ($var(saved) == 1) {
+      $var(rep_event) = "registered";
+    }
+    $var(rep_aor) = $tU + "@" + $td;
+    $var(rep_contact) = $si + ":" + $sp;
+    $var(rep_ua) = "";
+    if (is_present_hf("User-Agent")) {
+      $var(rep_ua) = $(hdr(User-Agent){s.encode.hexa});
+    }
+    route(REG_REPORT);
   }
   exit;
+}
+
+# A contact ran out without being renewed: the device is no longer registered.
+event_route[usrloc:contact-expired] {
+  $var(rep_event) = "expired";
+  $var(rep_aor) = $ulc(exp=>aor);
+  $var(rep_contact) = $ulc(exp=>addr);
+  $var(rep_ua) = $(ulc(exp=>user_agent){s.encode.hexa});
+  route(REG_REPORT);
+}
+
+# Reports a registration change to the app (QPBX.Edge.RegistrationEvents) without holding up
+# the SIP reply: http_async_client sends it from its own worker. The user agent goes
+# hex-encoded (any character a phone puts there stays out of the JSON).
+route[REG_REPORT] {
+  $http_req(all) = $null;
+  $http_req(suspend) = 0;
+  $http_req(timeout) = 2000;
+  $http_req(method) = "POST";
+  $http_req(hdr) = "Content-Type: application/json";
+  $http_req(hdr) = "X-QPBX-Secret: " + EVENT_SECRET;
+  $http_req(body) = "{\"event\":\"" + $var(rep_event) + "\",\"aor\":\"" + $var(rep_aor) + "\",\"contact\":\"" + $var(rep_contact) + "\",\"ua_hex\":\"" + $var(rep_ua) + "\"}";
+  http_async_query("http://127.0.0.1:4000/internal/kamailio/registration", "REG_REPORT_REPLY");
+}
+
+route[REG_REPORT_REPLY] {
+  if (!$http_ok || $http_rs != 204) {
+    xlog("L_WARN", "registration report not taken: $http_rs $http_err\n");
+  }
 }
 
 # A new call from outside: a registration trunk's carrier (the R-URI user is the trunk id

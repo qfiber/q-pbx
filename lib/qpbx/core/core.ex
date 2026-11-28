@@ -367,6 +367,9 @@ defmodule QPBX.Core do
   defdelegate extension_addresses(tenant_id \\ nil),
     to: QPBX.Core.TelephonySnapshot
 
+  @doc "`%{tenant_id, extension_id, number}` of the extension at a SIP domain and number, or nil."
+  defdelegate extension_at(domain, number), to: QPBX.Core.TelephonySnapshot
+
   @doc "What a user typed (local formats allowed) as E.164, with the scope's number rule."
   def to_e164(scope, input), do: QPBX.Core.Numbers.to_e164(input, number_rule(scope))
 

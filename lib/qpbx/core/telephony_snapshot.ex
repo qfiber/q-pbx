@@ -65,6 +65,17 @@ defmodule QPBX.Core.TelephonySnapshot do
     }
   end
 
+  @doc "The extension a device login belongs to, by its SIP domain and extension number."
+  def extension_at(domain, number) do
+    Repo.one(
+      from e in Extension,
+        join: t in Tenant,
+        on: t.id == e.tenant_id,
+        where: t.sip_domain == ^domain and e.number == ^number,
+        select: %{tenant_id: e.tenant_id, extension_id: e.id, number: e.number}
+    )
+  end
+
   @doc "Every extension as `{id, number, sip_domain}`, optionally of one tenant (voicemail lights)."
   def extension_addresses(tenant_id \\ nil) do
     query =

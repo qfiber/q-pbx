@@ -48,6 +48,14 @@ defmodule QPBX.Edge do
   @doc "Reloads the allow lists (platform SIP allows and tenant office IPs)."
   def reload_allowlist, do: ok(rpc("permissions.addressReload"))
 
+  ## Registrations reported by Kamailio
+
+  @doc "A device's registration change from Kamailio (see `QPBX.Edge.RegistrationEvents`)."
+  defdelegate registration_report(params), to: QPBX.Edge.RegistrationEvents, as: :report
+
+  @doc "The shared secret Kamailio sends with its reports (nil: reports are refused)."
+  def event_secret, do: config()[:event_secret]
+
   ## Protection settings (platform admins)
 
   def get_settings, do: Repo.get!(Settings, true)

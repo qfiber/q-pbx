@@ -2,6 +2,23 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-28: Call and registration events (3-3)
+
+- **One call event type with a `type` field** (`CallEvent`: started, ringing, answered,
+  transferred, ended, missed) on one topic, rather than six structs: every step shares the
+  same fields, and webhooks and the event stream subscribe once. Version 1.
+- **`ringing` is the far end's ringing** (FreeSWITCH's progress events on the caller's
+  channel), not the moment a dial starts: an extension with no phone registered never
+  "rings". **`missed`** is a call that rang extensions and ended without anyone answering
+  (also when it then went to voicemail); calls out to carriers are never missed.
+- **Kamailio pushes registration changes** to the app over HTTP (`http_async_client`, its own
+  worker, so SIP replies are not held), only for new, removed and expired contacts.
+  Rejected: polling Kamailio's location table (seconds late, and a growing dump to compare);
+  a write-through location table in Postgres (Kamailio would need write access to the
+  database). The phone's user agent goes hex-encoded, so nothing in it can break the JSON.
+- **Explorer uploads (binary bodies) move to 3-11**: the explorer sends JSON only;
+  fax (phase 5) is the first big upload API, so 3-11 is where it gets file inputs.
+
 ## 2026-11-28: API resources (3-2)
 
 - **One security component for every route** (suggested in review, kept as built): the key
