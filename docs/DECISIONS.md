@@ -2,6 +2,26 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-28: Webhooks (3-5)
+
+- **Signature like the common providers':** HMAC-SHA256 over `"<timestamp>.<body>"`, sent as
+  `x-qpbx-signature: v1=<hex>` with `x-qpbx-timestamp` and `x-qpbx-event-id`; the timestamp
+  lets receivers refuse replays (5 minutes), `v1=` leaves room for a second scheme during a
+  change. The secret is encrypted, not hashed: signing needs it.
+- **Retries:** 30 s doubling to at most 6 hours apart, for 24 hours, then dead and
+  `WebhookDeadLettered` (the 3-9 alert). A 2xx is success; any other answer, a timeout or a
+  refused address is a failure.
+- **No ordering promise:** deliveries run in parallel (10 at once) so one slow receiver or a
+  retry does not hold back the rest; the body's `created_at` and `id` let receivers order and
+  drop repeats. Rejected: one queue per endpoint in order (a failing endpoint would stall
+  every later event for a day).
+- **Resend makes a new delivery of the same event** (same `id`), so the log keeps both.
+- **Deliveries are kept 30 days** (daily prune).
+- **Endpoints are checked at save and on every delivery:** an address that resolves inside
+  is refused when saved (a clear message) and again when sent (DNS can change).
+- **The secret can be rotated** (the old one stops at once), so a leaked secret does not
+  mean losing the endpoint and its log.
+
 ## 2026-11-28: Outbound request safety (3-4)
 
 - **One client in the integrations area** (`QPBX.Integrations.request/3`), the first piece of

@@ -438,6 +438,77 @@ defmodule QPBX.Web.Api.ResourcesTest do
       assert {204, nil} = api(k, :delete, "/v1/office-ips/#{id}")
     end
 
+    test "webhooks: add (secret once), change, rotate, deliveries, resend, remove", %{
+      tok: k,
+      t: t,
+      scope: scope
+    } do
+      old = Application.get_env(:qpbx, QPBX.Integrations)
+      Application.put_env(:qpbx, QPBX.Integrations, [])
+      on_exit(fn -> Application.put_env(:qpbx, QPBX.Integrations, old || []) end)
+
+      assert {422, %{"error" => %{"details" => %{"url" => ["must start with https://"]}}}} =
+               api(k, :post, "/v1/webhooks", %{
+                 url: "http://1.1.1.1/",
+                 event_types: ["call.started"]
+               })
+
+      assert {422, %{"error" => %{"details" => %{"url" => ["points to an internal address"]}}}} =
+               api(k, :post, "/v1/webhooks", %{
+                 url: "https://[::ffff:127.0.0.1]/",
+                 event_types: ["call.started"]
+               })
+
+      assert {201, %{"data" => %{"id" => id} = w, "secret" => "whsec_" <> _ = secret}} =
+               api(k, :post, "/v1/webhooks", %{
+                 url: "https://1.1.1.1/hook",
+                 event_types: ["call.started"]
+               })
+
+      refute inspect(w) =~ secret
+      assert {200, %{"data" => [_]}} = api(k, :get, "/v1/webhooks")
+
+      assert {200, %{"data" => %{"enabled" => false}}} =
+               api(k, :patch, "/v1/webhooks/#{id}", %{enabled: false})
+
+      assert {200, %{"secret" => new}} = api(k, :post, "/v1/webhooks/#{id}/rotate-secret")
+      assert new != secret
+
+      {:ok, _} =
+        QPBX.Integrations.update_webhook(
+          scope,
+          QPBX.Integrations.get_webhook(scope, id),
+          %{enabled: true},
+          {:system, "t"}
+        )
+
+      :ok =
+        QPBX.Integrations.Webhooks.dispatch(%QPBX.Events.CallEvent{
+          type: "started",
+          tenant_id: t.id,
+          call_id: "c1",
+          at: DateTime.utc_now()
+        })
+
+      assert {200,
+              %{"data" => [%{"id" => did, "status" => "pending", "event_type" => "call.started"}]}} =
+               api(k, :get, "/v1/webhooks/#{id}/deliveries")
+
+      assert {200, %{"data" => %{"payload" => payload}}} =
+               api(k, :get, "/v1/webhook-deliveries/#{did}")
+
+      assert %{"type" => "call.started", "data" => %{"call_id" => "c1"}} = Jason.decode!(payload)
+
+      assert {201, %{"data" => %{"event_type" => "call.started"}}} =
+               api(k, :post, "/v1/webhook-deliveries/#{did}/resend")
+
+      other = key(Core.scope_for(user_fixture(tenant_fixture())), ~w(read write admin))
+      assert {404, _} = api(other, :get, "/v1/webhooks/#{id}")
+      assert {404, _} = api(other, :post, "/v1/webhook-deliveries/#{did}/resend")
+      assert {403, _} = api(key(scope, ~w(read write)), :get, "/v1/webhooks")
+      assert {204, nil} = api(k, :delete, "/v1/webhooks/#{id}")
+    end
+
     test "calls: records by cursor, CSV export, daily usage", %{tok: k, t: t} do
       now = DateTime.utc_now() |> DateTime.truncate(:second)
 

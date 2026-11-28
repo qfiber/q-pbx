@@ -1,7 +1,7 @@
 # Integrations (`QPBX.Integrations`)
 
-**Purpose:** everything that reaches out to addresses tenants choose. So far the one
-outbound HTTP client; webhooks (3-5), flows and CRM adapters come later.
+**Purpose:** everything that reaches out to addresses tenants choose: the one outbound HTTP
+client and webhooks (flows and CRM adapters come later).
 
 **Public API:** `request/3` (`QPBX.Integrations.OutboundHTTP`): `request(method, url, opts)` →
 `{:ok, %{status, headers, body}}` for any HTTP status, or `{:error, reason}` (`:bad_url`,
@@ -31,9 +31,37 @@ authorities, PEM, trusted next to the system's; default none). Tenants cannot ch
 **Telemetry:** `[:qpbx, :outbound, :request]` (`duration`; metadata `host`, `result`: the
 status or the error reason).
 
-**Events:** none emitted or consumed.
+**Webhooks** (`QPBX.Integrations.Webhooks`; tables `webhook_endpoints`, `webhook_deliveries`,
+row-level security):
+- API (tenant scope, audited): `webhook_event_types/0`, `list_webhooks/1`, `get_webhook/2`,
+  `change_webhook/2`, `create_webhook/3` (`{:ok, endpoint, secret}`), `update_webhook/4`,
+  `delete_webhook/3`, `rotate_webhook_secret/3` (`{:ok, endpoint, secret}`),
+  `list_webhook_deliveries/4` (newest first, `before: {inserted_at, id}`),
+  `get_webhook_delivery/2`, `resend_webhook_delivery/3` (a new delivery of the same event id).
+- An endpoint: HTTPS URL (refused at save when it resolves inside, and checked again on every
+  delivery), event types, description, enabled, a secret (`whsec_...`, Cloak-encrypted, shown
+  on creation and rotation only).
+- Event types (`Webhooks.Event`): `call.started|ringing|answered|transferred|ended|missed`,
+  `extension.registered|unregistered`, `voicemail.received`, `limit.reached`. Body:
+  `{"id", "type", "version", "created_at", "tenant_id", "data"}`; `id` is the same for every
+  endpoint and resend of one event.
+- `Webhooks.Dispatcher` (started by the application; off in tests) subscribes to the bus and
+  calls `Webhooks.dispatch/1`: a delivery row and an Oban job per endpoint in one transaction.
+- `Webhooks.Worker` (queue `webhooks`, 10 at once): POST with `x-qpbx-event-id`,
+  `x-qpbx-event-type`, `x-qpbx-timestamp`, `x-qpbx-signature: v1=<hex HMAC-SHA256 of
+  "<timestamp>.<body>">` (`Webhooks.Signature`: `sign/3`, `valid?/6`, 5-minute tolerance);
+  2xx delivers; otherwise retried after 30 s, doubling to at most 6 h apart, until 24 hours
+  have passed, then dead (`WebhookDeadLettered`). Every attempt is logged on the delivery
+  (time, status or error, duration, the answer's first 2 KB). Disabled or removed endpoints
+  are not sent to.
+- `Webhooks.Prune` (Oban cron, 03:17 daily) deletes deliveries older than 30 days.
+
+**Events:** emits `WebhookDeadLettered`; consumes `CallEvent`, `ExtensionRegistration`,
+`VoicemailReceived`, `LimitReached` (webhooks).
 
 **Gotchas:**
 - Tests pass `resolver:` (a fun from host to address tuples) and `cacerts:`; never use them in
   application code.
 - HTTP/1.1 only, one connection per request (no pool): these are low-volume calls.
+- Webhook deliveries run in parallel, so they can arrive out of order (and a retry arrives
+  later than newer events): receivers order by `created_at` and drop repeats by `id`.

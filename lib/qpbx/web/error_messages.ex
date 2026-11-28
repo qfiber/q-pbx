@@ -21,7 +21,12 @@ defmodule QPBX.Web.ErrorMessages do
       dgettext_noop("errors", "tenant entries are for SIP only"),
       dgettext_noop("errors", "is too wide for a tenant entry (at most /%{min})"),
       dgettext_noop("errors", "must be in the future"),
-      dgettext_noop("errors", "pick at least one scope")
+      dgettext_noop("errors", "pick at least one scope"),
+      dgettext_noop("errors", "pick at least one event"),
+      dgettext_noop("errors", "must start with https://"),
+      dgettext_noop("errors", "points to an internal address"),
+      dgettext_noop("errors", "has a host name that does not resolve"),
+      dgettext_noop("errors", "is not a valid URL")
     ]
   end
 end

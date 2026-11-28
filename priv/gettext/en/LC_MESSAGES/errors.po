@@ -166,3 +166,28 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "pick at least one scope"
 msgstr ""
+
+#: lib/qpbx/web/error_messages.ex:28
+#, elixir-autogen, elixir-format
+msgid "has a host name that does not resolve"
+msgstr ""
+
+#: lib/qpbx/web/error_messages.ex:29
+#, elixir-autogen, elixir-format
+msgid "is not a valid URL"
+msgstr ""
+
+#: lib/qpbx/web/error_messages.ex:26
+#, elixir-autogen, elixir-format
+msgid "must start with https://"
+msgstr ""
+
+#: lib/qpbx/web/error_messages.ex:25
+#, elixir-autogen, elixir-format
+msgid "pick at least one event"
+msgstr ""
+
+#: lib/qpbx/web/error_messages.ex:27
+#, elixir-autogen, elixir-format
+msgid "points to an internal address"
+msgstr ""

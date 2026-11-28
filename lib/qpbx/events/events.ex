@@ -9,6 +9,7 @@ defmodule QPBX.Events do
       CallState,
       CallEvent,
       ExtensionRegistration,
+      WebhookDeadLettered,
       ConfigChanged,
       FraudAlert,
       LimitReached,

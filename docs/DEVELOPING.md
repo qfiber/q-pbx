@@ -102,6 +102,7 @@ uses two roles (`qpbx_owner` for migrations, `qpbx` for the app); development us
 | `lab/done-when/phase3-api.py <vm-ip>` | 3-1 and 3-2 lab check: the `/v1` API through nginx (keys, scopes, isolation, idempotency, pages, rate limit, OpenAPI, explorer; every resource kind, a device added through the API registering over SIP) |
 | `lab/done-when/phase3-events.py <vm-ip>` | 3-3 lab check: call and registration events for real SIP traffic (`--skip-expiry` saves the two-minute wait) |
 | `lab/done-when/phase3-outbound.py <vm-ip> <receiver-ip>` | 3-4 lab check: the outbound client from the server (real DNS and certificates; inside names, addresses and redirects refused); the HTTPS receiver (`lab/tools/http_receiver.py`, certificate from `lab/tools/lab-ca.sh`) runs on the backup VM |
+| `lab/done-when/phase3-webhooks.py <vm-ip> <receiver-ip>` | 3-5 lab check: webhooks for real calls and registrations to the HTTPS receiver on the backup VM (signatures, order, delivery time, retries) |
 | `node lab/done-when/phase3-explorer.mjs <vm-ip>` | 3-1 lab check: the API explorer in Chrome (sends requests with a typed key, no CSP violations) |
 | `lab/done-when/phase2-tenants.py <vm-ip>` | Two tenants with the same numbers, no crossover in or out; changes apply without restarting Kamailio or FreeSWITCH |
 | `lab/done-when/phase2-restore.py <vm-ip>` | 2-10 lab check: timed restore of the lab server onto a fresh VM |

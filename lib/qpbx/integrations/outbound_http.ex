@@ -56,6 +56,20 @@ defmodule QPBX.Integrations.OutboundHTTP do
     result
   end
 
+  @doc """
+  Checks a URL without sending anything: HTTPS, and its host resolves to allowed addresses
+  only (`:ok` or the same errors as `request/3`). For saving an address; every request
+  checks again.
+  """
+  def check_destination(url) do
+    opts = Keyword.merge(@defaults, Application.get_env(:qpbx, QPBX.Integrations, []))
+
+    with {:ok, uri} <- check_url(url),
+         {:ok, _ip} <-
+           resolve(uri.host, opts, System.monotonic_time(:millisecond) + opts[:connect_timeout]),
+         do: :ok
+  end
+
   defp follow(method, url, headers, body, opts, deadline, hops) do
     with {:ok, uri} <- check_url(url),
          {:ok, ip} <- resolve(uri.host, opts, deadline),

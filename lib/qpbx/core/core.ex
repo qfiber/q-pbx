@@ -30,7 +30,8 @@ defmodule QPBX.Core do
       NumberRule,
       NumberClass,
       Numbers,
-      ApiKey
+      ApiKey,
+      Encrypted.Binary
     ]
 
   import Ecto.Query

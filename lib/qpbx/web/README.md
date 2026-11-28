@@ -63,7 +63,8 @@ them. A device's SIP password is shown once, after creation or reset.
   (+ `blocks`), `platform-admins`; either kind: `me`, `api-keys` (admin), `audit`,
   `numbers` (read), `number-format`; tenant `extensions` (+ `devices`, `mailbox`,
   `greetings`), `voicemails` (+ `audio-link`), `users` (admin), `routes`, `office-ips`,
-  `calls` (+ `export` CSV), `usage/daily`. Numbers are E.164 in the API (no local formats).
+  `calls` (+ `export` CSV), `usage/daily`, `webhooks` (admin: + `rotate-secret`,
+  `deliveries`; `webhook-deliveries/:id`, `/resend`). Numbers are E.164 in the API (no local formats).
   A device's SIP password and a new key's token are in the creating response only; setup
   links are only emailed, never returned.
 - Voicemail audio: `POST /v1/voicemails/:id/audio-link` gives a `Phoenix.Token` link valid 5
@@ -78,6 +79,10 @@ them. A device's SIP password is shown once, after creation or reset.
 **API keys page:** `QPBX.Web.Account.ApiKeysLive` at `/app/api-keys` (tenant admins) and
 `/platform/api-keys` (platform admins): create (name, scopes, expiry 30/90/365 days or never;
 the key shown once), list by prefix with last use, revoke.
+
+**Webhooks pages:** `/app/webhooks` (`WebhooksLive`: list, add with the secret shown once and
+how to check a signature) and `/app/webhooks/:id` (`WebhookLive`: change, turn off, new secret,
+remove; the delivery log with each attempt and answer, send again), tenant admins.
 
 **My extension:** `/app/me` (`:tenant_user` live session, every tenant user): the user's own
 extension's voicemail, recent calls, forwarding and DND, and devices (read only).

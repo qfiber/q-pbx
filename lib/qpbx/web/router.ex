@@ -163,6 +163,15 @@ defmodule QPBX.Web.Router do
     get "/calls", CallController, :index
     get "/calls/export", CallController, :export
     get "/usage/daily", CallController, :usage
+    get "/webhooks", WebhookController, :index
+    post "/webhooks", WebhookController, :create
+    get "/webhooks/:id", WebhookController, :show
+    patch "/webhooks/:id", WebhookController, :update
+    delete "/webhooks/:id", WebhookController, :delete
+    post "/webhooks/:id/rotate-secret", WebhookController, :rotate
+    get "/webhooks/:id/deliveries", WebhookController, :deliveries
+    get "/webhook-deliveries/:id", WebhookController, :delivery
+    post "/webhook-deliveries/:id/resend", WebhookController, :resend
   end
 
   scope "/", QPBX.Web do
@@ -234,6 +243,8 @@ defmodule QPBX.Web.Router do
       live "/routes", RoutesLive, :index
       live "/office-ips", OfficeIpsLive, :index
       live "/number-format", NumberFormatLive, :index
+      live "/webhooks", WebhooksLive, :index
+      live "/webhooks/:id", WebhookLive, :show
 
       scope "/", alias: false do
         live "/api-keys", QPBX.Web.Account.ApiKeysLive, :index, as: :tenant_api_keys

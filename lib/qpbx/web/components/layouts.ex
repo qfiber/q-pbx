@@ -108,6 +108,9 @@ defmodule QPBX.Web.Layouts do
           <.link navigate={~p"/app/number-format"} class="btn btn-ghost btn-sm" id="nav-number-format">
             {gettext("Number format")}
           </.link>
+          <.link navigate={~p"/app/webhooks"} class="btn btn-ghost btn-sm" id="nav-webhooks">
+            {gettext("Webhooks")}
+          </.link>
           <.link navigate={~p"/app/api-keys"} class="btn btn-ghost btn-sm" id="nav-api-keys">
             {gettext("API keys")}
           </.link>

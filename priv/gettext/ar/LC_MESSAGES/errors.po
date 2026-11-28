@@ -191,3 +191,28 @@ msgstr "لا يمكن للمستأجرين إضافة سوى إدخالات ال
 #, elixir-autogen, elixir-format
 msgid "pick at least one scope"
 msgstr "اختر صلاحية واحدة على الأقل"
+
+#: lib/qpbx/web/error_messages.ex:28
+#, elixir-autogen, elixir-format
+msgid "has a host name that does not resolve"
+msgstr "يحتوي على اسم مضيف لا يمكن الوصول إليه"
+
+#: lib/qpbx/web/error_messages.ex:29
+#, elixir-autogen, elixir-format
+msgid "is not a valid URL"
+msgstr "ليس عنوان URL صالحًا"
+
+#: lib/qpbx/web/error_messages.ex:26
+#, elixir-autogen, elixir-format
+msgid "must start with https://"
+msgstr "يجب أن يبدأ بـ https://"
+
+#: lib/qpbx/web/error_messages.ex:25
+#, elixir-autogen, elixir-format
+msgid "pick at least one event"
+msgstr "اختر حدثًا واحدًا على الأقل"
+
+#: lib/qpbx/web/error_messages.ex:27
+#, elixir-autogen, elixir-format
+msgid "points to an internal address"
+msgstr "يشير إلى عنوان داخلي"

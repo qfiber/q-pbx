@@ -25,6 +25,7 @@ defmodule QPBX.Web do
       QPBX.Firewall,
       QPBX.Edge,
       QPBX.Telephony,
+      QPBX.Integrations,
       QPBX.Events,
       QPBX.Repo
     ],

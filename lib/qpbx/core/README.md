@@ -5,7 +5,8 @@
 
 **Public API** (`QPBX.Core`; exported schemas `Plan`, `Tenant`, `PlatformAdmin`, `User`, `AuditLog`,
 `SipCredential`, `Extension`, `Device`, `Trunk`, `TrunkAddress`, `Did`, `OutboundRoute`,
-`EmergencyRoute`, `NumberRule`, `NumberClass`, `ApiKey`; `Vault`, `Scope`, `KeyProvider`; and `Numbers`).
+`EmergencyRoute`, `NumberRule`, `NumberClass`, `ApiKey`; `Vault`, `Encrypted.Binary` (the
+Cloak field type, for other areas' encrypted columns), `Scope`, `KeyProvider`; and `Numbers`).
 Every changing function takes an `actor` (`%PlatformAdmin{}`, `%User{}`, `%ApiKey{}` or `{:system, name}`)
 and writes an audit entry in the same transaction.
 - A tenant's users (tenant scope, for tenant admins; `QPBX.Core.Users`): `list_tenant_users/1`,

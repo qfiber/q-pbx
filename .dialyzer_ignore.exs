@@ -2,5 +2,6 @@
 # as opaque mismatches (a known false positive). Ignore only that warning class, only in these files.
 [
   {"lib/qpbx/core/accounts.ex", :call_without_opaque},
-  {"lib/qpbx/web/gettext.ex", :call_without_opaque}
+  {"lib/qpbx/web/gettext.ex", :call_without_opaque},
+  {"lib/qpbx/integrations/webhooks.ex", :call_without_opaque}
 ]

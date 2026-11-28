@@ -5,7 +5,15 @@ defmodule QPBX.Application do
 
   use Boundary,
     top_level?: true,
-    deps: [QPBX.Repo, QPBX.Core, QPBX.Firewall, QPBX.Edge, QPBX.Telephony, QPBX.Web]
+    deps: [
+      QPBX.Repo,
+      QPBX.Core,
+      QPBX.Firewall,
+      QPBX.Edge,
+      QPBX.Telephony,
+      QPBX.Integrations,
+      QPBX.Web
+    ]
 
   use Application
 
@@ -27,6 +35,8 @@ defmodule QPBX.Application do
       Application.get_env(:qpbx, :edge_workers, true) && QPBX.Edge.Bans,
       Application.get_env(:qpbx, :edge_workers, true) && QPBX.Edge.Presence,
       QPBX.Telephony,
+      # Off in tests too: they call QPBX.Integrations.Webhooks.dispatch/1 directly.
+      Application.get_env(:qpbx, :edge_workers, true) && QPBX.Integrations.Webhooks.Dispatcher,
       QPBX.Web.Health,
       QPBX.Web.SessionReaper,
       QPBX.Web.Captcha.PowStore,

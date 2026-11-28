@@ -52,13 +52,16 @@ config :qpbx, QPBX.Web.Health, interval: 10_000, disk: [paths: ["/"]]
 config :qpbx, QPBX.Web.Captcha, provider: :pow
 
 # Oban: one queue per area (spec: calls, fax, webhooks, notify, crm, provisioning).
-# Phase 1 only has work for notify; the others are added with their areas.
+# Queues are added with their areas.
 config :qpbx, Oban,
   engine: Oban.Engines.Basic,
   repo: QPBX.Repo,
-  queues: [notify: 5],
+  queues: [notify: 5, webhooks: 10],
   # Completed jobs (which carry setup links) are deleted after a day.
-  plugins: [{Oban.Plugins.Pruner, max_age: 86_400}]
+  plugins: [
+    {Oban.Plugins.Pruner, max_age: 86_400},
+    {Oban.Plugins.Cron, crontab: [{"17 3 * * *", QPBX.Integrations.Webhooks.Prune}]}
+  ]
 
 # Configure the mailer
 #

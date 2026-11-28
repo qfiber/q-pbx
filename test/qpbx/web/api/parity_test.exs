@@ -8,7 +8,7 @@ defmodule QPBX.Web.Api.ParityTest do
 
   # Page events that only change the form on screen.
   @ui_only ~w(validate validate_class validate_emergency validate_device validate_greeting
-              dismiss hide_secret edit cancel)
+              dismiss hide_secret edit cancel open refresh)
 
   # A signed-in person's own sessions: an API key is not a person.
   @personal %{"account/sessions_live" => ~w(revoke revoke_others)}
@@ -99,6 +99,14 @@ defmodule QPBX.Web.Api.ParityTest do
       "setup_link" => "POST /v1/users/:id/setup-link",
       "sign_out" => "POST /v1/users/:id/sign-out",
       "delete" => "DELETE /v1/users/:id"
+    },
+    "tenant/webhooks_live" => %{"save" => "POST /v1/webhooks"},
+    "tenant/webhook_live" => %{
+      "save" => "PATCH /v1/webhooks/:id",
+      "toggle" => "PATCH /v1/webhooks/:id",
+      "rotate" => "POST /v1/webhooks/:id/rotate-secret",
+      "delete" => "DELETE /v1/webhooks/:id",
+      "resend" => "POST /v1/webhook-deliveries/:id/resend"
     },
     "tenant/voicemail_live" => %{
       "save" => "POST /v1/voicemails/:id/save",

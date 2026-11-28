@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Lab HTTP receiver (webhooks, outbound request checks): answers every request with a JSON
 echo of what it got and keeps the requests; GET /_seen returns and clears them.
-/redirect?to=URL[&status=302] answers a redirect to URL.
+/redirect?to=URL[&status=302] answers a redirect to URL; /fail answers 500 (and is kept).
 
 usage: http_receiver.py <port> [<cert.pem> <key.pem>]   (with a certificate: HTTPS)
 """
@@ -35,7 +35,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.reply(int(q.get("status", ["302"])[0]), headers=[("Location", q["to"][0])])
         record = {"at": time.time(), "method": self.command, "path": url.path, "headers": dict(self.headers), "body": body.decode(errors="replace")}
         seen.append(record)
-        self.reply(200, json.dumps(record).encode(), [("Content-Type", "application/json")])
+        self.reply(500 if url.path == "/fail" else 200, json.dumps(record).encode(), [("Content-Type", "application/json")])
 
     do_GET = do_POST = do_PUT = do_DELETE = handle_any
 

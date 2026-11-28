@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-4 done; next task 3-5. Phase 2 done.
+**Current phase:** 3 — API, webhooks and notifications: 3-1 to 3-5 done; next task 3-6. Phase 2 done.
 **Last updated:** 2026-11-28
 
 ## Phase 1 goal
@@ -40,6 +40,25 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 3-5 Webhooks (done, 2026-11-28): tenant endpoints (HTTPS URL refused at save when it
+  resolves inside, event types, signing secret shown once, encrypted, rotatable), events
+  `call.*`, `extension.registered|unregistered`, `voicemail.received`, `limit.reached` from
+  the bus; one delivery and Oban job per endpoint per event, sent at once through the 3-4
+  client; HMAC-SHA256 signature over timestamp and body with the event id; retries 30 s
+  doubling to 6 h apart for 24 hours, then dead (`WebhookDeadLettered`, for 3-9); a delivery
+  log with every attempt and answer, resend (same event id); pruned after 30 days. Portal
+  `/app/webhooks` and `/app/webhooks/:id`; API `/v1/webhooks` (admin scope) with
+  deliveries and resend; parity test extended. 9 new tests (315 in all): a signature test
+  vector computed independently, endpoint rules (HTTPS, internal addresses, events, other
+  tenants), dispatch to the right endpoints only, signed delivery to a local HTTPS server,
+  retry schedule, dead after 24 hours with the event, resend, an address that turns internal
+  refused at delivery, paging and pruning, the portal pages and the API. Lab:
+  `lab/done-when/phase3-webhooks.py` 10/10: endpoints made through the API (an internal and an
+  `http://` address refused), real registrations and a real call delivered to the HTTPS
+  receiver on the backup VM in order, every one signed correctly, **18 to 76 ms from event to
+  receiver** (clock difference between the VMs taken out), a receiver answering 500 logged and
+  kept for retry. Plain HTTP removed from the outbound client the same day (HTTPS only, always).
 
 - 3-4 Outbound request safety (done, 2026-11-28): `QPBX.Integrations.request/3`, the one HTTP
   client for tenant-chosen addresses (new integrations area): HTTPS only, always (final
@@ -450,7 +469,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 3-5 Webhooks (next).
+- 3-6 WebSocket event stream (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next
