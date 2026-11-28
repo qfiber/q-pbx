@@ -2,7 +2,7 @@ defmodule QPBX.Firewall.Store do
   @moduledoc "Database access for firewall entries, with audit entries in the same transaction."
   import Ecto.Query
   alias QPBX.Core
-  alias QPBX.Core.{PlatformAdmin, User}
+  alias QPBX.Core.{ApiKey, PlatformAdmin, User}
   alias QPBX.Firewall.Entry
   alias QPBX.Repo
 
@@ -128,5 +128,6 @@ defmodule QPBX.Firewall.Store do
 
   defp author(%PlatformAdmin{id: id}), do: {"platform_admin", id}
   defp author(%User{id: id}), do: {"user", id}
+  defp author(%ApiKey{id: id}), do: {"api_key", id}
   defp author({:system, name}), do: {"system:" <> name, nil}
 end

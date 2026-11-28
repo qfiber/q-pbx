@@ -17,7 +17,8 @@ defmodule QPBX.Web.Router do
   end
 
   pipeline :api do
-    plug :accepts, ["json"]
+    # csv: the call records export.
+    plug :accepts, ["json", "csv"]
   end
 
   # Every /v1 request but the document: API key, then its rate limit.
@@ -53,14 +54,109 @@ defmodule QPBX.Web.Router do
     get "/docs", SpecController, :docs
   end
 
+  # A voicemail's audio for a short-lived signed link (the link is the permission).
+  scope "/v1", QPBX.Web.Api do
+    get "/voicemail-audio/:token", VoicemailAudioController, :show
+  end
+
+  # Every route here: API key and rate limit (pipeline), then scope and key kind from the
+  # action's own description (QPBX.Web.Api.Authorize, in every API controller).
   scope "/v1", QPBX.Web.Api do
     pipe_through [:api, :api_key]
 
     get "/me", MeController, :show
+    get "/api-keys", ApiKeyController, :index
+    post "/api-keys", ApiKeyController, :create
+    delete "/api-keys/:id", ApiKeyController, :delete
+    get "/audit", AuditController, :index
+
+    # Platform
     get "/tenants", TenantController, :index
+    post "/tenants", TenantController, :create
+    get "/tenants/:id", TenantController, :show
+    patch "/tenants/:id", TenantController, :update
+    get "/tenants/:tenant_id/users", TenantController, :users
+    post "/tenants/:tenant_id/users", TenantController, :add_admin
+    post "/tenants/:tenant_id/users/:id/setup-link", TenantController, :setup_link
+    post "/tenants/:tenant_id/users/:id/sign-out", TenantController, :sign_out
+    get "/plans", PlanController, :index
+    post "/plans", PlanController, :create
+    get "/plans/:id", PlanController, :show
+    patch "/plans/:id", PlanController, :update
+    get "/trunks", TrunkController, :index
+    post "/trunks", TrunkController, :create
+    get "/trunks/:id", TrunkController, :show
+    patch "/trunks/:id", TrunkController, :update
+    delete "/trunks/:id", TrunkController, :delete
+    post "/numbers", NumberController, :create
+    patch "/numbers/:id", NumberController, :update
+    delete "/numbers/:id", NumberController, :delete
+    get "/number-classes", NumberingController, :classes
+    post "/number-classes", NumberingController, :create_class
+    delete "/number-classes/:id", NumberingController, :delete_class
+    get "/emergency-routes", NumberingController, :emergency
+    post "/emergency-routes", NumberingController, :create_emergency
+    delete "/emergency-routes/:id", NumberingController, :delete_emergency
+    get "/firewall", FirewallController, :index
+    post "/firewall", FirewallController, :create
+    delete "/firewall/:id", FirewallController, :delete
+    get "/protection", ProtectionController, :show
+    patch "/protection", ProtectionController, :update
+    get "/protection/bans", ProtectionController, :bans
+    delete "/protection/bans/:key", ProtectionController, :lift
+    get "/fraud", ProtectionController, :fraud
+    patch "/fraud", ProtectionController, :update_fraud
+    get "/fraud/blocks", ProtectionController, :blocks
+    delete "/fraud/blocks/:id", ProtectionController, :unblock
+    get "/platform-admins", AdminController, :index
+    post "/platform-admins", AdminController, :create
+    post "/platform-admins/:id/setup-link", AdminController, :setup_link
+    post "/platform-admins/:id/sign-out", AdminController, :sign_out
+
+    # Both kinds: a platform key sees the platform's, a tenant key its own
+    get "/numbers", NumberController, :index
+    get "/numbers/:id", NumberController, :show
+    get "/number-format", NumberingController, :format
+    put "/number-format", NumberingController, :put_format
+
+    # Tenant
+    delete "/number-format", NumberingController, :reset_format
+    put "/numbers/:id/destination", NumberController, :destination
     get "/extensions", ExtensionController, :index
     post "/extensions", ExtensionController, :create
     get "/extensions/:id", ExtensionController, :show
+    patch "/extensions/:id", ExtensionController, :update
+    delete "/extensions/:id", ExtensionController, :delete
+    post "/extensions/:extension_id/devices", ExtensionController, :add_device
+    delete "/devices/:id", ExtensionController, :delete_device
+    post "/devices/:id/reset-password", ExtensionController, :reset_device
+    get "/extensions/:extension_id/mailbox", VoicemailController, :mailbox
+    put "/extensions/:extension_id/mailbox", VoicemailController, :put_mailbox
+    delete "/extensions/:extension_id/mailbox", VoicemailController, :delete_mailbox
+    get "/extensions/:extension_id/greetings", VoicemailController, :greetings
+    put "/extensions/:extension_id/greetings/:kind", VoicemailController, :put_greeting
+    delete "/extensions/:extension_id/greetings/:kind", VoicemailController, :delete_greeting
+    get "/voicemails", VoicemailController, :index
+    post "/voicemails/:id/save", VoicemailController, :save
+    delete "/voicemails/:id", VoicemailController, :delete
+    post "/voicemails/:id/audio-link", VoicemailController, :audio_link
+    get "/users", UserController, :index
+    post "/users", UserController, :create
+    patch "/users/:id", UserController, :update
+    delete "/users/:id", UserController, :delete
+    post "/users/:id/setup-link", UserController, :setup_link
+    post "/users/:id/sign-out", UserController, :sign_out
+    get "/routes", RouteController, :index
+    post "/routes", RouteController, :create
+    get "/routes/:id", RouteController, :show
+    patch "/routes/:id", RouteController, :update
+    delete "/routes/:id", RouteController, :delete
+    get "/office-ips", FirewallController, :office_ips
+    post "/office-ips", FirewallController, :create_office_ip
+    delete "/office-ips/:id", FirewallController, :delete_office_ip
+    get "/calls", CallController, :index
+    get "/calls/export", CallController, :export
+    get "/usage/daily", CallController, :usage
   end
 
   scope "/", QPBX.Web do

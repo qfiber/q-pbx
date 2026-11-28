@@ -31,6 +31,8 @@ defmodule QPBX.Web.AuditTable do
 
   defp actor(%{actor_type: "system:" <> name}, _), do: gettext("System (%{name})", name: name)
 
+  defp actor(%{actor_type: "api_key"}, _), do: gettext("API key")
+
   defp actor(%{actor_id: id, actor_type: "platform_admin"}, emails),
     do: emails[id] || gettext("Platform admin")
 

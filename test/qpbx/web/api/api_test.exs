@@ -228,7 +228,7 @@ defmodule QPBX.Web.ApiTest do
 
       for %{path: "/v1/" <> _ = path, verb: verb, plug: plug} <-
             Phoenix.Router.routes(QPBX.Web.Router),
-          plug != QPBX.Web.Api.SpecController do
+          plug not in QPBX.Web.Api.Spec.unkeyed() do
         oa = Regex.replace(~r/:(\w+)/, path, "{\\1}")
         op = doc["paths"][oa][to_string(verb)]
         assert op, "#{verb} #{path} is not in the document"

@@ -9,20 +9,29 @@ defmodule QPBX.Web.CallsController do
   def export(conn, params) do
     if User.role(conn.assigns.current_account) == "tenant_admin" do
       filters = Map.take(params, ~w(from to number direction disposition leg))
-      tz = conn.assigns.current_account.tenant.timezone
 
-      conn =
-        conn
-        |> put_resp_content_type("text/csv")
-        |> put_resp_header("content-disposition", ~s(attachment; filename="calls.csv"))
-        |> put_resp_header("cache-control", "private, no-store")
-        |> send_chunked(200)
-
-      {:ok, conn} = chunk(conn, line(Enum.map(@header, &to_string/1)))
-      QPBX.Telephony.stream_cdrs(conn.assigns.current_scope, filters, tz, &send_rows(conn, &1))
+      send_csv(
+        conn,
+        conn.assigns.current_scope,
+        filters,
+        conn.assigns.current_account.tenant.timezone
+      )
     else
       conn |> put_status(404) |> text("Not found")
     end
+  end
+
+  @doc "Streams the scope's matching call records as CSV (the portal and the API)."
+  def send_csv(conn, scope, filters, tz) do
+    conn =
+      conn
+      |> put_resp_content_type("text/csv")
+      |> put_resp_header("content-disposition", ~s(attachment; filename="calls.csv"))
+      |> put_resp_header("cache-control", "private, no-store")
+      |> send_chunked(200)
+
+    {:ok, conn} = chunk(conn, line(Enum.map(@header, &to_string/1)))
+    QPBX.Telephony.stream_cdrs(scope, filters, tz, &send_rows(conn, &1))
   end
 
   defp send_rows(conn, stream) do

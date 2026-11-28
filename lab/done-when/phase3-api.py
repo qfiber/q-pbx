@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-"""3-1 lab check: the /v1 API through nginx on the lab server. API keys (scopes, expiry,
-revocation), another tenant's key gets nothing, idempotent POSTs, cursor pages, the plan's
-rate limit, the OpenAPI document and the explorer under the portal's CSP.
+"""3-1 and 3-2 lab check: the /v1 API through nginx on the lab server. API keys (scopes,
+expiry, revocation), another tenant's key gets nothing, idempotent POSTs, cursor pages, the
+plan's rate limit, the OpenAPI document and the explorer under the portal's CSP; then the
+resources (3-2): a tenant made through the API, a number pointed at an extension, a device
+added through the API that registers over SIP with the password the API returned, a greeting
+upload, a voicemail played through its short-lived link, the CSV export, users, routes.
 
 usage: phase3-api.py <vm-ip>   (portal.pbx.lab.test must resolve to the server)
 """
@@ -42,9 +45,9 @@ def req(method, path, key=None, body=None, headers=None):
     try:
         with urllib.request.urlopen(r, context=CTX, timeout=10) as res:
             raw = res.read()
-            return res.status, dict(res.headers), raw
+            return res.status, res.headers, raw  # case-insensitive lookups
     except urllib.error.HTTPError as e:
-        return e.code, dict(e.headers), e.read()
+        return e.code, e.headers, e.read()
 
 
 def j(raw):
@@ -60,6 +63,8 @@ for t <- Core.list_tenants(), String.starts_with?(t.slug, "api-"), do: QPBX.Repo
 for pl <- Core.list_plans(), String.starts_with?(pl.name, "api-"), do: QPBX.Repo.delete!(pl)
 p = %Core.Scope{kind: :platform}
 for k <- Core.list_api_keys(p), String.starts_with?(k.name, "api-"), do: Core.revoke_api_key(p, k.id, {:system, "lab"})
+for d <- Core.list_dids(p), String.starts_with?(d.number, "+97239"), do: Core.delete_did(p, d, {:system, "lab"})
+for tr <- Core.list_trunks(p), String.starts_with?(tr.name, "api-"), do: Core.delete_trunk(p, tr, {:system, "lab"})
 '''
 
 S = app(CLEANUP + f'''
@@ -78,6 +83,8 @@ for n <- ~w(101 102 103), do: {{:ok, _}} = Core.create_extension(sa, %{{number: 
 {{:ok, b101}} = Core.create_extension(sb, %{{number: "101", name: "B101"}}, a)
 IO.puts("JSON" <> Jason.encode!(%{{a_rw: key.(sa, ["read", "write"]), a_ro: key.(sa, ["read"]),
   b: key.(sb, ["read"]), b2: key.(sb, ["read"]), plat: key.(%Core.Scope{{kind: :platform}}, ["read"]),
+  a_admin: key.(sa, ["read", "write", "admin"]), plat_rw: key.(%Core.Scope{{kind: :platform}}, ["read", "write", "admin"]),
+  plan_open: open.id, tid_a: sa.tenant_id, domain_a: Core.my_tenant(sa).sip_domain,
   b101: b101.id, slug_a: "api-a-{RUN}"}}))
 ''')
 
@@ -137,6 +144,88 @@ try:
     check("plan limit 3/min: fourth request 429 with retry-after",
           [c[0] for c in codes] == [200, 200, 200, 429] and codes[3][1].get("retry-after") and codes[0][1].get("x-ratelimit-limit") == "3",
           [c[0] for c in codes])
+
+    # 3-2: resources
+    P, A = S["plat_rw"], S["a_admin"]
+    status, _, raw = req("POST", "/v1/tenants", P, {"name": "API made", "slug": f"api-c-{RUN}", "timezone": "Asia/Jerusalem", "locale": "ar",
+                                                    "plan_id": S["plan_open"], "admin": {"name": "Boss", "email": f"api-c-{RUN}@x.test"}})
+    tc = j(raw).get("data", {})
+    check("platform: tenant created with its admin", status == 201 and tc.get("sip_domain", "").startswith(f"api-c-{RUN}."), status)
+    status, _, raw = req("GET", f"/v1/tenants/{tc.get('id')}/users", P)
+    check("platform: the new tenant's admin is listed", status == 200 and [u["role"] for u in j(raw)["data"]] == ["tenant_admin"])
+    check("platform: tenant renamed", req("PATCH", f"/v1/tenants/{tc.get('id')}", P, {"name": "Renamed"})[0] == 200)
+
+    status, _, raw = req("POST", "/v1/trunks", P, {"name": f"api-t-{RUN}", "auth_mode": "ip", "addresses": [{"host": "127.0.0.99"}]})
+    trunk = j(raw).get("data", {})
+    status, _, raw = req("POST", "/v1/numbers", P, {"number": "+97239" + str(int(time.time()))[-6:], "trunk_id": trunk.get("id")})
+    num = j(raw).get("data", {})
+    check("platform: trunk and number added", trunk.get("id") and status == 201, status)
+    check("platform: number assigned to tenant A", req("PATCH", f"/v1/numbers/{num.get('id')}", P, {"tenant_id": S["tid_a"]})[0] == 200)
+
+    status, _, raw = req("POST", "/v1/extensions", A, {"number": "160", "name": "Via API"})
+    ext = j(raw).get("data", {})
+    status, _, raw = req("PUT", f"/v1/numbers/{num.get('id')}/destination", A, {"destination_type": "extension", "destination_id": ext.get("id")})
+    check("tenant: number pointed at its extension", status == 200 and j(raw)["data"]["destination_id"] == ext.get("id"))
+    status, _, raw = req("PATCH", f"/v1/extensions/{ext.get('id')}", A, {"dnd": True})
+    check("tenant: extension changed", status == 200 and j(raw)["data"]["dnd"] is True)
+
+    status, _, raw = req("POST", f"/v1/extensions/{ext.get('id')}/devices", A, {"label": "", "kind": "softphone"})
+    dev = j(raw)
+    reg = subprocess.run(["python3", os.path.join(os.path.dirname(__file__), "..", "tools", "sip_register.py"), VM, "160", S["domain_a"], dev.get("sip_password", "")],
+                         capture_output=True, text=True).stdout.strip()
+    check("device added through the API registers over SIP with the returned password", status == 201 and "200" in reg, reg)
+    status, _, raw = req("POST", f"/v1/devices/{dev['data']['id']}/reset-password", A)
+    old = subprocess.run(["python3", os.path.join(os.path.dirname(__file__), "..", "tools", "sip_register.py"), VM, "160", S["domain_a"], dev.get("sip_password", "")],
+                         capture_output=True, text=True).stdout.strip()
+    check("after a reset through the API the old password is refused", status == 200 and "200" not in old, old)
+
+    status, _, raw = req("PUT", f"/v1/extensions/{ext.get('id')}/mailbox", A, {"pin": "4831"})
+    check("mailbox set up through the API", status == 200 and j(raw)["data"]["enabled"] is True and "pin_hash" not in j(raw)["data"])
+    mp3 = b"ID3\x04\x00\x00\x00\x00\x00\x00" + b"\x09" * 2000
+    r = urllib.request.Request(BASE + f"/v1/extensions/{ext.get('id')}/greetings/unavailable", data=mp3, method="PUT",
+                               headers={"authorization": "Bearer " + A, "content-type": "audio/mpeg"})
+    try:
+        up = urllib.request.urlopen(r, context=CTX, timeout=10).status
+    except urllib.error.HTTPError as e:
+        up = e.code
+    status, _, raw = req("GET", f"/v1/extensions/{ext.get('id')}/greetings", A)
+    check("greeting uploaded through nginx", up == 204 and j(raw)["data"] == ["unavailable"], up)
+
+    vm_id = app(f'''
+s = %QPBX.Core.Scope{{kind: :tenant, tenant_id: "{S['tid_a']}"}}
+mb = QPBX.Telephony.mailbox(s, "{ext.get('id')}")
+{{:ok, m}} = QPBX.Telephony.Voicemail.store_system(mb, File.read!("/usr/share/qpbx/sounds/en/us/callie/voicemail/8000/vm-hello.wav"), %{{caller_number: "+972501111111", caller_name: "Lab", duration: 1, format: "wav"}})
+IO.puts("JSON" <> Jason.encode!(%{{id: m.id}}))
+''')["id"]
+    status, _, raw = req("GET", f"/v1/voicemails?extension_id={ext.get('id')}", A)
+    check("voicemail listed", status == 200 and [m["id"] for m in j(raw)["data"]] == [vm_id])
+    status, _, raw = req("POST", f"/v1/voicemails/{vm_id}/audio-link", A)
+    link = j(raw).get("url", "")
+    s1, h1, audio = req("GET", link.replace(BASE, "")) if link.startswith(BASE) else (0, {}, b"")
+    check("voicemail plays from its link without a key", s1 == 200 and audio[:4] == b"RIFF" and h1.get("content-type", "").startswith("audio/wav"), link[:40])
+    check("a tampered link is refused", req("GET", link.replace(BASE, "") + "x")[0] == 404)
+    check("voicemail marked heard", req("POST", f"/v1/voicemails/{vm_id}/save", A)[0] == 204)
+    check("mailbox deleted with its files", req("DELETE", f"/v1/extensions/{ext.get('id')}/mailbox", A)[0] == 204)
+
+    status, headers, raw = req("GET", "/v1/calls/export", A, headers={"accept": "text/csv"})
+    check("call records exported as CSV through nginx", status == 200 and headers.get("content-type", "").startswith("text/csv") and raw.startswith(b"started_at,"), status)
+    status, _, raw = req("GET", "/v1/calls?limit=5", A)
+    check("call records listed", status == 200 and "next_cursor" in j(raw))
+    check("daily usage", req("GET", "/v1/usage/daily", A)[0] == 200)
+
+    status, _, raw = req("POST", "/v1/users", A, {"name": "Dana", "email": f"api-u-{RUN}@x.test", "extension_id": ext.get("id")})
+    u = j(raw).get("data", {})
+    check("user invited with their extension", status == 201 and u.get("extension_id") == ext.get("id"))
+    check("user made an admin", req("PATCH", f"/v1/users/{u.get('id')}", A, {"role": "tenant_admin"})[0] == 200)
+    check("user removed", req("DELETE", f"/v1/users/{u.get('id')}", A)[0] == 204)
+    check("users need the admin scope", req("GET", "/v1/users", S["a_rw"])[0] == 403)
+
+    status, _, raw = req("POST", "/v1/routes", A, {"name": "all", "prefixes": [], "destination_class": "local", "trunk_ids": [trunk.get("id")]})
+    route = j(raw).get("data", {})
+    check("route created with its trunk", status == 201 and route.get("trunk_ids") == [trunk.get("id")])
+    check("route deleted", req("DELETE", f"/v1/routes/{route.get('id')}", A)[0] == 204)
+    status, _, raw = req("GET", "/v1/audit?limit=200", A)
+    check("tenant audit log through the API", status == 200 and any(e["actor_type"] == "api_key" for e in j(raw)["data"]))
 
     audit = app(f'''
 t = Enum.find(QPBX.Core.list_tenants(), &(&1.slug == "{S['slug_a']}"))

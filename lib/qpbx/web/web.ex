@@ -90,6 +90,9 @@ defmodule QPBX.Web do
       use Phoenix.Controller, formats: [:json]
       import Plug.Conn
 
+      import QPBX.Web.Api.Helpers
+      alias QPBX.Web.Api.{Page, Schemas}
+
       plug QPBX.Web.Api.Authorize
       plug QPBX.Web.Api.Idempotency
       action_fallback QPBX.Web.Api.Fallback

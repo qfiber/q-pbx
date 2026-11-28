@@ -7,7 +7,21 @@ defmodule QPBX.Telephony do
   """
   use Boundary,
     deps: [QPBX.Repo, QPBX.Core, QPBX.Events, QPBX.Storage, QPBX.Notify],
-    exports: [Router, Dialplan, Cache, Calls, Usage, Fraud, Admission]
+    exports: [
+      Router,
+      Dialplan,
+      Cache,
+      Calls,
+      Usage,
+      Fraud,
+      Fraud.Settings,
+      Fraud.Block,
+      Admission,
+      Cdr,
+      Voicemail.Mailbox,
+      Voicemail.Message,
+      Voicemail.Greeting
+    ]
 
   alias QPBX.Telephony.{Calls, Dialplan}
   alias QPBX.Telephony.ESL.Connection

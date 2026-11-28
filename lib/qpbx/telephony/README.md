@@ -36,11 +36,15 @@ number, a tenant's own trunk only for its numbers; destination extension or an o
 platform's and the DID index, loaded on first use and all dropped on `ConfigChanged`,
 `SipCredentialsChanged` or `TenantsChanged`.
 
+**Exported schemas** (for the API's records and documents): `Cdr`, `Fraud.Settings`,
+`Fraud.Block`, `Voicemail.Mailbox`, `Voicemail.Message`, `Voicemail.Greeting`.
+
 **Public API:** `dialplan_xml/1`, `connected?/0`, `active_calls/0`, `curl_password/0`;
 `fraud_settings/0`, `change_fraud_settings/2`, `update_fraud_settings/2`, `list_fraud_blocks/0`,
 `lift_fraud_block/2`; call records for tenant admins: `search_cdrs/4` (filters `from`, `to`,
 `number`, `direction`, `disposition`, `leg`, `extension` (one extension's calls: its own a-legs
-and the legs that rang it, one row per call); `limit`, `offset`), `stream_cdrs/4` (all matches,
+and the legs that rang it, one row per call); `limit`, `offset`, `before: {started_at, id}`
+(keyset paging, newest first by time then id)), `stream_cdrs/4` (all matches,
 oldest first, inside a transaction), `usage_daily/2`, `cdr_directions/0`; voicemail for tenant admins (scope first): `mailbox/2`, `change_mailbox/2`,
 `save_mailbox/4`, `delete_mailbox/3` (rows and files; call it before deleting the extension),
 `list_voicemails/2` (`{message, extension_id}`), `voicemail_audio/3`, `save_voicemail/4`,

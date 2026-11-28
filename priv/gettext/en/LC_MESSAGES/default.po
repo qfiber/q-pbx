@@ -2277,7 +2277,7 @@ msgstr ""
 msgid "Nothing recorded yet."
 msgstr ""
 
-#: lib/qpbx/web/components/audit_table.ex:35
+#: lib/qpbx/web/components/audit_table.ex:37
 #, elixir-autogen, elixir-format
 msgid "Platform admin"
 msgstr ""
@@ -2289,7 +2289,7 @@ msgstr ""
 msgid "Platform admins"
 msgstr ""
 
-#: lib/qpbx/web/components/audit_table.ex:37
+#: lib/qpbx/web/components/audit_table.ex:39
 #, elixir-autogen, elixir-format
 msgid "Removed account"
 msgstr ""
@@ -2356,6 +2356,7 @@ msgid "API explorer"
 msgstr ""
 
 #: lib/qpbx/web/api/controllers/spec_html.ex:26
+#: lib/qpbx/web/components/audit_table.ex:34
 #, elixir-autogen, elixir-format
 msgid "API key"
 msgstr ""

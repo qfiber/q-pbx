@@ -36,7 +36,8 @@ try {
 
   await page.type("#api-key", token);
   const send = async (match) => {
-    const i = ops.findIndex((o) => o.startsWith(match));
+    // The summary text follows the path: an exact path, not one that merely starts the same.
+    const i = ops.findIndex((o) => o.startsWith(match) && /^[A-Z]/.test(o.slice(match.length)));
     const d = (await page.$$("#operations details"))[i];
     await d.evaluate((el) => (el.open = true));
     await (await d.$("button")).click();

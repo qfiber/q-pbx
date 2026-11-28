@@ -1,141 +1,130 @@
 defmodule QPBX.Web.Api.Schemas do
   @moduledoc """
-  What the API returns for each record (`render/1`) and its OpenAPI schema, side by side so
-  they change together. Secrets (key hashes, SIP passwords) are never rendered.
+  Records as JSON and their OpenAPI schemas, both derived from the Ecto schema, so a new
+  field shows up in the API and its document together. Secrets are never rendered: redacted
+  fields and the names in `@hidden`. Loaded has-many and has-one associations are nested;
+  belongs-to ones appear as their `_id`.
   """
-  alias QPBX.Core.{ApiKey, Device, Extension, Tenant}
+  alias QPBX.Core.{ApiKey, Device, OutboundRoute, User}
 
-  @time %{type: "string", format: "date-time"}
-  @id %{type: "string", format: "uuid"}
-  @nullable_string %{type: ["string", "null"]}
+  @hidden ~w(hashed_password password totp_secret totp_last_used_at token_hash ha1 pin pin_hash
+             file_key recording_key push_token expires_in fingerprint)a
 
-  def render(%ApiKey{} = k),
-    do: %{
-      id: k.id,
-      name: k.name,
-      prefix: k.prefix,
-      scopes: k.scopes,
-      kind: if(k.tenant_id, do: "tenant", else: "platform"),
-      tenant_id: k.tenant_id,
-      expires_at: k.expires_at,
-      created_at: k.inserted_at
+  # Values a schema adds to its fields.
+  defp extras(%Device{sip_credential: %{username: u}}), do: %{sip_username: u}
+  defp extras(%User{user_role: %{role: role}}), do: %{role: role}
+  defp extras(%ApiKey{tenant_id: tid}), do: %{kind: if(tid, do: "tenant", else: "platform")}
+  defp extras(%OutboundRoute{trunk_ids: ids}), do: %{trunk_ids: ids}
+  defp extras(_), do: %{}
+
+  @extra_props %{
+    Device => %{sip_username: %{type: ["string", "null"]}},
+    User => %{role: %{type: "string", enum: ["tenant_admin", "tenant_user"]}},
+    ApiKey => %{kind: %{type: "string", enum: ["tenant", "platform"]}},
+    OutboundRoute => %{
+      trunk_ids: %{
+        type: "array",
+        items: %{type: "string", format: "uuid"},
+        description: "failover order"
+      }
     }
-
-  def render(%Extension{} = e),
-    do:
-      e
-      |> Map.take(
-        ~w(id number name external_caller_id dnd call_waiting forward_always forward_busy
-                     forward_no_answer no_answer_seconds follow_me_enabled follow_me_numbers)a
-      )
-      |> Map.put(:devices, Enum.map(e.devices, &render/1))
-
-  def render(%Device{} = d),
-    do: %{
-      id: d.id,
-      label: d.label,
-      kind: d.kind,
-      model: d.model,
-      sip_username: d.sip_credential && d.sip_credential.username
-    }
-
-  def render(%Tenant{} = t),
-    do: %{
-      id: t.id,
-      name: t.name,
-      slug: t.slug,
-      sip_domain: t.sip_domain,
-      timezone: t.timezone,
-      locale: t.locale,
-      plan_id: t.plan_id,
-      created_at: t.inserted_at
-    }
-
-  def api_key,
-    do:
-      object("ApiKey", %{
-        id: @id,
-        name: %{type: "string"},
-        prefix: %{type: "string", description: "the key's first characters"},
-        scopes: %{type: "array", items: %{type: "string", enum: ApiKey.scopes()}},
-        kind: %{type: "string", enum: ["tenant", "platform"]},
-        tenant_id: %{type: ["string", "null"], format: "uuid"},
-        expires_at: %{type: ["string", "null"], format: "date-time"},
-        created_at: @time
-      })
-
-  @extension_fields %{
-    number: %{type: "string", pattern: "^[1-9][0-9]{1,5}$", example: "101"},
-    name: %{type: "string", maxLength: 100, example: "Dana"},
-    external_caller_id: %{type: ["string", "null"], description: "E.164"},
-    dnd: %{type: "boolean"},
-    call_waiting: %{type: "boolean"},
-    forward_always: @nullable_string,
-    forward_busy: @nullable_string,
-    forward_no_answer: @nullable_string,
-    no_answer_seconds: %{type: "integer", minimum: 5, maximum: 120},
-    follow_me_enabled: %{type: "boolean"},
-    follow_me_numbers: %{type: "array", items: %{type: "string"}, maxItems: 5}
   }
 
-  def extension_input,
-    do: object("ExtensionInput", @extension_fields, required: ["number", "name"])
+  # Nested records that are not exposed on their own.
+  @skip_assocs [:user_role, :route_trunks, :sip_credential]
 
-  def extension,
-    do:
-      object(
-        "Extension",
-        Map.merge(@extension_fields, %{
-          id: @id,
-          devices: %{
-            type: "array",
-            items:
-              object("Device", %{
-                id: @id,
-                label: %{type: "string"},
-                kind: %{type: "string"},
-                model: @nullable_string,
-                sip_username: @nullable_string
-              })
-          }
-        })
-      )
+  def render(list) when is_list(list), do: Enum.map(list, &render/1)
 
-  def tenant,
+  def render(%mod{} = rec) when mod not in [DateTime, Date, NaiveDateTime] do
+    if function_exported?(mod, :__schema__, 1) do
+      fields = Enum.map(shown(mod), &{&1, render(Map.get(rec, &1))})
+
+      assocs =
+        for a <- many(mod), loaded?(Map.get(rec, a)), do: {a, render(Map.get(rec, a))}
+
+      Map.new(fields ++ assocs) |> Map.merge(extras(rec))
+    else
+      rec
+    end
+  end
+
+  def render(other), do: other
+
+  @doc "The OpenAPI schema of a record type; `name` makes it a named component."
+  def of(mod, name \\ nil, depth \\ 1) do
+    props =
+      for(f <- shown(mod), into: %{}, do: {f, type(mod.__schema__(:type, f))})
+      |> Map.merge(Map.get(@extra_props, mod, %{}))
+
+    props = if depth > 0, do: Map.merge(props, nested(mod, depth)), else: props
+
+    schema = %{type: "object", properties: props}
+    if name, do: Map.put(schema, :"x-name", name), else: schema
+  end
+
+  defp nested(mod, depth) do
+    Map.new(many(mod), fn a ->
+      %{cardinality: c, related: rel} = mod.__schema__(:association, a)
+      inner = of(rel, nil, depth - 1)
+      {a, if(c == :many, do: %{type: "array", items: inner}, else: inner)}
+    end)
+  end
+
+  @doc "A request body: the record's fields without ids, timestamps or the tenant."
+  def input(mod, name, required \\ [], extra \\ %{}) do
+    props =
+      Map.drop(of(mod, nil, 0).properties, [:id, :tenant_id, :inserted_at, :updated_at, :edge_id])
+      |> Map.merge(extra)
+
+    %{"x-name": name, type: "object", properties: props}
+    |> then(&if(required == [], do: &1, else: Map.put(&1, :required, required)))
+  end
+
+  defp shown(mod),
     do:
-      object("Tenant", %{
-        id: @id,
-        name: %{type: "string"},
-        slug: %{type: "string"},
-        sip_domain: %{type: "string"},
-        timezone: %{type: "string"},
-        locale: %{type: "string"},
-        plan_id: @id,
-        created_at: @time
-      })
+      (mod.__schema__(:fields) -- mod.__schema__(:redact_fields))
+      |> Enum.reject(&(&1 in @hidden))
+
+  defp many(mod) do
+    for a <- mod.__schema__(:associations),
+        a not in @skip_assocs,
+        match?(
+          %{cardinality: _, __struct__: s} when s != Ecto.Association.BelongsTo,
+          mod.__schema__(:association, a)
+        ),
+        do: a
+  end
+
+  defp loaded?(%Ecto.Association.NotLoaded{}), do: false
+  defp loaded?(_), do: true
+
+  defp type(t) when t in [:binary_id, Ecto.UUID], do: %{type: "string", format: "uuid"}
+
+  defp type(t) when t in [:utc_datetime, :utc_datetime_usec, :naive_datetime],
+    do: %{type: "string", format: "date-time"}
+
+  defp type(:date), do: %{type: "string", format: "date"}
+  defp type(:integer), do: %{type: "integer"}
+  defp type(:boolean), do: %{type: "boolean"}
+  defp type(:map), do: %{type: "object"}
+  defp type({:array, t}), do: %{type: "array", items: type(t)}
+  defp type(_), do: %{type: "string"}
 
   def error,
-    do:
-      object(
-        "Error",
-        %{
-          error:
-            object(
-              "ErrorBody",
-              %{
-                code: %{type: "string", example: "not_found"},
-                message: %{type: "string"},
-                details: %{type: "object"}
-              },
-              required: ["code", "message"]
-            )
-        },
-        required: ["error"]
-      )
-
-  # A named schema: Spec moves it to components/schemas and refers to it by name.
-  defp object(name, properties, opts \\ []) do
-    %{"x-name": name, type: "object", properties: properties}
-    |> then(&if(opts[:required], do: Map.put(&1, :required, opts[:required]), else: &1))
-  end
+    do: %{
+      "x-name": "Error",
+      type: "object",
+      required: ["error"],
+      properties: %{
+        error: %{
+          type: "object",
+          required: ["code", "message"],
+          properties: %{
+            code: %{type: "string", example: "not_found"},
+            message: %{type: "string"},
+            details: %{type: "object"}
+          }
+        }
+      }
+    }
 end

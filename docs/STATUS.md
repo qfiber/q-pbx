@@ -1,6 +1,6 @@
 # Status
 
-**Current phase:** 3 — API, webhooks and notifications: 3-1 done; next task 3-2. Phase 2 done.
+**Current phase:** 3 — API, webhooks and notifications: 3-1 and 3-2 done; next task 3-3. Phase 2 done.
 **Last updated:** 2026-11-28
 
 ## Phase 1 goal
@@ -40,6 +40,27 @@ not as empty stubs now. `notify` starts in phase 1 with only the setup-link mail
 Kamailio gets its real config.
 
 ## Done
+
+- 3-2 API resources (done, 2026-11-28): everything built so far through `/v1`, calling the
+  same functions the portal pages call. Platform: tenants (created with their first admin,
+  changed; their users, setup links, sign-out), plans, trunks, numbers (add, assign, remove),
+  number classes, emergency routes, firewall entries, SIP protection and bans, fraud settings
+  and blocks, platform admins. Either kind: API keys (admin scope), audit log, numbers (read),
+  number format. Tenant: extensions with devices (SIP password returned once), mailboxes,
+  greetings (raw MP3 or WAV upload), voicemails (audio through a signed link valid 5 minutes),
+  users (admin scope), outbound routes, office IPs, call records (paged in the database) and
+  their CSV export, daily usage. Records and their OpenAPI schemas are derived from the Ecto
+  schemas, secrets left out by rule; one security component for every route, each route only
+  declaring its scope and key kind. Numbers are E.164 in the API; setup links are only
+  emailed. A parity test maps every portal page action to its API route (a new portal action
+  without one fails it). 17 new tests (292 in all). Lab: `lab/done-when/phase3-api.py` 47/47
+  through nginx (the 3-1 checks plus a tenant created through the API, a number pointed at an
+  extension, a device added through the API registering over SIP with the returned password
+  and refused after a reset, a greeting upload, a voicemail played from its link and a
+  tampered link refused, the CSV export, users, routes, the tenant's audit log) and
+  `lab/done-when/phase3-explorer.mjs` 5/5 in Chrome (87 operations listed, no CSP violations).
+  Seen on the way: after the lab VMs were restarted the backup VM came up on 192.168.10.84
+  instead of .85 (DHCP), so the lab server's backups cannot reach it until that is fixed.
 
 - 3-1 API foundation (done, 2026-11-28): API keys per tenant and for the platform
   (`api_keys`: SHA-256 of a `qpbx_` key shown once, scopes read/write/calls/fax/admin, expiry
@@ -386,7 +407,7 @@ Kamailio gets its real config.
 
 ## In progress
 
-- 3-2 API resources (next).
+- 3-3 Call events (next).
   (Meow end to end) waits for call control (2-5).
 
 ## Next

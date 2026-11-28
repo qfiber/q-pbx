@@ -179,7 +179,8 @@ defmodule QPBX.Telephony.Cdrs do
   @doc """
   The tenant's legs, newest first. Filters (all optional): `from`, `to` (dates, the tenant's
   time zone), `number` (part of the caller or destination), `direction`, `disposition`, `leg`
-  ("a" by default: one row per call; "all").
+  ("a" by default: one row per call; "all"). Options: `limit`, `offset`, `before:
+  {started_at, id}` (the rows after that one, for keyset paging).
   """
   def search(%Scope{kind: :tenant, tenant_id: tid} = scope, filters, timezone, opts \\ []) do
     Scope.run(scope, fn -> Repo.all(query(tid, filters, timezone, opts)) end)
@@ -239,10 +240,20 @@ defmodule QPBX.Telephony.Cdrs do
           if f["leg"] == "all", do: filtered, else: where(filtered, [c], c.leg == "a")
       end
 
-    from c in base,
-      order_by: [desc: c.started_at],
-      limit: ^Keyword.get(opts, :limit, 50),
-      offset: ^Keyword.get(opts, :offset, 0)
+    q =
+      from c in base,
+        order_by: [desc: c.started_at, desc: c.id],
+        limit: ^Keyword.get(opts, :limit, 50),
+        offset: ^Keyword.get(opts, :offset, 0)
+
+    # Keyset paging (the API): rows after the last one of the previous page.
+    case opts[:before] do
+      {at, id} ->
+        where(q, [c], fragment("(?, ?) < (?, ?)", c.started_at, c.id, ^at, type(^id, :binary_id)))
+
+      nil ->
+        q
+    end
   end
 
   defp filters(q, f, tz) do

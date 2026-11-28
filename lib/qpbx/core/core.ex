@@ -216,25 +216,44 @@ defmodule QPBX.Core do
   def audit(actor, action, target, changes),
     do: actor |> Audit.entry(action, target, changes) |> Repo.insert()
 
-  @doc "The tenant's own audit log, newest first (tenant admins; row-level security in force)."
-  def list_my_audit_logs(%QPBX.Core.Scope{kind: :tenant, tenant_id: tid} = scope, limit \\ 200) do
+  @doc """
+  The tenant's own audit log, newest first (tenant admins; row-level security in force);
+  `before: {inserted_at, id}` pages on from that entry.
+  """
+  def list_my_audit_logs(
+        %QPBX.Core.Scope{kind: :tenant, tenant_id: tid} = scope,
+        limit \\ 200,
+        before \\ nil
+      ) do
     QPBX.Core.Scope.run(scope, fn ->
-      Repo.all(
-        from a in AuditLog,
-          where: a.tenant_id == ^tid,
-          order_by: [desc: a.inserted_at],
-          limit: ^limit
-      )
+      Repo.all(from a in audit_query(limit, before), where: a.tenant_id == ^tid)
     end)
   end
 
+  @doc "Audit entries, newest first. Options: `limit`, `tenant_id`, `before: {inserted_at, id}`."
   def list_audit_logs(opts \\ []) do
-    limit = Keyword.get(opts, :limit, 100)
-    query = from a in AuditLog, order_by: [desc: a.inserted_at], limit: ^limit
+    query = audit_query(Keyword.get(opts, :limit, 100), opts[:before])
 
     case Keyword.fetch(opts, :tenant_id) do
       {:ok, id} -> Repo.all(from a in query, where: a.tenant_id == ^id)
       :error -> Repo.all(query)
+    end
+  end
+
+  # Keyset paging for the API: entries after `{inserted_at, id}`.
+  defp audit_query(limit, before) do
+    q = from a in AuditLog, order_by: [desc: a.inserted_at, desc: a.id], limit: ^limit
+
+    case before do
+      {at, id} ->
+        where(
+          q,
+          [a],
+          fragment("(?, ?) < (?, ?)", a.inserted_at, a.id, ^at, type(^id, :binary_id))
+        )
+
+      nil ->
+        q
     end
   end
 

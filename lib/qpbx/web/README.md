@@ -50,11 +50,30 @@ them. A device's SIP password is shown once, after creation or reset.
 - POST with `Idempotency-Key` (`QPBX.Web.Api.Idempotency`): the first response is kept 24
   hours and replayed (`idempotent-replayed: true`); another body with the same key is 422
   `idempotency_key_reused`; 409 while the first runs; 5xx responses are not kept.
-- Records as JSON next to their schema in `QPBX.Web.Api.Schemas` (secrets never rendered).
-- Routes so far: `GET /v1/me`, `GET /v1/tenants` (platform), `GET|POST /v1/extensions`,
-  `GET /v1/extensions/:id`; public `GET /v1/openapi.json` and `GET /v1/docs` (the explorer:
-  this app's own script `assets/js/api_explorer.js`, portal CSP, DOM built without
-  `innerHTML`).
+- Records: `QPBX.Web.Api.Schemas.render/1` and `of/3` / `input/4` (OpenAPI) derive both the
+  JSON and its schema from the Ecto schema; redacted fields and a fixed list of secret names
+  (password hashes, TOTP secrets, PIN hashes, file keys) are never rendered; loaded has-many
+  associations nest (`extras/1` adds a few derived values: a device's SIP username, a user's
+  role, a route's trunk ids).
+- Controllers use `QPBX.Web.Api.Helpers` (`op/5` one-line descriptions, `data/3`, `paged/3`,
+  `reply/3`, `query/3`). Each calls the same public functions the portal page does.
+- Routes (`router.ex`, one `/v1` scope behind the key pipeline): platform `tenants` (with
+  users, setup links, sign-out), `plans`, `trunks`, `numbers` (add, assign, remove),
+  `number-classes`, `emergency-routes`, `firewall`, `protection` (+ `bans`), `fraud`
+  (+ `blocks`), `platform-admins`; either kind: `me`, `api-keys` (admin), `audit`,
+  `numbers` (read), `number-format`; tenant `extensions` (+ `devices`, `mailbox`,
+  `greetings`), `voicemails` (+ `audio-link`), `users` (admin), `routes`, `office-ips`,
+  `calls` (+ `export` CSV), `usage/daily`. Numbers are E.164 in the API (no local formats).
+  A device's SIP password and a new key's token are in the creating response only; setup
+  links are only emailed, never returned.
+- Voicemail audio: `POST /v1/voicemails/:id/audio-link` gives a `Phoenix.Token` link valid 5
+  minutes, `GET /v1/voicemail-audio/:token` (`VoicemailAudioController`, no key) serves it.
+- Public: `GET /v1/openapi.json` and `GET /v1/docs` (the explorer: this app's own script
+  `assets/js/api_explorer.js`, portal CSP, DOM built without `innerHTML`; uploads, whose body
+  is not JSON, are not sent from it). `QPBX.Web.Api.Spec.unkeyed/0` lists the `/v1`
+  controllers outside the key pipeline.
+- Parity: `test/qpbx/web/api/parity_test.exs` maps every portal page event to its API route;
+  a new portal action without one fails it.
 
 **API keys page:** `QPBX.Web.Account.ApiKeysLive` at `/app/api-keys` (tenant admins) and
 `/platform/api-keys` (platform admins): create (name, scopes, expiry 30/90/365 days or never;
@@ -69,7 +88,7 @@ it belongs to (404 otherwise), `cache-control: private,
 no-store`. Deleting an extension deletes its mailbox (files included) first.
 
 **Call records export:** `GET /app/calls/export` (`CallsController`, tenant admins; the same
-filters as the Calls page): CSV streamed in chunks; a cell starting with `=`, `+`, `-` or `@`
+filters as the Calls page; `send_csv/4` is shared with the API's export): CSV streamed in chunks; a cell starting with `=`, `+`, `-` or `@`
 that is not a plain number gets a leading `'` (no spreadsheet formulas from caller names).
 
 **FreeSWITCH:** `POST /internal/freeswitch/dialplan` (`FreeswitchController`): loopback only

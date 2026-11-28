@@ -19,7 +19,7 @@ SIP allow entries through a view (below).
 
 **Entries:** level `platform` (any kind and scope) or `tenant` (allow + scope `sip` only,
 prefix at most /24 for IPv4 or /48 for IPv6). Scope `ssh | sip | https | all`. Optional
-`expires_at`, required `reason`, author recorded. Management entry = platform allow with scope
+`expires_at`, required `reason`, author recorded (an admin, a user, an API key or the system). Management entry = platform allow with scope
 `ssh` or `all`.
 
 **Sets:** `<kind>_<scope>_<v4|v6>`: 12 sets, listed by `QPBX.Firewall.Sets.all/0`. Scope

@@ -2,6 +2,31 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-28: API resources (3-2)
+
+- **One security component for every route** (suggested in review, kept as built): the key
+  pipeline (`QPBX.Web.Api.Auth`) and the per-action check (`QPBX.Web.Api.Authorize`) are
+  written once; a route only declares its scope and key kind, the same declaration the
+  OpenAPI document shows. Tenant isolation stays in Core (scoped calls, row-level security).
+- **Records and their OpenAPI schemas come from the Ecto schemas,** with secrets left out
+  by rule (redacted fields plus a fixed list of names). Rejected: a hand-written JSON view per
+  record, which drifts from the schema and can leak a new secret field.
+- **The API takes numbers in E.164 only.** The portal turns local formats (02-123-4567) into
+  E.164; programs send the canonical form. Rejected: guessing local formats in the API.
+- **Setup links are emailed, never returned by the API.** A link sets the account's password,
+  so returning it would hand the account to whoever holds the key. A device's SIP password and
+  a new key's token are returned once, in the creating response, as in the portal.
+- **Voicemail audio is fetched through a signed link valid 5 minutes** (no key needed), so a
+  browser or a CRM can play it without holding the key. Rejected: audio only with the key
+  (no way to hand it to a player).
+- **Call records and the audit log page in the database** (time, then id); configuration
+  lists page in memory. Bans are one list (they expire within hours).
+- **Parity is a test:** every portal page action is mapped to its API route; form-only events
+  and a person's own sessions are the only exceptions. Tenant-owned trunks exist in Core but
+  have no portal page, so the API does not expose them yet.
+- **Lifting a fraud block or a ban is idempotent** (204 even when nothing was blocked), as Core
+  already behaves.
+
 ## 2026-11-28: API foundation (3-1)
 
 - **Scopes:** `read` (every GET), `write` (changes to configuration), `calls` (call control,

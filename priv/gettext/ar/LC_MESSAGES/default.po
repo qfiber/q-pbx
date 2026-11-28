@@ -2277,7 +2277,7 @@ msgstr "لم يُعدّ بعد"
 msgid "Nothing recorded yet."
 msgstr "لم يُسجَّل شيء بعد."
 
-#: lib/qpbx/web/components/audit_table.ex:35
+#: lib/qpbx/web/components/audit_table.ex:37
 #, elixir-autogen, elixir-format
 msgid "Platform admin"
 msgstr "مسؤول المنصة"
@@ -2289,7 +2289,7 @@ msgstr "مسؤول المنصة"
 msgid "Platform admins"
 msgstr "مسؤولو المنصة"
 
-#: lib/qpbx/web/components/audit_table.ex:37
+#: lib/qpbx/web/components/audit_table.ex:39
 #, elixir-autogen, elixir-format
 msgid "Removed account"
 msgstr "حساب محذوف"
@@ -2360,6 +2360,7 @@ msgid "API explorer"
 msgstr "مستكشف الواجهة البرمجية"
 
 #: lib/qpbx/web/api/controllers/spec_html.ex:26
+#: lib/qpbx/web/components/audit_table.ex:34
 #, elixir-autogen, elixir-format
 msgid "API key"
 msgstr "مفتاح الواجهة البرمجية"

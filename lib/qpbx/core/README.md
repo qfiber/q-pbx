@@ -45,7 +45,8 @@ and writes an audit entry in the same transaction.
   `QPBX.Core.SessionSweeper` ends idle/expired sessions every 30 s.
 - Login limits: `login_check/1`, `login_failed/2` (IP, optional account), `login_succeeded/1`
   (`QPBX.Core.LoginGuard`; never locks accounts).
-- Audit: `audit/4` (for changes made by other areas), `list_audit_logs/1`.
+- Audit: `audit/4` (for changes made by other areas), `list_audit_logs/1` (`limit`, `tenant_id`,
+  `before: {inserted_at, id}` for keyset paging), `list_my_audit_logs/3` (scope, limit, before).
 - SIP credentials: `list_sip_credentials/1`, `create_sip_credential/3` (returns the password
   once), `reset_sip_password/3`, `delete_sip_credential/3` (tenant scope); each announces
   `SipCredentialsChanged`. Tenant creation and updates announce `TenantsChanged` (after commit).

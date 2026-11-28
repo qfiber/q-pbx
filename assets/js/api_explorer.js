@@ -38,8 +38,9 @@ const operation = (spec, path, method, op) => {
   })
 
   let body = null
-  if (op.requestBody) {
-    const schema = op.requestBody.content["application/json"].schema
+  const jsonBody = op.requestBody && op.requestBody.content["application/json"]
+  if (jsonBody) {
+    const schema = jsonBody.schema
     body = el("textarea", {class: "textarea textarea-bordered w-full font-mono text-xs", rows: "8"})
     body.value = example(spec, schema)
     fields.push(el("label", {class: "block"}, [el("span", {class: "text-xs", text: label("Body")}), body]))

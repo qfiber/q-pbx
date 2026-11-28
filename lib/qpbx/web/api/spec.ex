@@ -10,12 +10,10 @@ defmodule QPBX.Web.Api.Spec do
     {paths, schemas} =
       QPBX.Web.Router
       |> Phoenix.Router.routes()
-      |> Enum.filter(
-        &(String.starts_with?(&1.path, "/v1/") and &1.plug != QPBX.Web.Api.SpecController)
-      )
+      |> Enum.filter(&(String.starts_with?(&1.path, "/v1/") and &1.plug not in unkeyed()))
       |> Enum.reduce({%{}, %{}}, &add_route/2)
 
-    {error, schemas} = extract(Schemas.error(), schemas)
+    {_ref, schemas} = extract(Schemas.error(), schemas)
 
     %{
       openapi: "3.1.0",
@@ -33,18 +31,24 @@ defmodule QPBX.Web.Api.Spec do
       servers: [%{url: "/"}],
       paths: paths,
       components: %{
-        schemas: Map.put(schemas, "Error", error),
+        schemas: schemas,
         securitySchemes: %{apiKey: %{type: "http", scheme: "bearer"}}
       },
       security: [%{apiKey: []}]
     }
   end
 
+  @doc "`/v1` controllers outside the key pipeline: the document itself and audio links."
+  def unkeyed, do: [QPBX.Web.Api.SpecController, QPBX.Web.Api.VoicemailAudioController]
+
   defp add_route(%{path: path, verb: verb, plug: controller, plug_opts: action}, {paths, schemas}) do
     op = controller.operation(action)
-    {response, schemas} = extract(wrap(op.response), schemas)
-    {body, schemas} = if op[:body], do: extract(op.body, schemas), else: {nil, schemas}
-    status = to_string(op[:status] || 200)
+    {ok, schemas} = response(op[:response], schemas)
+    {body, schemas} = request(op[:body], schemas)
+    status = to_string(if(is_nil(op[:response]), do: 204, else: op[:status] || 200))
+
+    params =
+      path_params(path) ++ (op[:params] || []) ++ if(verb == :post, do: [idempotency()], else: [])
 
     operation =
       %{
@@ -53,26 +57,46 @@ defmodule QPBX.Web.Api.Spec do
         tags: [op.tag],
         description: "Scope: `#{op.scope}`. Key: #{audience(op.audience)}.",
         "x-scope": op.scope,
-        parameters: path_params(path) ++ (op[:params] || []),
+        parameters: params,
         responses: %{
-          status => json("OK", response),
+          status => ok,
           "4XX" => json("Error", %{"$ref": "#/components/schemas/Error"})
         }
       }
-      |> then(
-        &if(body,
-          do: Map.put(&1, :requestBody, Map.put(json("", body), :required, true)),
-          else: &1
-        )
-      )
-      |> then(
-        &if(verb == :post,
-          do: Map.update!(&1, :parameters, fn ps -> ps ++ [idempotency()] end),
-          else: &1
-        )
-      )
+      |> then(&if(body, do: Map.put(&1, :requestBody, body), else: &1))
 
     {put_in(paths, [Access.key(oa_path(path), %{}), verb], operation), schemas}
+  end
+
+  defp response(nil, schemas), do: {%{description: "No content"}, schemas}
+
+  defp response({:binary, type}, schemas),
+    do:
+      {%{description: "OK", content: %{type => %{schema: %{type: "string", format: "binary"}}}},
+       schemas}
+
+  defp response({:raw, schema}, schemas) do
+    {schema, schemas} = extract(schema, schemas)
+    {json("OK", schema), schemas}
+  end
+
+  defp response(schema, schemas) do
+    {schema, schemas} = extract(wrap(schema), schemas)
+    {json("OK", schema), schemas}
+  end
+
+  defp request(nil, schemas), do: {nil, schemas}
+
+  defp request({:binary, types}, schemas),
+    do:
+      {%{
+         required: true,
+         content: Map.new(types, &{&1, %{schema: %{type: "string", format: "binary"}}})
+       }, schemas}
+
+  defp request(schema, schemas) do
+    {schema, schemas} = extract(schema, schemas)
+    {Map.put(json("", schema), :required, true), schemas}
   end
 
   defp wrap({:list, schema}),

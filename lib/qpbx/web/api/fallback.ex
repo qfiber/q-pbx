@@ -13,6 +13,7 @@ defmodule QPBX.Web.Api.Fallback do
         Error.changeset_details(cs)
       )
 
+  def call(conn, nil), do: Error.send(conn, 404, "not_found", "Not found.")
   def call(conn, {:error, :not_found}), do: Error.send(conn, 404, "not_found", "Not found.")
 
   def call(conn, {:error, {:bad_request, message}}),
