@@ -9,7 +9,8 @@ defmodule QPBX.Web.Api.ParityTest do
   # Page events that only change the form on screen, or read again what is shown (`check`:
   # the health checks run now; their results are at /health/details for code).
   @ui_only ~w(validate validate_class validate_emergency validate_device validate_greeting
-              validate_channel dismiss hide_secret edit cancel open refresh filter check)
+              validate_channel validate_email validate_captcha dismiss hide_secret edit cancel
+              open refresh filter check)
 
   # A signed-in person's own sessions: an API key is not a person.
   @personal %{
@@ -19,6 +20,13 @@ defmodule QPBX.Web.Api.ParityTest do
   }
 
   @parity %{
+    "platform/settings_live" => %{
+      "save_email" => "PATCH /v1/platform-settings",
+      "save_captcha" => "PATCH /v1/platform-settings",
+      "reset_email" => "PATCH /v1/platform-settings",
+      "reset_captcha" => "PATCH /v1/platform-settings",
+      "test_email" => "POST /v1/platform-settings/test-email"
+    },
     "account/api_keys_live" => %{
       "save" => "POST /v1/api-keys",
       "revoke" => "DELETE /v1/api-keys/:id"

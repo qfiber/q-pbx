@@ -41,6 +41,14 @@ Kamailio gets its real config.
 
 ## Done
 
+- Platform settings page (2026-11-29): Administration > Settings for outgoing email (mail
+  server, port, login, password, sender; a "send a test email" that answers at once, the
+  reason in plain words when it fails) and the sign-in check (proof of work, Turnstile,
+  Friendly Captcha, Captcha.eu or none, with site key and secret). An empty field uses the
+  installation's value (Ansible), shown as its hint; passwords and secrets are encrypted,
+  never shown or audited, and an empty one keeps the saved one; changes apply to the next
+  email or sign-in. Also in the API (`/v1/platform-settings`). 4 new tests (375 in all; lab: the test email through the installation's server and a portal-set one, a refused server reported in plain words, the sign-in check switched from the settings and back).
+
 - Audit log made readable (2026-11-29, from a lab report): entries read as sentences ("Dana
   Levi turned on two-factor authentication", "System (lab) created extension 104 Lab") with
   the changed values as tags; each entry now keeps the names of who, what and which tenant

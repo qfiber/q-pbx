@@ -2,6 +2,16 @@
 
 Newest first. Each entry: date, what, why, alternatives rejected.
 
+## 2026-11-29: Email and sign-in settings in the portal
+
+- **Platform admins set outgoing email and the sign-in check in the portal**, which wins over
+  the installation's (Ansible) values; an empty field falls back to them, so a fresh install
+  works before anyone opens the page. Read at each email and each check: a change applies at
+  once, with no restart. Rejected: a cache (one row read per email or sign-in is cheap, and
+  a cache would need clearing on every node later).
+- **If the settings cannot be read, sign-in uses the installation's check** rather than
+  failing: signing in must not depend on this row.
+
 ## 2026-11-29: Shared portal components
 
 - **One list component for every list** (`PagedTable`, a LiveComponent): search and paging

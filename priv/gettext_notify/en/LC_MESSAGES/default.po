@@ -86,3 +86,13 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Your notification settings are in the portal: %{url}"
 msgstr ""
+
+#: lib/qpbx/notify/notify.ex:70
+#, elixir-autogen, elixir-format
+msgid "Q-PBX test email"
+msgstr ""
+
+#: lib/qpbx/notify/notify.ex:72
+#, elixir-autogen, elixir-format
+msgid "This is a test email from Q-PBX. Email from this server works."
+msgstr ""

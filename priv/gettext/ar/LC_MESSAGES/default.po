@@ -26,8 +26,8 @@ msgstr "الإجراءات"
 msgid "Allowed destination classes"
 msgstr "فئات الوجهات المسموح بها"
 
-#: lib/qpbx/web/components/layouts.ex:419
-#: lib/qpbx/web/components/layouts.ex:431
+#: lib/qpbx/web/components/layouts.ex:420
+#: lib/qpbx/web/components/layouts.ex:432
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
 msgstr "جارٍ محاولة إعادة الاتصال"
@@ -249,6 +249,7 @@ msgid "Outbound minutes per month"
 msgstr "الدقائق الصادرة في الشهر"
 
 #: lib/qpbx/web/controllers/auth_html.ex:30
+#: lib/qpbx/web/live/platform/settings_live.ex:136
 #: lib/qpbx/web/live/tenant/extension_live.ex:175
 #, elixir-autogen, elixir-format
 msgid "Password"
@@ -350,7 +351,7 @@ msgstr "إعداد حسابك"
 msgid "Setup link for %{email} (also emailed). It works once and expires in 48 hours:"
 msgstr "رابط الإعداد لـ %{email} (أُرسل بالبريد أيضًا). يعمل مرة واحدة وتنتهي صلاحيته خلال 48 ساعة:"
 
-#: lib/qpbx/web/components/layouts.ex:426
+#: lib/qpbx/web/components/layouts.ex:427
 #, elixir-autogen, elixir-format
 msgid "Something went wrong!"
 msgstr "حدث خطأ ما!"
@@ -431,7 +432,7 @@ msgstr "غير محدود"
 msgid "Verify"
 msgstr "تحقّق"
 
-#: lib/qpbx/web/components/layouts.ex:414
+#: lib/qpbx/web/components/layouts.ex:415
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
 msgstr "تعذّر الاتصال بالإنترنت"
@@ -1012,7 +1013,7 @@ msgstr "تم إنشاء التحويلة %{number}."
 msgid "Extension %{number} deleted."
 msgstr "تم حذف التحويلة %{number}."
 
-#: lib/qpbx/web/components/layouts.ex:347
+#: lib/qpbx/web/components/layouts.ex:348
 #: lib/qpbx/web/live/platform/plans_live.ex:119
 #: lib/qpbx/web/live/tenant/extensions_live.ex:10
 #: lib/qpbx/web/live/tenant/extensions_live.ex:62
@@ -1203,7 +1204,7 @@ msgstr "الرقم"
 msgid "Number (e.g. 100)"
 msgstr "الرقم (مثلًا 100)"
 
-#: lib/qpbx/web/components/layouts.ex:357
+#: lib/qpbx/web/components/layouts.ex:358
 #: lib/qpbx/web/live/tenant/number_format_live.ex:8
 #: lib/qpbx/web/live/tenant/number_format_live.ex:65
 #, elixir-autogen, elixir-format
@@ -1223,7 +1224,7 @@ msgid "Numbering"
 msgstr "الترقيم"
 
 #: lib/qpbx/web/components/layouts.ex:307
-#: lib/qpbx/web/components/layouts.ex:355
+#: lib/qpbx/web/components/layouts.ex:356
 #: lib/qpbx/web/live/platform/dashboard_live.ex:147
 #: lib/qpbx/web/live/platform/dids_live.ex:14
 #: lib/qpbx/web/live/platform/dids_live.ex:85
@@ -1240,7 +1241,7 @@ msgstr "الأرقام"
 msgid "Numbers can be typed the local way, for example 02-123-4567."
 msgstr "يمكن كتابة الأرقام بالطريقة المحلية، مثلًا 02-123-4567."
 
-#: lib/qpbx/web/components/layouts.ex:363
+#: lib/qpbx/web/components/layouts.ex:364
 #: lib/qpbx/web/live/tenant/office_ips_live.ex:14
 #: lib/qpbx/web/live/tenant/office_ips_live.ex:75
 #, elixir-autogen, elixir-format
@@ -1261,7 +1262,7 @@ msgstr "مفعّل"
 msgid "Only tenant admins can open this page."
 msgstr "يمكن لمسؤولي المستأجر فقط فتح هذه الصفحة."
 
-#: lib/qpbx/web/components/layouts.ex:356
+#: lib/qpbx/web/components/layouts.ex:357
 #: lib/qpbx/web/live/tenant/routes_live.ex:17
 #: lib/qpbx/web/live/tenant/routes_live.ex:115
 #, elixir-autogen, elixir-format
@@ -1279,6 +1280,7 @@ msgid "Outside number"
 msgstr "الرقم الخارجي"
 
 #: lib/qpbx/web/live/platform/protection_live.ex:146
+#: lib/qpbx/web/live/platform/settings_live.ex:119
 #: lib/qpbx/web/live/platform/trunks_live.ex:203
 #, elixir-autogen, elixir-format
 msgid "Port"
@@ -1370,6 +1372,8 @@ msgstr "مستخدم SIP"
 #: lib/qpbx/web/live/platform/fraud_live.ex:105
 #: lib/qpbx/web/live/platform/numbering_live.ex:177
 #: lib/qpbx/web/live/platform/protection_live.ex:122
+#: lib/qpbx/web/live/platform/settings_live.ex:153
+#: lib/qpbx/web/live/platform/settings_live.ex:240
 #: lib/qpbx/web/live/platform/tenant_live.ex:223
 #: lib/qpbx/web/live/platform/trunks_live.ex:290
 #: lib/qpbx/web/live/tenant/extension_live.ex:326
@@ -1912,7 +1916,7 @@ msgstr "غير معروف"
 msgid "Upload greeting"
 msgstr "رفع التحية"
 
-#: lib/qpbx/web/components/layouts.ex:350
+#: lib/qpbx/web/components/layouts.ex:351
 #: lib/qpbx/web/live/tenant/extension_live.ex:154
 #: lib/qpbx/web/live/tenant/my_extension_live.ex:189
 #: lib/qpbx/web/live/tenant/voicemail_live.ex:9
@@ -1949,7 +1953,7 @@ msgstr "بدون تحية يسمع المتصلون تحية قياسية برق
 msgid "Answered"
 msgstr "تم الرد"
 
-#: lib/qpbx/web/components/layouts.ex:351
+#: lib/qpbx/web/components/layouts.ex:352
 #: lib/qpbx/web/live/tenant/calls_live.ex:15
 #: lib/qpbx/web/live/tenant/calls_live.ex:68
 #: lib/qpbx/web/live/tenant/calls_live.ex:173
@@ -2116,7 +2120,7 @@ msgstr "دعوة"
 msgid "Invite a user"
 msgstr "دعوة مستخدم"
 
-#: lib/qpbx/web/components/layouts.ex:338
+#: lib/qpbx/web/components/layouts.ex:339
 #: lib/qpbx/web/live/tenant/home_live.ex:237
 #: lib/qpbx/web/live/tenant/home_live.ex:264
 #: lib/qpbx/web/live/tenant/my_extension_live.ex:15
@@ -2133,6 +2137,7 @@ msgstr "لا توجد تحويلة مرتبطة بحسابك بعد. اطلب م
 
 #: lib/qpbx/web/live/account/notifications_live.ex:229
 #: lib/qpbx/web/live/account/notifications_live.ex:238
+#: lib/qpbx/web/live/platform/settings_live.ex:261
 #: lib/qpbx/web/live/tenant/users_live.ex:24
 #, elixir-autogen, elixir-format
 msgid "None"
@@ -2170,7 +2175,7 @@ msgstr "هذه التحويلة ليست من تحويلاتك."
 msgid "The company needs at least one tenant admin."
 msgstr "تحتاج الشركة إلى مسؤول مستأجر واحد على الأقل."
 
-#: lib/qpbx/web/components/layouts.ex:349
+#: lib/qpbx/web/components/layouts.ex:350
 #: lib/qpbx/web/live/platform/tenant_live.ex:227
 #: lib/qpbx/web/live/tenant/home_live.ex:183
 #: lib/qpbx/web/live/tenant/users_live.ex:14
@@ -2213,7 +2218,7 @@ msgid "All tenants"
 msgstr "كل المستأجرين"
 
 #: lib/qpbx/web/components/layouts.ex:322
-#: lib/qpbx/web/components/layouts.ex:364
+#: lib/qpbx/web/components/layouts.ex:365
 #: lib/qpbx/web/live/platform/audit_live.ex:13
 #: lib/qpbx/web/live/platform/audit_live.ex:54
 #: lib/qpbx/web/live/tenant/audit_live.ex:14
@@ -2261,7 +2266,7 @@ msgstr "لم يُسجَّل شيء بعد."
 msgid "Platform admin"
 msgstr "مسؤول المنصة"
 
-#: lib/qpbx/web/components/layouts.ex:326
+#: lib/qpbx/web/components/layouts.ex:327
 #: lib/qpbx/web/live/platform/admins_live.ex:13
 #: lib/qpbx/web/live/platform/admins_live.ex:75
 #, elixir-autogen, elixir-format
@@ -2329,7 +2334,7 @@ msgstr[4] "%{count} يومًا"
 msgstr[5] "%{count} يوم"
 
 #: lib/qpbx/web/api/controllers/spec_controller.ex:12
-#: lib/qpbx/web/components/layouts.ex:370
+#: lib/qpbx/web/components/layouts.ex:371
 #: lib/qpbx/web/live/account/api_keys_live.ex:94
 #, elixir-autogen, elixir-format
 msgid "API explorer"
@@ -2341,8 +2346,8 @@ msgstr "مستكشف الواجهة البرمجية"
 msgid "API key"
 msgstr "مفتاح الواجهة البرمجية"
 
-#: lib/qpbx/web/components/layouts.ex:327
-#: lib/qpbx/web/components/layouts.ex:369
+#: lib/qpbx/web/components/layouts.ex:328
+#: lib/qpbx/web/components/layouts.ex:370
 #: lib/qpbx/web/live/account/api_keys_live.ex:15
 #: lib/qpbx/web/live/account/api_keys_live.ex:89
 #, elixir-autogen, elixir-format
@@ -2638,7 +2643,7 @@ msgstr "تمت إضافة خطاف الويب."
 msgid "Webhook removed."
 msgstr "تمت إزالة خطاف الويب."
 
-#: lib/qpbx/web/components/layouts.ex:368
+#: lib/qpbx/web/components/layouts.ex:369
 #: lib/qpbx/web/live/tenant/webhooks_live.ex:14
 #: lib/qpbx/web/live/tenant/webhooks_live.ex:69
 #, elixir-autogen, elixir-format
@@ -2735,7 +2740,7 @@ msgid "Alertmanager"
 msgstr "Alertmanager"
 
 #: lib/qpbx/web/components/layouts.ex:321
-#: lib/qpbx/web/components/layouts.ex:362
+#: lib/qpbx/web/components/layouts.ex:363
 #: lib/qpbx/web/live/account/alerts_live.ex:21
 #: lib/qpbx/web/live/account/alerts_live.ex:208
 #, elixir-autogen, elixir-format
@@ -2855,8 +2860,8 @@ msgid "No notifications."
 msgstr "لا توجد إشعارات."
 
 #: lib/qpbx/web/components/layouts.ex:96
-#: lib/qpbx/web/components/layouts.ex:328
-#: lib/qpbx/web/components/layouts.ex:339
+#: lib/qpbx/web/components/layouts.ex:329
+#: lib/qpbx/web/components/layouts.ex:340
 #: lib/qpbx/web/live/account/notifications_live.ex:13
 #: lib/qpbx/web/live/account/notifications_live.ex:112
 #, elixir-autogen, elixir-format
@@ -2924,7 +2929,7 @@ msgid "Resolved."
 msgstr "تم الحل."
 
 #: lib/qpbx/web/components/layouts.ex:310
-#: lib/qpbx/web/components/layouts.ex:360
+#: lib/qpbx/web/components/layouts.ex:361
 #: lib/qpbx/web/live/account/notifications_live.ex:85
 #, elixir-autogen, elixir-format
 msgid "Security"
@@ -3132,7 +3137,7 @@ msgid "Customers"
 msgstr "العملاء"
 
 #: lib/qpbx/web/components/layouts.ex:298
-#: lib/qpbx/web/components/layouts.ex:337
+#: lib/qpbx/web/components/layouts.ex:338
 #: lib/qpbx/web/live/platform/dashboard_live.ex:17
 #: lib/qpbx/web/live/tenant/home_live.ex:18
 #, elixir-autogen, elixir-format
@@ -3188,7 +3193,7 @@ msgstr "مرحبًا، %{name}"
 msgid "Instant changes"
 msgstr "تغييرات فورية"
 
-#: lib/qpbx/web/components/layouts.ex:366
+#: lib/qpbx/web/components/layouts.ex:367
 #, elixir-autogen, elixir-format
 msgid "Integrations"
 msgstr "التكاملات"
@@ -3209,7 +3214,7 @@ msgstr "المكالمات الجارية"
 msgid "Main"
 msgstr "الرئيسية"
 
-#: lib/qpbx/web/components/layouts.ex:335
+#: lib/qpbx/web/components/layouts.ex:336
 #, elixir-autogen, elixir-format
 msgid "Me"
 msgstr "أنا"
@@ -3264,7 +3269,7 @@ msgstr "الهواتف المتصلة"
 msgid "Platform overview"
 msgstr "نظرة عامة على المنصة"
 
-#: lib/qpbx/web/components/layouts.ex:353
+#: lib/qpbx/web/components/layouts.ex:354
 #, elixir-autogen, elixir-format
 msgid "Routing"
 msgstr "التوجيه"
@@ -3302,7 +3307,7 @@ msgstr "سجّل الدخول ببريدك الإلكتروني وكلمة ال�
 msgid "Sign-in and sessions"
 msgstr "الدخول والجلسات"
 
-#: lib/qpbx/web/components/layouts.ex:345
+#: lib/qpbx/web/components/layouts.ex:346
 #, elixir-autogen, elixir-format
 msgid "Team"
 msgstr "الفريق"
@@ -3933,6 +3938,9 @@ msgstr "ابحث في الخطط"
 msgid "Search prefixes"
 msgstr "ابحث في البادئات"
 
+#: lib/qpbx/web/components/layouts.ex:326
+#: lib/qpbx/web/live/platform/settings_live.ex:20
+#: lib/qpbx/web/live/platform/settings_live.ex:91
 #: lib/qpbx/web/live/tenant/webhook_live.ex:165
 #, elixir-autogen, elixir-format
 msgid "Settings"
@@ -4409,3 +4417,124 @@ msgstr "نعم"
 #, elixir-autogen, elixir-format
 msgid "Search by who, what or name"
 msgstr "ابحث بالفاعل أو الفعل أو الاسم"
+
+#: lib/qpbx/web/live/platform/settings_live.ex:214
+#, elixir-autogen, elixir-format
+msgid "Check"
+msgstr "الفحص"
+
+#: lib/qpbx/web/live/platform/settings_live.ex:159
+#, elixir-autogen, elixir-format
+msgid "Go back to the installation's email settings?"
+msgstr "العودة إلى إعدادات البريد الخاصة بالتثبيت؟"
+
+#: lib/qpbx/web/live/platform/settings_live.ex:246
+#, elixir-autogen, elixir-format
+msgid "Go back to the installation's sign-in check?"
+msgstr "العودة إلى فحص تسجيل الدخول الخاص بالتثبيت؟"
+
+#: lib/qpbx/web/live/platform/settings_live.ex:124
+#, elixir-autogen, elixir-format
+msgid "Login (empty: none)"
+msgstr "اسم الدخول (فارغ: بلا)"
+
+#: lib/qpbx/web/live/platform/settings_live.ex:112
+#, elixir-autogen, elixir-format
+msgid "Mail server"
+msgstr "خادم البريد"
+
+#: lib/qpbx/web/live/platform/settings_live.ex:191
+#, elixir-autogen, elixir-format
+msgid "Not sent: %{reason}"
+msgstr "لم يُرسل: %{reason}"
+
+#: lib/qpbx/web/live/platform/settings_live.ex:101
+#, elixir-autogen, elixir-format
+msgid "Outgoing email"
+msgstr "البريد الصادر"
+
+#: lib/qpbx/web/live/platform/settings_live.ex:135
+#, elixir-autogen, elixir-format
+msgid "Password (saved; empty keeps it)"
+msgstr "كلمة المرور (محفوظة؛ الفارغ يبقيها)"
+
+#: lib/qpbx/web/live/platform/settings_live.ex:257
+#, elixir-autogen, elixir-format
+msgid "Proof of work (built in)"
+msgstr "إثبات العمل (مدمج)"
+
+#: lib/qpbx/web/live/platform/settings_live.ex:73
+#, elixir-autogen, elixir-format
+msgid "Saved. It applies at once."
+msgstr "تم الحفظ. يسري فورًا."
+
+#: lib/qpbx/web/live/platform/settings_live.ex:232
+#, elixir-autogen, elixir-format
+msgid "Secret (outside services)"
+msgstr "السر (للخدمات الخارجية)"
+
+#: lib/qpbx/web/live/platform/settings_live.ex:231
+#, elixir-autogen, elixir-format
+msgid "Secret (saved; empty keeps it)"
+msgstr "السر (محفوظ؛ الفارغ يبقيه)"
+
+#: lib/qpbx/web/live/platform/settings_live.ex:168
+#, elixir-autogen, elixir-format
+msgid "Send a test email to"
+msgstr "إرسال بريد تجريبي إلى"
+
+#: lib/qpbx/web/live/platform/settings_live.ex:179
+#, elixir-autogen, elixir-format
+msgid "Send test email"
+msgstr "إرسال بريد تجريبي"
+
+#: lib/qpbx/web/live/platform/settings_live.ex:146
+#, elixir-autogen, elixir-format
+msgid "Sender address"
+msgstr "عنوان المرسل"
+
+#: lib/qpbx/web/live/platform/settings_live.ex:178
+#, elixir-autogen, elixir-format
+msgid "Sending..."
+msgstr "جارٍ الإرسال..."
+
+#: lib/qpbx/web/live/platform/settings_live.ex:183
+#, elixir-autogen, elixir-format
+msgid "Sent. Check the inbox of %{to}."
+msgstr "تم الإرسال. افحص صندوق الوارد لـ %{to}."
+
+#: lib/qpbx/web/live/platform/settings_live.ex:93
+#, elixir-autogen, elixir-format
+msgid "Server-wide settings. An empty field uses the installation's value, shown as its hint. Changes apply at once."
+msgstr "إعدادات الخادم كله. الحقل الفارغ يستخدم قيمة التثبيت الظاهرة كتلميح. التغييرات تسري فورًا."
+
+#: lib/qpbx/web/live/platform/settings_live.ex:202
+#, elixir-autogen, elixir-format
+msgid "Sign-in protection"
+msgstr "حماية تسجيل الدخول"
+
+#: lib/qpbx/web/live/platform/settings_live.ex:222
+#, elixir-autogen, elixir-format
+msgid "Site key (outside services)"
+msgstr "مفتاح الموقع (للخدمات الخارجية)"
+
+#: lib/qpbx/web/live/platform/settings_live.ex:205
+#, elixir-autogen, elixir-format
+msgid "The human check on the login and account setup pages. Proof of work runs in the browser with no outside service."
+msgstr "فحص الإنسان في صفحتي تسجيل الدخول وإعداد الحساب. إثبات العمل يعمل في المتصفح دون خدمة خارجية."
+
+#: lib/qpbx/web/live/platform/settings_live.ex:215
+#, elixir-autogen, elixir-format
+msgid "The installation's (%{name})"
+msgstr "الخاص بالتثبيت (%{name})"
+
+#: lib/qpbx/web/live/platform/settings_live.ex:104
+#, elixir-autogen, elixir-format
+msgid "The mail server every email goes through: alerts, voicemail, setup links. With a login, the connection must be encrypted (TLS)."
+msgstr "خادم البريد الذي تمر عبره كل الرسائل: التنبيهات والبريد الصوتي وروابط الإعداد. مع اسم دخول يجب أن يكون الاتصال مشفرًا (TLS)."
+
+#: lib/qpbx/web/live/platform/settings_live.ex:161
+#: lib/qpbx/web/live/platform/settings_live.ex:248
+#, elixir-autogen, elixir-format
+msgid "Use the installation's settings"
+msgstr "استخدام إعدادات التثبيت"

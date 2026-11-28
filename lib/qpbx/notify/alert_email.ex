@@ -11,6 +11,7 @@ defmodule QPBX.Notify.AlertEmail do
   import Swoosh.Email
   require Ecto.Query
   alias QPBX.Notify.Alerts.{Alert, Notification}
+  alias QPBX.Notify.Mail
   alias QPBX.Repo
 
   @impl Oban.Worker
@@ -24,7 +25,7 @@ defmodule QPBX.Notify.AlertEmail do
          %Alert{} = alert <- Repo.get(Alert, n.alert_id) do
       email = Gettext.with_locale(QPBX.Notify.Gettext, locale, fn -> build(n, alert, token) end)
 
-      sent(n, QPBX.Notify.Mailer.deliver(email), attempt >= max)
+      sent(n, Mail.deliver(email), attempt >= max)
     else
       _ -> :ok
     end
@@ -103,7 +104,7 @@ defmodule QPBX.Notify.AlertEmail do
 
     new()
     |> to(n.address)
-    |> from(Application.get_env(:qpbx, :mail_from, {"Q-PBX", "noreply@localhost"}))
+    |> from(Mail.sender())
     |> subject(subject)
     |> text_body(
       Enum.join(

@@ -1,7 +1,8 @@
 defmodule QPBX.Web.Captcha do
   @moduledoc """
   Human check on the login and setup pages, chosen per installation
-  (`config :qpbx, QPBX.Web.Captcha, provider: ..., site_key: ..., secret: ...`):
+  (`config :qpbx, QPBX.Web.Captcha, provider: ..., site_key: ..., secret: ...`) and changeable
+  by platform admins on the settings page (`/platform/settings`), which wins when set:
 
     * `:pow` (default): built-in proof of work, no outside service (ALTCHA format)
     * `:turnstile`: Cloudflare Turnstile
@@ -26,7 +27,28 @@ defmodule QPBX.Web.Captcha do
   }
 
   def provider, do: config()[:provider] || :pow
-  def config, do: Application.get_env(:qpbx, __MODULE__, [])
+
+  @doc """
+  The installation's settings with the portal's on top (`QPBX.Core.platform_settings/0`: the
+  provider, its site key and secret, each when set). If the settings cannot be read, the
+  installation's alone: signing in must not depend on them.
+  """
+  def config do
+    Keyword.merge(Application.get_env(:qpbx, __MODULE__, []), saved())
+  end
+
+  defp saved do
+    s = QPBX.Core.platform_settings()
+
+    [
+      provider: s.captcha_provider && String.to_existing_atom(s.captcha_provider),
+      site_key: s.captcha_site_key,
+      secret: s.captcha_secret
+    ]
+    |> Enum.reject(fn {_, v} -> is_nil(v) end)
+  rescue
+    _ -> []
+  end
 
   @doc "Checks the answer the form carried."
   def verify(params, remote_ip) do

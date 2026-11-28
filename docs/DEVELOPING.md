@@ -155,7 +155,9 @@ from the commit (FreeSWITCH from a cache keyed on `packaging/freeswitch/`).
 (`ansible/inventories/<env>/`): `qpbx_domain`, `qpbx_management_ips` (must include the machine
 running Ansible, or the run stops before touching the firewall), `qpbx_cert_mode`, SMTP
 settings, the human check (`qpbx_captcha_provider`: `pow`, `turnstile`, `friendly_captcha`,
-`captcha_eu` or `none`, with site key and secret for the outside services), and for `wildcard` mode `qpbx_acme_dns_provider` and `qpbx_acme_dns_env` (keep these in
+`captcha_eu` or `none`, with site key and secret for the outside services; email and the
+human check can also be changed later in the portal, Administration > Settings, which then
+wins over these), and for `wildcard` mode `qpbx_acme_dns_provider` and `qpbx_acme_dns_env` (keep these in
 Ansible Vault). Requests to tenant-chosen addresses (webhooks) are HTTPS only:
 `qpbx_outbound_allow_cidrs` (inside networks you trust; default none) and
 `qpbx_outbound_ca_pem` (extra certificate authorities, PEM; default none). Collections: `ansible-galaxy collection install -r ansible/requirements.yml`.

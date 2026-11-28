@@ -15,7 +15,8 @@ defmodule QPBX.Notify do
       Alerts.Preference
     ]
 
-  alias QPBX.Notify.{SetupLinkEmail, VoicemailEmail}
+  use Gettext, backend: QPBX.Notify.Gettext
+  alias QPBX.Notify.{Mail, SetupLinkEmail, VoicemailEmail}
 
   @doc """
   Queues the setup-link email (Oban queue `notify`). `account` needs `email`, `name` and
@@ -51,6 +52,34 @@ defmodule QPBX.Notify do
     |> Map.put(:at, vm.at |> DateTime.truncate(:second) |> DateTime.to_iso8601())
     |> VoicemailEmail.new()
     |> Oban.insert()
+  end
+
+  @doc "The installation's email settings (host, port, username, from), the portal's fallback."
+  defdelegate installation_email(), to: QPBX.Notify.Mail, as: :installation
+
+  @doc """
+  Sends a test email to `to` now, with the current settings: `:ok`, or `{:error, reason}` in
+  plain words (the settings page shows it).
+  """
+  def send_test_email(to, locale \\ "en") when is_binary(to) do
+    email =
+      Gettext.with_locale(QPBX.Notify.Gettext, locale, fn ->
+        Swoosh.Email.new(
+          to: to,
+          from: Mail.sender(),
+          subject: dgettext("default", "Q-PBX test email"),
+          text_body:
+            dgettext(
+              "default",
+              "This is a test email from Q-PBX. Email from this server works."
+            )
+        )
+      end)
+
+    case Mail.deliver(email) do
+      {:ok, _} -> :ok
+      {:error, reason} -> {:error, QPBX.Notify.AlertEmail.readable(reason)}
+    end
   end
 
   ## Alerts (QPBX.Notify.Alerts) and the service around them (QPBX.Notify.Inbox)

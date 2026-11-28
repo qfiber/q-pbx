@@ -127,6 +127,9 @@ defmodule QPBX.Web.Router do
     patch "/fraud", ProtectionController, :update_fraud
     get "/fraud/blocks", ProtectionController, :blocks
     delete "/fraud/blocks/:id", ProtectionController, :unblock
+    get "/platform-settings", SettingsController, :show
+    patch "/platform-settings", SettingsController, :update
+    post "/platform-settings/test-email", SettingsController, :test_email
     get "/platform-admins", AdminController, :index
     post "/platform-admins", AdminController, :create
     post "/platform-admins/:id/setup-link", AdminController, :setup_link
@@ -223,6 +226,7 @@ defmodule QPBX.Web.Router do
     live_session :platform_admin, on_mount: {QPBX.Web.Auth, :platform_admin} do
       live "/", DashboardLive, :index
       live "/health", HealthLive, :index
+      live "/settings", SettingsLive, :index
       live "/tenants", TenantsLive, :index
       live "/tenants/new", TenantsLive, :new
       live "/tenants/:id", TenantLive, :show

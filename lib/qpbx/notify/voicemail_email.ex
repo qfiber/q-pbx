@@ -6,11 +6,12 @@ defmodule QPBX.Notify.VoicemailEmail do
   use Oban.Worker, queue: :notify, max_attempts: 10
   use Gettext, backend: QPBX.Notify.Gettext
   import Swoosh.Email
+  alias QPBX.Notify.Mail
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: args}) do
     with {:ok, email} <- build(args),
-         {:ok, _} <- QPBX.Notify.Mailer.deliver(email) do
+         {:ok, _} <- Mail.deliver(email) do
       :ok
     else
       # The message was deleted before the email went out: nothing to send.
@@ -40,7 +41,7 @@ defmodule QPBX.Notify.VoicemailEmail do
 
     new()
     |> to(a["email"])
-    |> from(Application.get_env(:qpbx, :mail_from, {"Q-PBX", "noreply@localhost"}))
+    |> from(Mail.sender())
     |> subject(gettext("New voicemail from %{caller}", caller: caller))
     |> text_body(text <> "\n")
     |> html_body("<p>#{text |> Phoenix.HTML.html_escape() |> Phoenix.HTML.safe_to_string()}</p>")

@@ -323,6 +323,7 @@ defmodule QPBX.Web.Layouts do
        ]},
       {gettext("Administration"),
        [
+         {gettext("Settings"), ~p"/platform/settings", "nav-settings", "hero-cog-6-tooth"},
          {gettext("Platform admins"), ~p"/platform/admins", "nav-admins", "hero-user-group"},
          {gettext("API keys"), ~p"/platform/api-keys", "nav-api-keys", "hero-key"},
          {gettext("Notifications"), ~p"/platform/notifications", "nav-notifications", "hero-bell"}

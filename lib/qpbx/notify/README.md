@@ -39,6 +39,11 @@ audio, decrypted while the email is built). Queue `notify`.
 - Every notification (one recipient, one channel, one event) is a row: status pending, sent,
   failed, dead, bounced, skipped; attempts logged.
 
+**Sending email:** every email goes through `QPBX.Notify.Mail` (`deliver/1`, `sender/0`): the
+SMTP server and sender saved on the platform settings page, else the installation's, read at
+each send. `send_test_email/2` sends one now and returns `:ok` or `{:error, plain words}`;
+`installation_email/0` gives the installation's values (the page's hints).
+
 **Scoped API** (`QPBX.Notify.Inbox`): `list_alerts/3` (filters state, category, severity; a
 tenant its own, the platform all), `get_alert/2`, `acknowledge_alert/3`, `resolve_alert/3`,
 `acknowledge_by_token/1`, `send_test_notification/3`, `list_notifications/2`,

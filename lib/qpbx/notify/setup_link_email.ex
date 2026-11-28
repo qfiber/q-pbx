@@ -3,12 +3,13 @@ defmodule QPBX.Notify.SetupLinkEmail do
   use Oban.Worker, queue: :notify, max_attempts: 10
   use Gettext, backend: QPBX.Notify.Gettext
   import Swoosh.Email
+  alias QPBX.Notify.Mail
 
   @impl Oban.Worker
   def perform(%Oban.Job{
         args: %{"email" => email, "name" => name, "locale" => locale, "url" => url}
       }) do
-    case email |> build(name, locale, url) |> QPBX.Notify.Mailer.deliver() do
+    case email |> build(name, locale, url) |> Mail.deliver() do
       {:ok, _} -> :ok
       {:error, reason} -> {:error, reason}
     end
@@ -48,5 +49,5 @@ defmodule QPBX.Notify.SetupLinkEmail do
   end
 
   defp esc(text), do: text |> Phoenix.HTML.html_escape() |> Phoenix.HTML.safe_to_string()
-  defp sender, do: Application.get_env(:qpbx, :mail_from, {"Q-PBX", "noreply@localhost"})
+  defp sender, do: Mail.sender()
 end

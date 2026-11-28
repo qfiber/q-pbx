@@ -198,6 +198,13 @@ loopback peers, i.e. nginx. Use `conn.remote_ip` everywhere; never read forwardi
 429 for blocked IPs, `failed/2`, `succeeded/1`, `human?/2`, `captcha_assigns/1`; allowlisted
 IPs exempt). `QPBX.Web.Captcha` (`provider/0`, `verify/2`, `widget/1`) with `Pow`, `Turnstile`,
 `FriendlyCaptcha`, `CaptchaEU`; `Captcha.PowStore` remembers used challenges (per node).
+`Captcha.config/0` is the installation's settings with the platform settings page's on top
+(read at each check; if the settings cannot be read, the installation's alone).
+
+**Platform settings:** `/platform/settings` (`Platform.SettingsLive`, Administration):
+outgoing email with a test email, and the sign-in check; the API is `GET/PATCH
+/v1/platform-settings` and `POST /v1/platform-settings/test-email` (502 with the reason when
+the mail server refuses).
 
 **Content-Security-Policy:** `QPBX.Web.CSP` (browser pipeline). No inline scripts: put JS in
 `assets/js` or `priv/static`. A new outside script host goes into its provider entry.

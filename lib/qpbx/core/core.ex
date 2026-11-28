@@ -31,6 +31,7 @@ defmodule QPBX.Core do
       NumberClass,
       Numbers,
       ApiKey,
+      PlatformSettings,
       Encrypted.Binary
     ]
 
@@ -52,6 +53,28 @@ defmodule QPBX.Core do
   def update_plan(%Plan{} = plan, attrs, actor) do
     save(:update, Plan.changeset(plan, attrs), "plan.update", actor)
     |> QPBX.Core.Changes.announce(nil, "plans")
+  end
+
+  ## Platform settings (outgoing email, the sign-in human check)
+
+  @doc "The platform's settings row; empty fields fall back to the installation's values."
+  def platform_settings, do: Repo.get!(QPBX.Core.PlatformSettings, true)
+
+  def change_platform_settings(settings \\ platform_settings(), attrs \\ %{}),
+    do: QPBX.Core.PlatformSettings.changeset(settings, attrs)
+
+  @doc "Saves platform settings (audited, passwords and secrets left out of the audit)."
+  def update_platform_settings(attrs, actor) do
+    cs = change_platform_settings(platform_settings(), attrs)
+
+    Repo.transaction(fn ->
+      with {:ok, s} <- Repo.update(cs),
+           {:ok, _} <- audit(actor, "platform_settings.update", nil, cs.changes) do
+        s
+      else
+        {:error, e} -> Repo.rollback(e)
+      end
+    end)
   end
 
   ## Tenants

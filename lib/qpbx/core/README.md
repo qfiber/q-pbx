@@ -19,6 +19,11 @@ and writes an audit entry in the same transaction. Each entry keeps names as the
   demoted or removed, nobody removes themselves. For the signed-in tenant user:
   `my_extension/1`, `update_my_extension/3` (call features only: DND, call waiting,
   forwarding, ring time, follow-me). `users.extension_id` is cleared when the extension goes.
+- Platform settings (`PlatformSettings`, one row): `platform_settings/0`,
+  `change_platform_settings/2`, `update_platform_settings/2` (audited without the password and
+  secret). Outgoing email (SMTP host, port, login, encrypted password, sender) and the sign-in
+  check (provider, site key, encrypted secret); an empty field falls back to the
+  installation's value, an empty password or secret keeps the saved one.
 - Accounts for the portal: `list_platform_admins/0`, `issue_setup_link/2` (audited token; the
   CLI's `setup_link` uses it too), `account_emails/2` (names for the audit log; with a tenant
   id only its users), `list_my_audit_logs/2` (a tenant's own, under row-level security),

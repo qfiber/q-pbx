@@ -19,6 +19,10 @@ defmodule QPBX.Web.Api.Fallback do
   def call(conn, {:error, {:bad_request, message}}),
     do: Error.send(conn, 400, "bad_request", message)
 
+  # An outside service (the mail server) refused: the reason in plain words.
+  def call(conn, {:error, {:bad_gateway, message}}),
+    do: Error.send(conn, 502, "upstream_failed", message)
+
   def call(conn, {:error, reason}) when is_atom(reason),
     do: Error.send(conn, 422, Atom.to_string(reason), "The request was refused (#{reason}).")
 end
